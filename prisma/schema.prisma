@@ -1,6 +1,6 @@
 // iFundOS — Prisma Schema
 // Core data models for the Intelligent Fund Operating System
-// Database: SQLite (dev) → PostgreSQL (production)
+// Database: PostgreSQL (Neon serverless)
 
 generator client {
   provider = "prisma-client"
@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ============================================================

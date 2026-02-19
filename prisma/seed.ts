@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client.js";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import bcrypt from "bcryptjs";
 
-const adapter = new PrismaBetterSqlite3({ url: "file:./dev.db" });
+const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 /**
@@ -22,7 +22,7 @@ async function main() {
       name: "Saudi Environmental Fund",
       type: "FUND",
       registrationNumber: "SEF-001",
-      capitalization: 10_000_000_000, // 10B SAR
+      capitalization: 10_000_000_000,
       trustTier: "T4",
       status: "ACTIVE",
       preQualificationScore: 100,
@@ -37,7 +37,7 @@ async function main() {
       name: "Tabuk Green Solutions",
       type: "CONTRACTOR",
       registrationNumber: "TGS-2024-0471",
-      capitalization: 25_000_000, // 25M SAR
+      capitalization: 25_000_000,
       trustTier: "T1",
       status: "ACTIVE",
       preQualificationScore: 72.5,
@@ -130,7 +130,7 @@ async function main() {
       name: "Desert Greening Initiative",
       description:
         "A flagship program under the Saudi Green Initiative to combat desertification through native tree planting, ecosystem restoration, and sustainable land management across key provinces. Target: 10 million trees by 2030.",
-      budgetTotal: 500_000_000, // 500M SAR
+      budgetTotal: 500_000_000,
       budgetAllocated: 0,
       budgetDisbursed: 0,
       sgiTargets: JSON.stringify({
@@ -154,7 +154,7 @@ async function main() {
       programId: program.id,
       title: "Native Tree Planting — Tabuk Province",
       description:
-        "Request for Proposals for large-scale native tree planting in Tabuk Province. Contractors must demonstrate capability to plant and maintain a minimum of 500,000 native trees (Acacia, Ghaf, Sidr) over a 3-year period with survival rate commitments.",
+        "Request for Proposals for large-scale native tree planting in Tabuk Province.",
       eligibilityCriteria: JSON.stringify({
         minimumCapitalization: 10_000_000,
         requiredCertifications: [
@@ -167,67 +167,21 @@ async function main() {
       }),
       scoringRubric: JSON.stringify({
         dimensions: [
-          {
-            name: "Technical Capability",
-            weight: 0.30,
-            criteria: [
-              "Proven reforestation track record",
-              "Native species expertise",
-              "Irrigation technology",
-              "Survival rate methodology",
-            ],
-          },
-          {
-            name: "Financial Viability",
-            weight: 0.20,
-            criteria: [
-              "Capitalization adequacy",
-              "Cash flow projections",
-              "Cost breakdown realism",
-              "Financial audit history",
-            ],
-          },
-          {
-            name: "SGI Alignment",
-            weight: 0.25,
-            criteria: [
-              "Carbon offset methodology",
-              "Biodiversity impact plan",
-              "Community engagement",
-              "Vision 2030 contribution",
-            ],
-          },
-          {
-            name: "Risk Profile",
-            weight: 0.15,
-            criteria: [
-              "Project timeline feasibility",
-              "Supply chain reliability",
-              "Climate adaptation plan",
-              "Contingency provisions",
-            ],
-          },
-          {
-            name: "Innovation & Sustainability",
-            weight: 0.10,
-            criteria: [
-              "Technology use (drone monitoring, IoT sensors)",
-              "Water efficiency measures",
-              "Knowledge transfer plan",
-              "Long-term maintenance strategy",
-            ],
-          },
+          { name: "Technical Capability", weight: 0.30 },
+          { name: "Financial Viability", weight: 0.20 },
+          { name: "SGI Alignment", weight: 0.25 },
+          { name: "Risk Profile", weight: 0.15 },
+          { name: "Innovation & Sustainability", weight: 0.10 },
         ],
         passingScore: 65,
         maxScore: 100,
       }),
       evidenceRequirements: JSON.stringify([
-        "Quarterly drone survey imagery (minimum 4K resolution)",
-        "Monthly ground-level photo documentation per planting zone",
-        "IoT soil moisture sensor data (continuous)",
-        "Independent arborist survival rate audit (bi-annual)",
-        "Financial expenditure reports with receipts",
-        "Community engagement activity logs",
+        "Quarterly drone survey imagery",
+        "Monthly ground-level photo documentation",
+        "IoT soil moisture sensor data",
+        "Independent arborist survival rate audit",
+        "Financial expenditure reports",
       ]),
       deadline: new Date("2026-06-30T23:59:59Z"),
       status: "OPEN",
@@ -235,7 +189,7 @@ async function main() {
   });
   console.log("  Created RFP:", rfp.title);
 
-  console.log("\n✓ Seed completed successfully!");
+  console.log("\n Seed completed successfully!");
   console.log("\nLogin credentials:");
   console.log("  Admin:      admin@ifundos.sa / admin123");
   console.log("  Manager:    manager@ifundos.sa / manager123");
