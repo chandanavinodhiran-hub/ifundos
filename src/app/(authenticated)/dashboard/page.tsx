@@ -152,17 +152,17 @@ export default function FundManagerDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full justify-between" disabled>
+            <Button variant="outline" className="w-full justify-between" onClick={() => window.location.href = "/dashboard/rfps"}>
               Create New RFP <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="w-full justify-between" disabled>
+            <Button variant="outline" className="w-full justify-between" onClick={() => window.location.href = "/dashboard/applications"}>
               Review Applications <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="w-full justify-between" disabled>
+            <Button variant="outline" className="w-full justify-between" onClick={() => window.location.href = "/dashboard/grants"}>
               Manage Contracts <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="w-full justify-between" disabled>
-              Generate Reports <ArrowRight className="w-4 h-4" />
+            <Button variant="outline" className="w-full justify-between" onClick={() => window.location.href = "/dashboard/impact"}>
+              Impact Dashboard <ArrowRight className="w-4 h-4" />
             </Button>
           </CardContent>
         </Card>
