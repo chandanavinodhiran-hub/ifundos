@@ -1,21 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 import {
   FileText, FolderKanban, Clock, Loader2, Star, CalendarClock,
-  ArrowRight, TrendingUp, Target,
+  ArrowRight, TrendingUp, Target, Bell, MessageSquare,
 } from "lucide-react";
 
 interface Application {
   id: string;
   status: string;
   proposedBudget: number;
+  questionnaireStatus: string;
   createdAt: string;
   rfp: { title: string; deadline: string | null };
 }
@@ -40,25 +37,29 @@ interface ContractorStats {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-800 border-gray-200",
-  SUBMITTED: "bg-blue-100 text-blue-800 border-blue-200",
-  SCORING: "bg-amber-100 text-amber-800 border-amber-200",
-  IN_REVIEW: "bg-purple-100 text-purple-800 border-purple-200",
-  APPROVED: "bg-green-100 text-green-800 border-green-200",
-  REJECTED: "bg-red-100 text-red-800 border-red-200",
-  WITHDRAWN: "bg-gray-100 text-gray-600 border-gray-200",
+  DRAFT: "bg-gray-100 text-gray-700",
+  SUBMITTED: "bg-blue-100 text-blue-700",
+  SCORING: "bg-yellow-100 text-yellow-700 animate-pulse",
+  IN_REVIEW: "bg-orange-100 text-orange-700",
+  SHORTLISTED: "bg-teal-100 text-teal-700",
+  QUESTIONNAIRE_PENDING: "bg-purple-100 text-purple-700",
+  QUESTIONNAIRE_SUBMITTED: "bg-indigo-100 text-indigo-700",
+  APPROVED: "bg-green-100 text-green-700",
+  REJECTED: "bg-red-100 text-red-700",
 };
 
-const TIER_COLORS: Record<string, string> = {
-  GOLD: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  SILVER: "bg-gray-100 text-gray-700 border-gray-300",
-  BRONZE: "bg-amber-100 text-amber-800 border-amber-300",
-  UNRATED: "bg-gray-50 text-gray-500 border-gray-200",
+const TIER_LABELS: Record<string, { label: string; color: string }> = {
+  T0: { label: "Unrated", color: "bg-gray-100 text-gray-600" },
+  T1: { label: "Bronze", color: "bg-amber-100 text-amber-700" },
+  T2: { label: "Silver", color: "bg-gray-200 text-gray-700" },
+  T3: { label: "Gold", color: "bg-yellow-100 text-yellow-700" },
+  T4: { label: "Platinum", color: "bg-indigo-100 text-indigo-700" },
 };
 
 export default function ContractorDashboard() {
   const [stats, setStats] = useState<ContractorStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/stats")
@@ -79,11 +80,42 @@ export default function ContractorDashboard() {
 
   const org = stats.organization;
   const qualScore = org?.preQualificationScore ?? 0;
-  const trustTier = org?.trustTier ?? "UNRATED";
+  const trustTier = org?.trustTier ?? "T0";
+  const tierInfo = TIER_LABELS[trustTier] || TIER_LABELS.T0;
+
+  // Find applications needing questionnaire action
+  const pendingQuestionnaires = stats.applications.filter(
+    (a) => a.questionnaireStatus === "PENDING" || a.status === "QUESTIONNAIRE_PENDING"
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header with org info */}
+      {/* Questionnaire Notification Banner */}
+      {pendingQuestionnaires.length > 0 && (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-start gap-3">
+          <Bell className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-purple-800">
+              You have been shortlisted! Complete your interview questionnaire{pendingQuestionnaires.length > 1 ? "s" : ""}.
+            </p>
+            <div className="mt-2 space-y-1">
+              {pendingQuestionnaires.map((app) => (
+                <button
+                  key={app.id}
+                  onClick={() => router.push(`/contractor/applications/${app.id}/questionnaire`)}
+                  className="flex items-center gap-2 text-sm text-purple-700 hover:text-purple-900 hover:underline"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  {app.rfp.title} — Complete Questionnaire
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy-800">Contractor Dashboard</h1>
@@ -91,16 +123,13 @@ export default function ContractorDashboard() {
             {org?.name ?? "Your Organization"} — Contractor Portal
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className={TIER_COLORS[trustTier] || TIER_COLORS.UNRATED}>
-            <Star className="w-3 h-3 mr-1" /> {trustTier}
-          </Badge>
-        </div>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${tierInfo.color}`}>
+          <Star className="w-3.5 h-3.5" /> {tierInfo.label} ({trustTier})
+        </span>
       </div>
 
       {/* Pre-qualification Score + Summary Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Pre-qual Score Card */}
         <Card className="lg:col-span-2">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -123,7 +152,7 @@ export default function ContractorDashboard() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Pre-Qualification Score</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Trust Tier: <span className="font-medium text-foreground">{trustTier}</span>
+                  Trust Tier: <span className="font-medium text-foreground">{tierInfo.label}</span>
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Score determines eligibility for higher-value RFPs
@@ -133,7 +162,6 @@ export default function ContractorDashboard() {
           </CardContent>
         </Card>
 
-        {/* Stats */}
         <SummaryCard title="Open RFPs" value={String(stats.openRfps)} desc="Available to apply" icon={Target} color="bg-blue-50 text-blue-600" />
         <SummaryCard title="Active Contracts" value={String(stats.activeContracts)} desc="Awarded grants" icon={FolderKanban} color="bg-emerald-50 text-emerald-600" />
         <SummaryCard title="Pending Milestones" value={String(stats.pendingMilestones)} desc="Awaiting verification" icon={Clock} color="bg-amber-50 text-amber-600" />
@@ -146,15 +174,12 @@ export default function ContractorDashboard() {
             <FileText className="w-5 h-5 text-teal" />
             My Applications ({stats.applications.length})
           </CardTitle>
-          <div className="flex items-center gap-1.5 text-xs">
-            {Object.entries(stats.statusCounts)
-              .filter(([, count]) => count > 0)
-              .map(([status, count]) => (
-                <Badge key={status} variant="outline" className="text-xs">
-                  {status.replace("_", " ")}: {count}
-                </Badge>
-              ))}
-          </div>
+          <button
+            onClick={() => router.push("/contractor/applications")}
+            className="text-sm text-teal hover:text-teal-600 font-medium flex items-center gap-1"
+          >
+            View All <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </CardHeader>
         <CardContent>
           {stats.applications.length === 0 ? (
@@ -162,49 +187,63 @@ export default function ContractorDashboard() {
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground text-sm">No applications yet</p>
               <p className="text-xs text-muted-foreground mt-1">Browse open RFPs to submit your first proposal</p>
+              <button
+                onClick={() => router.push("/contractor/rfps")}
+                className="mt-4 px-4 py-2 bg-teal text-white text-sm rounded-lg hover:bg-teal-600 transition-colors"
+              >
+                Browse RFPs
+              </button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>RFP Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Proposed Budget</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Submitted</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stats.applications.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell className="font-medium max-w-[250px] truncate">
-                      {app.rfp.title}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={STATUS_COLORS[app.status] || ""}>
-                        {app.status.replace("_", " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {formatSAR(app.proposedBudget)}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {app.rfp.deadline ? new Date(app.rfp.deadline).toLocaleDateString() : "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(app.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="pb-2 font-medium text-muted-foreground">RFP Title</th>
+                    <th className="pb-2 font-medium text-muted-foreground">Status</th>
+                    <th className="pb-2 font-medium text-muted-foreground">Budget</th>
+                    <th className="pb-2 font-medium text-muted-foreground">Deadline</th>
+                    <th className="pb-2 font-medium text-muted-foreground">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.applications.slice(0, 5).map((app) => (
+                    <tr key={app.id} className="border-b last:border-0">
+                      <td className="py-3 font-medium max-w-[250px] truncate">
+                        {app.rfp.title}
+                      </td>
+                      <td className="py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[app.status] || "bg-gray-100 text-gray-700"}`}>
+                          {app.status.replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className="py-3 font-mono text-xs">
+                        {formatSAR(app.proposedBudget)}
+                      </td>
+                      <td className="py-3 text-xs text-muted-foreground">
+                        {app.rfp.deadline ? new Date(app.rfp.deadline).toLocaleDateString() : "—"}
+                      </td>
+                      <td className="py-3">
+                        {(app.questionnaireStatus === "PENDING" || app.status === "QUESTIONNAIRE_PENDING") && (
+                          <button
+                            onClick={() => router.push(`/contractor/applications/${app.id}/questionnaire`)}
+                            className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                          >
+                            Answer Questionnaire
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {/* Upcoming Deadlines + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Deadlines */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -228,13 +267,13 @@ export default function ContractorDashboard() {
                           Due: {date.toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge variant="outline" className={
-                        daysLeft <= 7 ? "bg-red-100 text-red-800 border-red-200" :
-                        daysLeft <= 14 ? "bg-amber-100 text-amber-800 border-amber-200" :
-                        "bg-green-100 text-green-800 border-green-200"
-                      }>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        daysLeft <= 7 ? "bg-red-100 text-red-700" :
+                        daysLeft <= 14 ? "bg-amber-100 text-amber-700" :
+                        "bg-green-100 text-green-700"
+                      }`}>
                         {daysLeft} days left
-                      </Badge>
+                      </span>
                     </div>
                   );
                 })}
@@ -243,7 +282,6 @@ export default function ContractorDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -252,18 +290,18 @@ export default function ContractorDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full justify-between" disabled>
-              Browse Open RFPs <ArrowRight className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" className="w-full justify-between" disabled>
-              Submit New Proposal <ArrowRight className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" className="w-full justify-between" disabled>
+            <button onClick={() => router.push("/contractor/rfps")} className="w-full flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-muted/50 transition-colors text-sm font-medium">
+              Browse Open RFPs <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button onClick={() => router.push("/contractor/applications")} className="w-full flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-muted/50 transition-colors text-sm font-medium">
+              View My Applications <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-muted/50 transition-colors text-sm font-medium text-muted-foreground" disabled>
               Upload Evidence <ArrowRight className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" className="w-full justify-between" disabled>
-              View Contract Details <ArrowRight className="w-4 h-4" />
-            </Button>
+            </button>
+            <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-muted/50 transition-colors text-sm font-medium text-muted-foreground" disabled>
+              View Contracts <ArrowRight className="w-4 h-4" />
+            </button>
           </CardContent>
         </Card>
       </div>

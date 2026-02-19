@@ -8,8 +8,8 @@ const prisma = new PrismaClient({ adapter });
 
 /**
  * iFundOS Seed Script
- * Populates the database with initial users, organizations, programs, and RFPs
- * for development and demo purposes.
+ * Populates the database with initial users, organizations, programs, RFPs,
+ * questionnaire questions, and sample data for the full pipeline demo.
  */
 async function main() {
   console.log("Seeding iFundOS database...\n");
@@ -17,7 +17,10 @@ async function main() {
   // ── Organizations ──────────────────────────────────────────
   const sefOrg = await prisma.organization.upsert({
     where: { registrationNumber: "SEF-001" },
-    update: {},
+    update: {
+      businessCategories: JSON.stringify(["Environmental", "Government"]),
+      certifications: JSON.stringify(["ISO 14001", "Saudi Government Entity"]),
+    },
     create: {
       name: "Saudi Environmental Fund",
       type: "FUND",
@@ -26,13 +29,18 @@ async function main() {
       trustTier: "T4",
       status: "ACTIVE",
       preQualificationScore: 100,
+      businessCategories: JSON.stringify(["Environmental", "Government"]),
+      certifications: JSON.stringify(["ISO 14001", "Saudi Government Entity"]),
     },
   });
   console.log("  Created organization:", sefOrg.name);
 
   const tabukOrg = await prisma.organization.upsert({
     where: { registrationNumber: "TGS-2024-0471" },
-    update: {},
+    update: {
+      businessCategories: JSON.stringify(["Environmental", "Agriculture", "Construction"]),
+      certifications: JSON.stringify(["ISO 14001 Environmental Management", "Saudi Contractor Classification (Grade 2+)", "OSHA Safety Certified"]),
+    },
     create: {
       name: "Tabuk Green Solutions",
       type: "CONTRACTOR",
@@ -41,9 +49,32 @@ async function main() {
       trustTier: "T1",
       status: "ACTIVE",
       preQualificationScore: 72.5,
+      businessCategories: JSON.stringify(["Environmental", "Agriculture", "Construction"]),
+      certifications: JSON.stringify(["ISO 14001 Environmental Management", "Saudi Contractor Classification (Grade 2+)", "OSHA Safety Certified"]),
     },
   });
   console.log("  Created organization:", tabukOrg.name);
+
+  // Second contractor org for demo comparison
+  const riyadhOrg = await prisma.organization.upsert({
+    where: { registrationNumber: "RGP-2023-1122" },
+    update: {
+      businessCategories: JSON.stringify(["Environmental", "Water Management", "Renewable Energy"]),
+      certifications: JSON.stringify(["ISO 14001 Environmental Management", "Saudi Contractor Classification (Grade 3)", "Water Management Specialist"]),
+    },
+    create: {
+      name: "Riyadh GreenPlanet Co.",
+      type: "CONTRACTOR",
+      registrationNumber: "RGP-2023-1122",
+      capitalization: 45_000_000,
+      trustTier: "T2",
+      status: "ACTIVE",
+      preQualificationScore: 81.3,
+      businessCategories: JSON.stringify(["Environmental", "Water Management", "Renewable Energy"]),
+      certifications: JSON.stringify(["ISO 14001 Environmental Management", "Saudi Contractor Classification (Grade 3)", "Water Management Specialist"]),
+    },
+  });
+  console.log("  Created organization:", riyadhOrg.name);
 
   const auditOrg = await prisma.organization.upsert({
     where: { registrationNumber: "AUD-GOV-001" },
@@ -62,6 +93,7 @@ async function main() {
   const passwordHash = await bcrypt.hash("admin123", 12);
   const managerHash = await bcrypt.hash("manager123", 12);
   const contractorHash = await bcrypt.hash("contractor123", 12);
+  const contractor2Hash = await bcrypt.hash("contractor123", 12);
   const auditorHash = await bcrypt.hash("auditor123", 12);
 
   const admin = await prisma.user.upsert({
@@ -109,6 +141,21 @@ async function main() {
   });
   console.log("  Created user:", contractor.email, "(CONTRACTOR)");
 
+  const contractor2 = await prisma.user.upsert({
+    where: { email: "contractor2@greenplanet.sa" },
+    update: {},
+    create: {
+      email: "contractor2@greenplanet.sa",
+      name: "Layla Al-Mutairi",
+      passwordHash: contractor2Hash,
+      role: "CONTRACTOR",
+      organizationId: riyadhOrg.id,
+      clearanceLevel: 1,
+      status: "ACTIVE",
+    },
+  });
+  console.log("  Created user:", contractor2.email, "(CONTRACTOR)");
+
   const auditor = await prisma.user.upsert({
     where: { email: "auditor@ifundos.sa" },
     update: {},
@@ -125,76 +172,200 @@ async function main() {
   console.log("  Created user:", auditor.email, "(AUDITOR)");
 
   // ── Program ────────────────────────────────────────────────
-  const program = await prisma.program.create({
-    data: {
-      name: "Desert Greening Initiative",
-      description:
-        "A flagship program under the Saudi Green Initiative to combat desertification through native tree planting, ecosystem restoration, and sustainable land management across key provinces. Target: 10 million trees by 2030.",
-      budgetTotal: 500_000_000,
-      budgetAllocated: 0,
-      budgetDisbursed: 0,
-      sgiTargets: JSON.stringify({
-        treePlantingTarget: 10_000_000,
-        provinces: ["Tabuk", "Al Jouf", "Hail", "Northern Borders"],
-        carbonOffsetGoalTons: 2_500_000,
-        biodiversityTargets: [
-          "Restore 15% native shrubland",
-          "Establish 3 wildlife corridors",
-        ],
-        alignedVision2030Goals: ["Environmental Sustainability", "Quality of Life"],
-      }),
-      status: "ACTIVE",
-    },
-  });
-  console.log("\n  Created program:", program.name);
+  // Check if program already exists
+  const existingPrograms = await prisma.program.findMany({ where: { name: "Desert Greening Initiative" } });
+  let program;
+  if (existingPrograms.length > 0) {
+    program = existingPrograms[0];
+    console.log("\n  Program already exists:", program.name);
+  } else {
+    program = await prisma.program.create({
+      data: {
+        name: "Desert Greening Initiative",
+        description:
+          "A flagship program under the Saudi Green Initiative to combat desertification through native tree planting, ecosystem restoration, and sustainable land management across key provinces. Target: 10 million trees by 2030.",
+        budgetTotal: 500_000_000,
+        budgetAllocated: 0,
+        budgetDisbursed: 0,
+        sgiTargets: JSON.stringify({
+          treePlantingTarget: 10_000_000,
+          provinces: ["Tabuk", "Al Jouf", "Hail", "Northern Borders"],
+          carbonOffsetGoalTons: 2_500_000,
+          biodiversityTargets: [
+            "Restore 15% native shrubland",
+            "Establish 3 wildlife corridors",
+          ],
+          alignedVision2030Goals: ["Environmental Sustainability", "Quality of Life"],
+        }),
+        status: "ACTIVE",
+      },
+    });
+    console.log("\n  Created program:", program.name);
+  }
 
-  // ── RFP ────────────────────────────────────────────────────
-  const rfp = await prisma.rFP.create({
-    data: {
-      programId: program.id,
-      title: "Native Tree Planting — Tabuk Province",
-      description:
-        "Request for Proposals for large-scale native tree planting in Tabuk Province.",
-      eligibilityCriteria: JSON.stringify({
-        minimumCapitalization: 10_000_000,
-        requiredCertifications: [
-          "ISO 14001 Environmental Management",
-          "Saudi Contractor Classification (Grade 2+)",
-        ],
-        minimumExperience: "5 years in reforestation or landscaping",
-        geographicPresence: "Must have operational base in Tabuk or Northern Region",
-        insuranceRequirement: "Professional liability insurance min 5M SAR",
-      }),
-      scoringRubric: JSON.stringify({
-        dimensions: [
-          { name: "Technical Capability", weight: 0.30 },
-          { name: "Financial Viability", weight: 0.20 },
-          { name: "SGI Alignment", weight: 0.25 },
-          { name: "Risk Profile", weight: 0.15 },
-          { name: "Innovation & Sustainability", weight: 0.10 },
-        ],
-        passingScore: 65,
-        maxScore: 100,
-      }),
-      evidenceRequirements: JSON.stringify([
-        "Quarterly drone survey imagery",
-        "Monthly ground-level photo documentation",
-        "IoT soil moisture sensor data",
-        "Independent arborist survival rate audit",
-        "Financial expenditure reports",
-      ]),
-      deadline: new Date("2026-06-30T23:59:59Z"),
-      status: "OPEN",
-    },
-  });
-  console.log("  Created RFP:", rfp.title);
+  // ── RFP with Questionnaire Questions ───────────────────────
+  // Check if RFP already exists
+  const existingRfps = await prisma.rFP.findMany({ where: { title: "Native Tree Planting — Tabuk Province" } });
+  let rfp;
+  if (existingRfps.length > 0) {
+    rfp = existingRfps[0];
+    // Update it with new fields
+    rfp = await prisma.rFP.update({
+      where: { id: rfp.id },
+      data: {
+        eligibilityCriteria: JSON.stringify({
+          minimumCapitalization: 10_000_000,
+          requiredCategories: ["Environmental"],
+          minimumTrustTier: "T1",
+          requiredCertifications: [
+            "ISO 14001 Environmental Management",
+            "Saudi Contractor Classification (Grade 2+)",
+          ],
+          geographicRestrictions: "Must have operational base in Tabuk or Northern Region",
+        }),
+        scoringRubric: JSON.stringify({
+          dimensions: [
+            { name: "Procurement Integrity", weight: 25, criteria: "Financial health, team capacity, fraud indicators" },
+            { name: "Vision Alignment", weight: 25, criteria: "SGI goal alignment, sustainability approach" },
+            { name: "Scientific Viability", weight: 25, criteria: "Species selection, survival methodology, irrigation plan" },
+            { name: "Impact Potential", weight: 25, criteria: "Scale, carbon offset, biodiversity impact" },
+          ],
+          passingScore: 65,
+          maxScore: 100,
+        }),
+        evidenceRequirements: JSON.stringify([
+          "Site photos",
+          "Drone surveys",
+          "Soil analysis reports",
+          "Species survival data",
+          "Water budget analysis",
+          "Environmental impact assessment",
+          "Team CVs",
+          "Financial statements",
+          "Past project references",
+        ]),
+        createdById: manager.id,
+      },
+    });
+    console.log("  Updated RFP:", rfp.title);
+  } else {
+    rfp = await prisma.rFP.create({
+      data: {
+        programId: program.id,
+        title: "Native Tree Planting — Tabuk Province",
+        description:
+          "Request for Proposals for large-scale native tree planting in Tabuk Province as part of the Desert Greening Initiative. The selected contractor will be responsible for planting 500,000 native trees across designated sites, implementing irrigation systems, and maintaining plantings for 36 months post-planting. The project aims to combat desertification, restore native ecosystems, and contribute to the Saudi Green Initiative's goal of planting 10 billion trees.",
+        eligibilityCriteria: JSON.stringify({
+          minimumCapitalization: 10_000_000,
+          requiredCategories: ["Environmental"],
+          minimumTrustTier: "T1",
+          requiredCertifications: [
+            "ISO 14001 Environmental Management",
+            "Saudi Contractor Classification (Grade 2+)",
+          ],
+          geographicRestrictions: "Must have operational base in Tabuk or Northern Region",
+        }),
+        scoringRubric: JSON.stringify({
+          dimensions: [
+            { name: "Procurement Integrity", weight: 25, criteria: "Financial health, team capacity, fraud indicators" },
+            { name: "Vision Alignment", weight: 25, criteria: "SGI goal alignment, sustainability approach" },
+            { name: "Scientific Viability", weight: 25, criteria: "Species selection, survival methodology, irrigation plan" },
+            { name: "Impact Potential", weight: 25, criteria: "Scale, carbon offset, biodiversity impact" },
+          ],
+          passingScore: 65,
+          maxScore: 100,
+        }),
+        evidenceRequirements: JSON.stringify([
+          "Site photos",
+          "Drone surveys",
+          "Soil analysis reports",
+          "Species survival data",
+          "Water budget analysis",
+          "Environmental impact assessment",
+          "Team CVs",
+          "Financial statements",
+          "Past project references",
+        ]),
+        deadline: new Date("2026-06-30T23:59:59Z"),
+        status: "OPEN",
+        createdById: manager.id,
+      },
+    });
+    console.log("  Created RFP:", rfp.title);
+  }
+
+  // ── Questionnaire Questions ────────────────────────────────
+  const existingQuestions = await prisma.questionnaireQuestion.findMany({ where: { rfpId: rfp.id } });
+  if (existingQuestions.length === 0) {
+    const questions = [
+      {
+        rfpId: rfp.id,
+        questionText: "Describe your team's experience with native tree planting in arid environments.",
+        questionType: "LONG_ANSWER",
+        isRequired: true,
+        sortOrder: 1,
+      },
+      {
+        rfpId: rfp.id,
+        questionText: "What irrigation methodology will you use and why?",
+        questionType: "LONG_ANSWER",
+        isRequired: true,
+        sortOrder: 2,
+      },
+      {
+        rfpId: rfp.id,
+        questionText: "Provide references from 3 previous environmental projects.",
+        questionType: "FILE_UPLOAD",
+        isRequired: true,
+        sortOrder: 3,
+      },
+      {
+        rfpId: rfp.id,
+        questionText: "What is your proposed timeline for achieving 80% survival rate at 12 months?",
+        questionType: "SHORT_ANSWER",
+        isRequired: true,
+        sortOrder: 4,
+      },
+      {
+        rfpId: rfp.id,
+        questionText: "Describe your approach to post-planting maintenance for the first 36 months.",
+        questionType: "LONG_ANSWER",
+        isRequired: true,
+        sortOrder: 5,
+      },
+    ];
+
+    for (const q of questions) {
+      await prisma.questionnaireQuestion.create({ data: q });
+    }
+    console.log("  Created", questions.length, "questionnaire questions");
+  } else {
+    console.log("  Questionnaire questions already exist:", existingQuestions.length);
+  }
+
+  // ── Audit Genesis Event ────────────────────────────────────
+  const auditCount = await prisma.auditEvent.count();
+  if (auditCount === 0) {
+    await prisma.auditEvent.create({
+      data: {
+        action: "SYSTEM_INITIALIZED",
+        resourceType: "SYSTEM",
+        purpose: "iFundOS system initialization and seed data creation",
+        details: JSON.stringify({ version: "1.0.0", seedDate: new Date().toISOString() }),
+        hashPrev: null,
+        hashCurr: "GENESIS_HASH",
+      },
+    });
+    console.log("  Created genesis audit event");
+  }
 
   console.log("\n Seed completed successfully!");
   console.log("\nLogin credentials:");
-  console.log("  Admin:      admin@ifundos.sa / admin123");
-  console.log("  Manager:    manager@ifundos.sa / manager123");
-  console.log("  Contractor: contractor@tabuk-green.sa / contractor123");
-  console.log("  Auditor:    auditor@ifundos.sa / auditor123");
+  console.log("  Admin:       admin@ifundos.sa / admin123");
+  console.log("  Manager:     manager@ifundos.sa / manager123");
+  console.log("  Contractor:  contractor@tabuk-green.sa / contractor123");
+  console.log("  Contractor2: contractor2@greenplanet.sa / contractor123");
+  console.log("  Auditor:     auditor@ifundos.sa / auditor123");
 }
 
 main()

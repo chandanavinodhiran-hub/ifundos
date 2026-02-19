@@ -23,6 +23,8 @@ model Organization {
   trustTier             String   @default("T0") // T0–T4
   status                String   @default("ACTIVE") // ACTIVE | SUSPENDED
   preQualificationScore Float?
+  businessCategories    String?  // JSON array of categories
+  certifications        String?  // JSON array of certifications
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -47,10 +49,11 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization Organization? @relation(fields: [organizationId], references: [id])
-  reviews      Review[]
-  auditEvents  AuditEvent[]
-  boostActions BoostAction[]
+  organization             Organization?             @relation(fields: [organizationId], references: [id])
+  reviews                  Review[]
+  auditEvents              AuditEvent[]
+  boostActions             BoostAction[]
+  questionnaireEvaluations QuestionnaireEvaluation[]
 }
 
 // ============================================================
@@ -83,52 +86,122 @@ model RFP {
   eligibilityCriteria   String?  // JSON string
   scoringRubric         String?  // JSON string
   evidenceRequirements  String?  // JSON string
+  questionnaireConfig   String?  // JSON string — custom questionnaire questions
   deadline              DateTime?
-  status                String   @default("DRAFT") // DRAFT | OPEN | CLOSED
+  status                String   @default("DRAFT") // DRAFT | OPEN | CLOSED | AWARDED
+  createdById           String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  program      Program       @relation(fields: [programId], references: [id])
-  applications Application[]
+  program                Program                 @relation(fields: [programId], references: [id])
+  applications           Application[]
+  questionnaireQuestions  QuestionnaireQuestion[]
 }
 
 // ============================================================
 // APPLICATION — Contractor proposals submitted against an RFP
 // ============================================================
 model Application {
-  id               String   @id @default(cuid())
-  rfpId            String
-  organizationId   String
-  proposalData     String?  // JSON string
-  compositeScore   Float?
-  dimensionScores  String?  // JSON string
-  confidenceLevels String?  // JSON string
-  status           String   @default("DRAFT") // DRAFT | SUBMITTED | SCORING | IN_REVIEW | APPROVED | REJECTED
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                        String    @id @default(cuid())
+  rfpId                     String
+  organizationId            String
+  proposalData              String?   // JSON string — full multi-step application data
+  proposedBudget            Float     @default(0)
+  compositeScore            Float?
+  dimensionScores           String?   // JSON string — {procurement, vision, viability, impact}
+  confidenceLevels          String?   // JSON string
+  aiFindings                String?   // JSON string — findings from AI scoring
+  status                    String    @default("DRAFT")
+  // Status flow: DRAFT → SUBMITTED → SCORING → IN_REVIEW → SHORTLISTED → QUESTIONNAIRE_PENDING → QUESTIONNAIRE_SUBMITTED → APPROVED | REJECTED
+  shortlistedAt             DateTime?
+  questionnaireStatus       String    @default("NOT_SENT") // NOT_SENT | PENDING | SUBMITTED
+  questionnaireSentAt       DateTime?
+  questionnaireSubmittedAt  DateTime?
+  submittedAt               DateTime?
+  rejectionReason           String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
-  rfp            RFP             @relation(fields: [rfpId], references: [id])
-  organization   Organization    @relation(fields: [organizationId], references: [id])
-  decisionPacket DecisionPacket?
-  reviews        Review[]
-  contract       Contract?
+  rfp                      RFP                      @relation(fields: [rfpId], references: [id])
+  organization             Organization             @relation(fields: [organizationId], references: [id])
+  decisionPacket           DecisionPacket?
+  reviews                  Review[]
+  contract                 Contract?
+  questionnaireResponses   QuestionnaireResponse[]
+  questionnaireEvaluations QuestionnaireEvaluation[]
 }
 
 // ============================================================
 // DECISION PACKET — AI-generated analysis for committee review
 // ============================================================
 model DecisionPacket {
-  id              String   @id @default(cuid())
-  applicationId   String   @unique
-  narrative       String?
-  recommendation  String?  // APPROVE | REJECT | DEFER
-  keyRisks        String?  // JSON string
-  questions       String?  // JSON string
-  scoringEvidence String?  // JSON string
-  createdByModel  String?  // e.g. "gpt-4-turbo" or "claude-3"
-  createdAt       DateTime @default(now())
+  id                String   @id @default(cuid())
+  applicationId     String   @unique
+  narrative         String?
+  recommendation    String?  // RECOMMEND | RECOMMEND_WITH_CONDITIONS | DO_NOT_RECOMMEND
+  executiveSummary  String?
+  strengths         String?  // JSON array
+  risks             String?  // JSON array (renamed from keyRisks)
+  questionsForContractor String? // JSON array
+  impactAssessment  String?
+  scoringEvidence   String?  // JSON string
+  createdByModel    String?  // e.g. "claude-sonnet-4-20250514" or "mock"
+  createdAt         DateTime @default(now())
 
   application Application @relation(fields: [applicationId], references: [id])
+}
+
+// ============================================================
+// QUESTIONNAIRE QUESTION — Custom questions attached to an RFP
+// ============================================================
+model QuestionnaireQuestion {
+  id           String   @id @default(cuid())
+  rfpId        String
+  questionText String
+  questionType String   // SHORT_ANSWER | LONG_ANSWER | MULTIPLE_CHOICE | FILE_UPLOAD
+  isRequired   Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  options      String?  // JSON array for multiple choice options
+  createdAt    DateTime @default(now())
+
+  rfp       RFP                      @relation(fields: [rfpId], references: [id])
+  responses QuestionnaireResponse[]
+  evaluations QuestionnaireEvaluation[]
+}
+
+// ============================================================
+// QUESTIONNAIRE RESPONSE — Contractor answers to questionnaire
+// ============================================================
+model QuestionnaireResponse {
+  id           String    @id @default(cuid())
+  applicationId String
+  questionId   String
+  responseText String?
+  filePath     String?   // For file upload questions
+  submittedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  application Application           @relation(fields: [applicationId], references: [id])
+  question    QuestionnaireQuestion  @relation(fields: [questionId], references: [id])
+}
+
+// ============================================================
+// QUESTIONNAIRE EVALUATION — Fund manager's internal notes on responses
+// ============================================================
+model QuestionnaireEvaluation {
+  id             String   @id @default(cuid())
+  applicationId  String
+  questionId     String
+  evaluatorId    String
+  internalNotes  String?
+  internalScore  Int?     // 0-10
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  application Application           @relation(fields: [applicationId], references: [id])
+  question    QuestionnaireQuestion  @relation(fields: [questionId], references: [id])
+  evaluator   User                   @relation(fields: [evaluatorId], references: [id])
 }
 
 // ============================================================
@@ -157,6 +230,7 @@ model Contract {
   programId         String
   organizationId    String
   awardAmount       Float
+  justification     String?
   milestoneSchedule String?  // JSON string
   status            String   @default("ACTIVE") // ACTIVE | COMPLETED | SUSPENDED | TERMINATED
   createdAt         DateTime @default(now())

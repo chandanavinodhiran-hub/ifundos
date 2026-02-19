@@ -25,7 +25,9 @@ export async function GET() {
   if (role === "FUND_MANAGER") {
     const [openRfps, applicationsInReview, activeGrants, programs, recentAudit] = await Promise.all([
       prisma.rFP.count({ where: { status: "OPEN" } }),
-      prisma.application.count({ where: { status: { in: ["SUBMITTED", "SCORING", "IN_REVIEW"] } } }),
+      prisma.application.count({
+        where: { status: { in: ["SUBMITTED", "SCORING", "IN_REVIEW", "SHORTLISTED", "QUESTIONNAIRE_PENDING", "QUESTIONNAIRE_SUBMITTED"] } },
+      }),
       prisma.contract.count({ where: { status: "ACTIVE" } }),
       prisma.program.findMany({
         select: { id: true, name: true, budgetTotal: true, budgetAllocated: true, budgetDisbursed: true, status: true },
@@ -54,7 +56,10 @@ export async function GET() {
     const orgId = session.user.organizationId;
 
     const [org, openRfps, applications, contracts, milestones] = await Promise.all([
-      orgId ? prisma.organization.findUnique({ where: { id: orgId }, select: { name: true, trustTier: true, preQualificationScore: true } }) : null,
+      orgId ? prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { name: true, trustTier: true, preQualificationScore: true, capitalization: true, businessCategories: true, certifications: true },
+      }) : null,
       prisma.rFP.count({ where: { status: "OPEN" } }),
       orgId ? prisma.application.findMany({
         where: { organizationId: orgId },
@@ -67,15 +72,18 @@ export async function GET() {
       }) : 0,
     ]);
 
-    const statusCounts: Record<string, number> = { draft: 0, submitted: 0, scoring: 0, in_review: 0, approved: 0, rejected: 0 };
+    const statusCounts: Record<string, number> = {
+      draft: 0, submitted: 0, scoring: 0, in_review: 0,
+      shortlisted: 0, questionnaire_pending: 0, questionnaire_submitted: 0,
+      approved: 0, rejected: 0,
+    };
     if (Array.isArray(applications)) {
       for (const app of applications) {
-        const key = app.status.toLowerCase().replace("-", "_");
+        const key = app.status.toLowerCase().replace(/-/g, "_");
         if (key in statusCounts) statusCounts[key]++;
       }
     }
 
-    // Get upcoming RFP deadlines
     const upcomingDeadlines = await prisma.rFP.findMany({
       where: { status: "OPEN", deadline: { gte: new Date() } },
       select: { id: true, title: true, deadline: true },
@@ -99,7 +107,7 @@ export async function GET() {
     const now = new Date();
     const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const [totalEvents, eventsToday, boostCount, recentEvents, boostActions] = await Promise.all([
+    const [totalEvents, eventsToday, boostCount, recentEvents, boostActions, scoringEvents] = await Promise.all([
       prisma.auditEvent.count(),
       prisma.auditEvent.count({ where: { timestamp: { gte: dayAgo } } }),
       prisma.boostAction.count(),
@@ -114,13 +122,16 @@ export async function GET() {
         orderBy: { timestamp: "desc" },
         include: { actor: { select: { name: true, role: true } } },
       }),
+      prisma.auditEvent.count({
+        where: { action: { in: ["AI_SCORING_COMPLETED", "APPLICATION_SHORTLISTED", "QUESTIONNAIRE_SENT", "CONTRACT_AWARDED"] } },
+      }),
     ]);
 
     return NextResponse.json({
       totalEvents,
       eventsToday,
       boostCount,
-      flaggedEvents: 0,
+      flaggedEvents: scoringEvents,
       recentEvents,
       boostActions,
     });
