@@ -1,0 +1,260 @@
+// iFundOS — Prisma Schema
+// Core data models for the Intelligent Fund Operating System
+// Database: SQLite (dev) → PostgreSQL (production)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================================
+// ORGANIZATION — Contractors, Fund bodies, Ministries, Auditors
+// ============================================================
+model Organization {
+  id                    String   @id @default(cuid())
+  name                  String
+  type                  String   // CONTRACTOR | FUND | MINISTRY | AUDITOR
+  registrationNumber    String?  @unique
+  capitalization        Float?
+  trustTier             String   @default("T0") // T0–T4
+  status                String   @default("ACTIVE") // ACTIVE | SUSPENDED
+  preQualificationScore Float?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  users        User[]
+  applications Application[]
+  contracts    Contract[]
+}
+
+// ============================================================
+// USER — Authenticated users with role-based access
+// ============================================================
+model User {
+  id             String   @id @default(cuid())
+  organizationId String?
+  email          String   @unique
+  name           String
+  passwordHash   String
+  role           String   // CONTRACTOR | FUND_MANAGER | ADMIN | AUDITOR
+  mfaEnabled     Boolean  @default(false)
+  clearanceLevel Int      @default(1)
+  status         String   @default("ACTIVE") // ACTIVE | SUSPENDED | PENDING
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  reviews      Review[]
+  auditEvents  AuditEvent[]
+  boostActions BoostAction[]
+}
+
+// ============================================================
+// PROGRAM — Funding programs under the Saudi Green Initiative
+// ============================================================
+model Program {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  budgetTotal      Float
+  budgetAllocated  Float    @default(0)
+  budgetDisbursed  Float    @default(0)
+  sgiTargets       String?  // JSON string — SGI alignment targets
+  status           String   @default("ACTIVE") // ACTIVE | CLOSED | DRAFT
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  rfps      RFP[]
+  contracts Contract[]
+}
+
+// ============================================================
+// RFP — Requests for Proposals issued under a Program
+// ============================================================
+model RFP {
+  id                    String   @id @default(cuid())
+  programId             String
+  title                 String
+  description           String?
+  eligibilityCriteria   String?  // JSON string
+  scoringRubric         String?  // JSON string
+  evidenceRequirements  String?  // JSON string
+  deadline              DateTime?
+  status                String   @default("DRAFT") // DRAFT | OPEN | CLOSED
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  program      Program       @relation(fields: [programId], references: [id])
+  applications Application[]
+}
+
+// ============================================================
+// APPLICATION — Contractor proposals submitted against an RFP
+// ============================================================
+model Application {
+  id               String   @id @default(cuid())
+  rfpId            String
+  organizationId   String
+  proposalData     String?  // JSON string
+  compositeScore   Float?
+  dimensionScores  String?  // JSON string
+  confidenceLevels String?  // JSON string
+  status           String   @default("DRAFT") // DRAFT | SUBMITTED | SCORING | IN_REVIEW | APPROVED | REJECTED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  rfp            RFP             @relation(fields: [rfpId], references: [id])
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  decisionPacket DecisionPacket?
+  reviews        Review[]
+  contract       Contract?
+}
+
+// ============================================================
+// DECISION PACKET — AI-generated analysis for committee review
+// ============================================================
+model DecisionPacket {
+  id              String   @id @default(cuid())
+  applicationId   String   @unique
+  narrative       String?
+  recommendation  String?  // APPROVE | REJECT | DEFER
+  keyRisks        String?  // JSON string
+  questions       String?  // JSON string
+  scoringEvidence String?  // JSON string
+  createdByModel  String?  // e.g. "gpt-4-turbo" or "claude-3"
+  createdAt       DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id])
+}
+
+// ============================================================
+// REVIEW — Committee member votes on applications
+// ============================================================
+model Review {
+  id            String   @id @default(cuid())
+  applicationId String
+  reviewerId    String
+  vote          String   // APPROVE | REJECT | DEFER
+  comments      String?
+  boostAction   String?  // UP | DOWN | MONITOR | SHUTDOWN
+  boostReason   String?
+  createdAt     DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id])
+  reviewer    User        @relation(fields: [reviewerId], references: [id])
+}
+
+// ============================================================
+// CONTRACT — Awarded funding agreements
+// ============================================================
+model Contract {
+  id                String   @id @default(cuid())
+  applicationId     String   @unique
+  programId         String
+  organizationId    String
+  awardAmount       Float
+  milestoneSchedule String?  // JSON string
+  status            String   @default("ACTIVE") // ACTIVE | COMPLETED | SUSPENDED | TERMINATED
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  application   Application    @relation(fields: [applicationId], references: [id])
+  program       Program        @relation(fields: [programId], references: [id])
+  organization  Organization   @relation(fields: [organizationId], references: [id])
+  milestones    Milestone[]
+  disbursements Disbursement[]
+}
+
+// ============================================================
+// MILESTONE — Deliverable checkpoints within a Contract
+// ============================================================
+model Milestone {
+  id                  String    @id @default(cuid())
+  contractId          String
+  sequence            Int
+  title               String
+  disbursementPct     Float
+  disbursementAmount  Float
+  triggerDescription  String?
+  verificationMethod  String?
+  status              String    @default("PENDING") // PENDING | EVIDENCE_SUBMITTED | VERIFIED | FAILED
+  verifiedAt          DateTime?
+  createdAt           DateTime  @default(now())
+
+  contract        Contract        @relation(fields: [contractId], references: [id])
+  evidenceRecords EvidenceRecord[]
+  disbursements   Disbursement[]
+}
+
+// ============================================================
+// EVIDENCE RECORD — Physical verification artifacts
+// ============================================================
+model EvidenceRecord {
+  id              String    @id @default(cuid())
+  milestoneId     String
+  type            String    // PHOTO | DRONE | SENSOR | REPORT
+  filePath        String?
+  metadata        String?   // JSON string
+  submittedAt     DateTime  @default(now())
+  reviewedAt      DateTime?
+  reviewStatus    String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  slideSolveCheck String    @default("PENDING") // PASS | FAIL | PENDING
+
+  milestone Milestone @relation(fields: [milestoneId], references: [id])
+}
+
+// ============================================================
+// DISBURSEMENT — Payment releases tied to milestones
+// ============================================================
+model Disbursement {
+  id          String    @id @default(cuid())
+  contractId  String
+  milestoneId String
+  amount      Float
+  status      String    @default("PENDING") // PENDING | APPROVED | HELD | RELEASED
+  approvedBy  String?
+  holdReason  String?
+  releasedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  contract  Contract  @relation(fields: [contractId], references: [id])
+  milestone Milestone @relation(fields: [milestoneId], references: [id])
+}
+
+// ============================================================
+// AUDIT EVENT — Tamper-evident log chain for all actions
+// ============================================================
+model AuditEvent {
+  id           String   @id @default(cuid())
+  actorId      String?
+  action       String
+  resourceType String
+  resourceId   String?
+  purpose      String?
+  details      String?  // JSON string
+  timestamp    DateTime @default(now())
+  hashPrev     String?
+  hashCurr     String?
+
+  actor User? @relation(fields: [actorId], references: [id])
+}
+
+// ============================================================
+// BOOST ACTION — Human override of AI scoring decisions
+// ============================================================
+model BoostAction {
+  id              String   @id @default(cuid())
+  actorId         String
+  targetType      String   // APPLICATION | CONTRACT
+  targetId        String
+  boostType       String   // UP | DOWN | MONITOR | SHUTDOWN
+  reason          String?
+  originalAiScore Float?
+  timestamp       DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id])
+}
