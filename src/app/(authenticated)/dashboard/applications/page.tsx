@@ -34,6 +34,7 @@ interface Application {
   compositeScore: number | null;
   dimensionScores: string | null;
   aiFindings: string | null;
+  proposalData: string | null;
   proposedBudget: number;
   submittedAt: string | null;
   shortlistedAt: string | null;
@@ -51,6 +52,15 @@ interface Application {
     type: string;
     trustTier: string;
   };
+  decisionPacket?: {
+    id: string;
+    narrative: string | null;
+    recommendation: string | null;
+    executiveSummary: string | null;
+    strengths: string | null;
+    risks: string | null;
+    createdByModel: string | null;
+  } | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -356,6 +366,12 @@ export default function ApplicationPipelinePage() {
                             {(() => {
                               try {
                                 const scores = JSON.parse(app.dimensionScores);
+                                const dimLabels: Record<string, string> = {
+                                  procurement: "Procurement Integrity",
+                                  vision: "Vision Alignment",
+                                  viability: "Scientific Viability",
+                                  impact: "Impact Potential",
+                                };
                                 return (
                                   <div className="space-y-2">
                                     {Object.entries(scores).map(
@@ -364,8 +380,8 @@ export default function ApplicationPipelinePage() {
                                           key={dim}
                                           className="flex items-center gap-2"
                                         >
-                                          <span className="text-xs text-muted-foreground w-24 capitalize">
-                                            {dim}
+                                          <span className="text-xs text-muted-foreground w-28">
+                                            {dimLabels[dim] || dim}
                                           </span>
                                           <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                             <div
@@ -390,42 +406,56 @@ export default function ApplicationPipelinePage() {
                           </div>
                         )}
 
-                        {/* AI Findings */}
-                        {app.aiFindings && (
-                          <div>
-                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                              <AlertTriangle className="w-4 h-4 text-amber-500" />
-                              AI Findings
-                            </h4>
-                            {(() => {
-                              try {
-                                const findings = JSON.parse(app.aiFindings);
-                                return (
-                                  <ul className="space-y-1">
-                                    {(Array.isArray(findings)
-                                      ? findings
-                                      : []
-                                    )
-                                      .slice(0, 5)
-                                      .map((f: string, i: number) => (
-                                        <li
-                                          key={i}
-                                          className="text-xs text-muted-foreground flex gap-1"
-                                        >
-                                          <span className="text-amber-500">
-                                            *
-                                          </span>
-                                          {f}
-                                        </li>
-                                      ))}
-                                  </ul>
-                                );
-                              } catch {
-                                return null;
-                              }
-                            })()}
-                          </div>
-                        )}
+                        {/* Decision Packet / AI Findings */}
+                        <div>
+                          {app.decisionPacket?.recommendation && (
+                            <div className="mb-3">
+                              <h4 className="font-semibold text-sm mb-1">Recommendation</h4>
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                app.decisionPacket.recommendation === "RECOMMEND"
+                                  ? "bg-green-100 text-green-700"
+                                  : app.decisionPacket.recommendation === "RECOMMEND_WITH_CONDITIONS"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}>
+                                {app.decisionPacket.recommendation.replace(/_/g, " ")}
+                              </span>
+                            </div>
+                          )}
+                          {app.decisionPacket?.executiveSummary && (
+                            <div className="mb-3">
+                              <h4 className="font-semibold text-sm mb-1">Executive Summary</h4>
+                              <p className="text-xs text-muted-foreground">{app.decisionPacket.executiveSummary}</p>
+                            </div>
+                          )}
+                          {app.aiFindings && (
+                            <div>
+                              <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
+                                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                                AI Findings
+                              </h4>
+                              {(() => {
+                                try {
+                                  const findings = JSON.parse(app.aiFindings);
+                                  return (
+                                    <ul className="space-y-1">
+                                      {(Array.isArray(findings) ? findings : [])
+                                        .slice(0, 5)
+                                        .map((f: string, i: number) => (
+                                          <li key={i} className="text-xs text-muted-foreground flex gap-1">
+                                            <span className="text-amber-500">•</span>
+                                            {f}
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  );
+                                } catch {
+                                  return null;
+                                }
+                              })()}
+                            </div>
+                          )}
+                        </div>
 
                         {/* Quick Info */}
                         <div className="space-y-2 text-xs">
@@ -457,9 +487,41 @@ export default function ApplicationPipelinePage() {
                               Questionnaire:
                             </span>
                             <Badge variant="outline" className="text-xs">
-                              {app.questionnaireStatus.replace(/_/g, " ")}
+                              {(app.questionnaireStatus || "NOT_SENT").replace(/_/g, " ")}
                             </Badge>
                           </div>
+                          {(() => {
+                            try {
+                              const strengths = app.decisionPacket?.strengths ? JSON.parse(app.decisionPacket.strengths) : [];
+                              const risks = app.decisionPacket?.risks ? JSON.parse(app.decisionPacket.risks) : [];
+                              return (
+                                <>
+                                  {Array.isArray(strengths) && strengths.length > 0 && (
+                                    <div className="mt-2">
+                                      <p className="font-medium text-foreground mb-1">Strengths</p>
+                                      {strengths.slice(0, 2).map((s: string, i: number) => (
+                                        <p key={i} className="text-muted-foreground flex gap-1">
+                                          <span className="text-green-500">✓</span> {s}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {Array.isArray(risks) && risks.length > 0 && (
+                                    <div className="mt-2">
+                                      <p className="font-medium text-foreground mb-1">Risks</p>
+                                      {risks.slice(0, 2).map((r: string, i: number) => (
+                                        <p key={i} className="text-muted-foreground flex gap-1">
+                                          <span className="text-orange-500">!</span> {r}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            } catch {
+                              return null;
+                            }
+                          })()}
                           <Button
                             size="sm"
                             variant="outline"

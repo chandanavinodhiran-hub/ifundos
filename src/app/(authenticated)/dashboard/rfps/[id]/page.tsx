@@ -783,80 +783,184 @@ export default function RFPDetailPage({
                             </tr>
 
                             {/* Expanded row */}
-                            {isExpanded && packet && (
+                            {isExpanded && (
                               <tr className="border-b bg-muted/10">
                                 <td colSpan={6} className="p-6">
                                   <div className="space-y-4">
-                                    {packet.executiveSummary && (
+                                    {/* Application summary */}
+                                    {(() => {
+                                      const proposal = safeParse<Record<string, unknown>>(app.proposalData, {});
+                                      const projectTitle = (proposal.projectTitle as string) || (proposal.title as string) || null;
+                                      return (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-3 bg-white rounded-lg border">
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Project</p>
+                                            <p className="text-sm font-medium">{projectTitle || app.organization.name}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Budget</p>
+                                            <p className="text-sm font-medium">{app.proposedBudget ? `${app.proposedBudget.toLocaleString()} SAR` : "—"}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Submitted</p>
+                                            <p className="text-sm font-medium">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : "—"}</p>
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
+
+                                    {/* AI Score breakdown */}
+                                    {app.compositeScore != null && (
                                       <div>
-                                        <h4 className="text-sm font-semibold mb-1">
-                                          Executive Summary
-                                        </h4>
-                                        <p className="text-sm text-muted-foreground">
-                                          {packet.executiveSummary}
-                                        </p>
+                                        <h4 className="text-sm font-semibold mb-2">AI Score Breakdown</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                          <div className="flex items-center gap-2 p-2 bg-white rounded border">
+                                            <span className="text-xs text-muted-foreground w-20">Composite</span>
+                                            <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                              <div className={`h-full rounded-full ${scoreColor(app.compositeScore)}`} style={{ width: `${Math.min(100, app.compositeScore)}%` }} />
+                                            </div>
+                                            <span className="text-xs font-mono w-8 text-right font-bold">{Math.round(app.compositeScore)}</span>
+                                          </div>
+                                          {(() => {
+                                            const dims = safeParse<Record<string, number>>(app.dimensionScores, {});
+                                            const dimLabels: Record<string, string> = {
+                                              procurement: "Procurement Integrity",
+                                              vision: "Vision Alignment",
+                                              viability: "Scientific Viability",
+                                              impact: "Impact Potential",
+                                            };
+                                            return Object.entries(dimLabels).map(([key, label]) => {
+                                              const val = dims[key] ?? null;
+                                              return (
+                                                <div key={key} className="flex items-center gap-2 p-2 bg-white rounded border">
+                                                  <span className="text-xs text-muted-foreground w-20 truncate" title={label}>{label}</span>
+                                                  <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                                    <div className={`h-full rounded-full ${scoreColor(val)}`} style={{ width: `${val != null ? Math.min(100, val) : 0}%` }} />
+                                                  </div>
+                                                  <span className="text-xs font-mono w-8 text-right">{val != null ? Math.round(val) : "—"}</span>
+                                                </div>
+                                              );
+                                            });
+                                          })()}
+                                        </div>
                                       </div>
                                     )}
-                                    {packet.recommendation && (
-                                      <div>
-                                        <h4 className="text-sm font-semibold mb-1">
-                                          Recommendation
-                                        </h4>
-                                        <span
-                                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                            packet.recommendation === "RECOMMEND"
-                                              ? "bg-green-100 text-green-700"
-                                              : packet.recommendation ===
-                                                "RECOMMEND_WITH_CONDITIONS"
-                                              ? "bg-yellow-100 text-yellow-700"
-                                              : "bg-red-100 text-red-700"
-                                          }`}
-                                        >
-                                          {packet.recommendation.replace(
-                                            /_/g,
-                                            " "
+
+                                    {/* Decision packet summary */}
+                                    {packet && (
+                                      <div className="space-y-3">
+                                        {packet.executiveSummary && (
+                                          <div>
+                                            <h4 className="text-sm font-semibold mb-1">Executive Summary</h4>
+                                            <p className="text-sm text-muted-foreground">{packet.executiveSummary}</p>
+                                          </div>
+                                        )}
+                                        {packet.recommendation && (
+                                          <div>
+                                            <h4 className="text-sm font-semibold mb-1">Recommendation</h4>
+                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                              packet.recommendation === "RECOMMEND"
+                                                ? "bg-green-100 text-green-700"
+                                                : packet.recommendation === "RECOMMEND_WITH_CONDITIONS"
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-red-100 text-red-700"
+                                            }`}>
+                                              {packet.recommendation.replace(/_/g, " ")}
+                                            </span>
+                                          </div>
+                                        )}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                          {strengths.length > 0 && (
+                                            <div>
+                                              <h4 className="text-sm font-semibold mb-1">Key Strengths</h4>
+                                              <ul className="space-y-1">
+                                                {strengths.map((s, i) => (
+                                                  <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                    <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                                    {s}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
                                           )}
+                                          {risks.length > 0 && (
+                                            <div>
+                                              <h4 className="text-sm font-semibold mb-1">Key Risks</h4>
+                                              <ul className="space-y-1">
+                                                {risks.map((r, i) => (
+                                                  <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                    <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
+                                                    {r}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* AI Findings */}
+                                    {app.aiFindings && (
+                                      <div>
+                                        <h4 className="text-sm font-semibold mb-1">AI Findings</h4>
+                                        {(() => {
+                                          const findings = safeParse<string[]>(app.aiFindings, []);
+                                          return findings.length > 0 ? (
+                                            <ul className="space-y-1">
+                                              {findings.slice(0, 5).map((f, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                                                  {f}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          ) : null;
+                                        })()}
+                                      </div>
+                                    )}
+
+                                    {/* Proposal details */}
+                                    {app.proposalData && (
+                                      <details className="group">
+                                        <summary className="text-sm font-semibold cursor-pointer hover:text-teal transition-colors">
+                                          Full Proposal Details
+                                        </summary>
+                                        <div className="mt-2 p-3 bg-white rounded border text-xs text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
+                                          {(() => {
+                                            const proposal = safeParse<Record<string, unknown>>(app.proposalData, {});
+                                            return Object.entries(proposal).map(([key, val]) => (
+                                              <div key={key} className="mb-2">
+                                                <span className="font-medium text-foreground capitalize">{key.replace(/([A-Z])/g, " $1").trim()}: </span>
+                                                {typeof val === "object" ? JSON.stringify(val, null, 2) : String(val ?? "—")}
+                                              </div>
+                                            ));
+                                          })()}
+                                        </div>
+                                      </details>
+                                    )}
+
+                                    {/* Shortlist button */}
+                                    {["SUBMITTED", "SCORING", "IN_REVIEW"].includes(app.status) && (
+                                      <div className="pt-2 border-t flex items-center gap-3">
+                                        <button
+                                          className="inline-flex items-center gap-2 rounded-md bg-navy-800 px-4 py-2 text-sm font-medium text-white hover:bg-navy-700 transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedApps((prev) => {
+                                              const next = new Set(prev);
+                                              next.add(app.id);
+                                              return next;
+                                            });
+                                          }}
+                                        >
+                                          Shortlist This Contractor
+                                        </button>
+                                        <span className="text-xs text-muted-foreground">
+                                          Or use checkboxes to shortlist multiple at once
                                         </span>
                                       </div>
                                     )}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                      {strengths.length > 0 && (
-                                        <div>
-                                          <h4 className="text-sm font-semibold mb-1">
-                                            Key Strengths
-                                          </h4>
-                                          <ul className="space-y-1">
-                                            {strengths.map((s, i) => (
-                                              <li
-                                                key={i}
-                                                className="flex items-start gap-2 text-sm text-muted-foreground"
-                                              >
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                                {s}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-                                      {risks.length > 0 && (
-                                        <div>
-                                          <h4 className="text-sm font-semibold mb-1">
-                                            Key Risks
-                                          </h4>
-                                          <ul className="space-y-1">
-                                            {risks.map((r, i) => (
-                                              <li
-                                                key={i}
-                                                className="flex items-start gap-2 text-sm text-muted-foreground"
-                                              >
-                                                <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
-                                                {r}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-                                    </div>
                                   </div>
                                 </td>
                               </tr>
@@ -956,7 +1060,7 @@ export default function RFPDetailPage({
                             {isExpanded && (
                               <tr className="border-b bg-muted/10">
                                 <td colSpan={4} className="p-6">
-                                  {app.questionnaireResponses.length === 0 ? (
+                                  {(!app.questionnaireResponses || app.questionnaireResponses.length === 0) ? (
                                     <p className="text-sm text-muted-foreground">
                                       No responses submitted yet
                                     </p>
@@ -968,12 +1072,12 @@ export default function RFPDetailPage({
                                         )
                                         .map((q) => {
                                           const resp =
-                                            app.questionnaireResponses.find(
+                                            (app.questionnaireResponses || []).find(
                                               (r) => r.questionId === q.id
                                             );
                                           const evalKey = `${app.id}:${q.id}`;
                                           const existingEval =
-                                            app.questionnaireEvaluations.find(
+                                            (app.questionnaireEvaluations || []).find(
                                               (e) => e.questionId === q.id
                                             );
                                           const localEval = evalNotes[evalKey];
@@ -1169,7 +1273,7 @@ export default function RFPDetailPage({
                                 const app = shortlistedApps.find(
                                   (a) => a.id === appId
                                 );
-                                const resp = app?.questionnaireResponses.find(
+                                const resp = (app?.questionnaireResponses || []).find(
                                   (r) => r.questionId === q.id
                                 );
                                 return (

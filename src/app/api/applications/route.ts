@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
       organization: {
         select: { id: true, name: true, type: true, trustTier: true },
       },
+      decisionPacket: true,
     },
     orderBy: { createdAt: "desc" },
   });

@@ -27,6 +27,9 @@ export async function GET(
           organization: {
             select: { id: true, name: true, type: true, trustTier: true },
           },
+          decisionPacket: true,
+          questionnaireResponses: true,
+          questionnaireEvaluations: true,
         },
         orderBy: { createdAt: "desc" },
       },
