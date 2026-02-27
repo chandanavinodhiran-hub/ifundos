@@ -19,7 +19,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  UserPlus, Search, MoreHorizontal, Pencil, Ban, CheckCircle, Trash2, Users, Loader2,
+  UserPlus, Search, MoreHorizontal, Pencil, Ban, CheckCircle, Trash2, Loader2,
 } from "lucide-react";
 
 interface Org { id: string; name: string; trustTier: string }
@@ -37,7 +37,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-800 border-green-200",
+  ACTIVE: "bg-leaf-100 text-leaf-800 border-leaf-200",
   SUSPENDED: "bg-red-100 text-red-800 border-red-200",
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200",
 };
@@ -50,6 +50,7 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -61,11 +62,14 @@ export default function UserManagementPage() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/users?search=${encodeURIComponent(search)}`);
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (roleFilter !== "ALL") params.set("role", roleFilter);
+    const res = await fetch(`/api/users?${params.toString()}`);
     const data = await res.json();
     setUsers(data.users || []);
     setLoading(false);
-  }, [search]);
+  }, [search, roleFilter]);
 
   const fetchOrgs = useCallback(async () => {
     const res = await fetch("/api/organizations");
@@ -143,76 +147,95 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-navy-800">User Management</h1>
-          <p className="text-muted-foreground mt-1">Manage platform users and access control</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">User Management</h1>
+          <p className="text-slate-500 mt-1 text-sm">Manage platform users and access control</p>
         </div>
-        <Button onClick={openCreate} className="gap-2">
+        <Button onClick={openCreate} className="gap-2 w-full sm:w-auto">
           <UserPlus className="w-4 h-4" /> Add User
         </Button>
       </div>
 
-      {/* Search */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+      {/* Search + Role Filter */}
+      <Card className="rounded-md">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search by name or email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Roles</SelectItem>
+                <SelectItem value="ADMIN">Admin</SelectItem>
+                <SelectItem value="FUND_MANAGER">Fund Manager</SelectItem>
+                <SelectItem value="CONTRACTOR">Contractor</SelectItem>
+                <SelectItem value="AUDITOR">Auditor</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
       {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="w-5 h-5 text-teal" />
+      <Card className="rounded-md">
+        <CardHeader className="p-4 pb-3">
+          <CardTitle className="text-base font-semibold text-slate-900">
             All Users ({users.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-teal" />
+              <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden sm:table-cell">Email</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Organization</TableHead>
+                  <TableHead className="hidden md:table-cell">Organization</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Trust Tier</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead className="hidden lg:table-cell">Trust Tier</TableHead>
+                  <TableHead className="hidden sm:table-cell">Created</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>
+                        {user.name}
+                        <p className="text-xs text-muted-foreground sm:hidden">{user.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground hidden sm:table-cell">{user.email}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={ROLE_COLORS[user.role] || ""}>
                         {ROLE_LABELS[user.role] || user.role}
                       </Badge>
                     </TableCell>
-                    <TableCell>{user.organization?.name || "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{user.organization?.name || "—"}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={STATUS_COLORS[user.status] || ""}>
                         {user.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{user.organization?.trustTier || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
+                    <TableCell className="hidden lg:table-cell">{user.organization?.trustTier || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs hidden sm:table-cell">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
@@ -254,6 +277,7 @@ export default function UserManagementPage() {
                 )}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

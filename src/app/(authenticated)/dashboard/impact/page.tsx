@@ -3,20 +3,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Loader2,
-  TreePine,
-  DollarSign,
-  TrendingUp,
-  Award,
-  Target,
-  BarChart3,
-  Users,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Leaf,
-} from "lucide-react";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+import { ScoreRing } from "@/components/ui/score-ring";
+import { Loader2 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -93,7 +82,7 @@ export default function ImpactDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -117,103 +106,64 @@ export default function ImpactDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-navy-800">Impact Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Portfolio analytics and environmental impact tracking
-        </p>
+      {/* Hero */}
+      <div className="rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-5 sm:p-6 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold">Impact Dashboard</h1>
+            <p className="text-slate-400 text-sm mt-0.5">Saudi Green Initiative</p>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-6">
+            <div className="text-center">
+              <p className="text-2xl sm:text-3xl font-bold">
+                <AnimatedCounter end={summary.totalTreesPlanted} duration={2000} />
+              </p>
+              <p className="text-xs text-white/70">Trees Planted</p>
+            </div>
+            <div className="w-px h-10 bg-white/20 hidden sm:block" />
+            <div className="text-center">
+              <p className="text-2xl sm:text-3xl font-bold">
+                {summary.totalTreesTarget > 0
+                  ? <AnimatedCounter end={Math.round((summary.totalTreesPlanted / summary.totalTreesTarget) * 100)} suffix="%" duration={1800} />
+                  : "0%"}
+              </p>
+              <p className="text-xs text-white/70">of SGI Target</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tree Progress Bar */}
+        <div className="mt-5 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-white/80">Tree Planting Progress</span>
+            <span className="text-white/60 font-mono text-xs sm:text-sm">{summary.totalTreesPlanted.toLocaleString()} / {summary.totalTreesTarget.toLocaleString()}</span>
+          </div>
+          <div className="w-full h-3 bg-white/15 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-leaf-300 rounded-full transition-all duration-2000"
+              style={{ width: `${Math.min(100, summary.totalTreesTarget > 0 ? (summary.totalTreesPlanted / summary.totalTreesTarget) * 100 : 0)}%` }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Top-Level KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          label="Trees Target"
-          value={summary.totalTreesTarget.toLocaleString()}
-          icon={TreePine}
-          color="bg-green-50 text-green-600"
-          subtitle="SGI alignment"
-        />
-        <KPICard
-          label="Trees Planted (est.)"
-          value={summary.totalTreesPlanted.toLocaleString()}
-          icon={Leaf}
-          color="bg-emerald-50 text-emerald-600"
-          subtitle={`${summary.totalTreesTarget > 0 ? Math.round((summary.totalTreesPlanted / summary.totalTreesTarget) * 100) : 0}% of target`}
-        />
-        <KPICard
-          label="Total Spend"
-          value={formatSAR(summary.totalDisbursed)}
-          icon={DollarSign}
-          color="bg-teal-50 text-teal-600"
-          subtitle={`of ${formatSAR(summary.totalBudget)} budget`}
-        />
-        <KPICard
-          label="Active Grants"
-          value={String(summary.activeContracts)}
-          icon={Award}
-          color="bg-blue-50 text-blue-600"
-          subtitle={`${summary.completedContracts} completed`}
-        />
+        <KPICard label="Trees Target" value={summary.totalTreesTarget > 0 ? summary.totalTreesTarget.toLocaleString() : "Pending"} subtitle="SGI alignment" />
+        <KPICard label="Total Spend" value={formatSAR(summary.totalDisbursed)} subtitle={`of ${formatSAR(summary.totalBudget)} budget`} />
+        <KPICard label="Active Grants" value={String(summary.activeContracts)} subtitle={`${summary.completedContracts} completed`} />
+        <KPICard label="Avg Score" value={String(applicationStats.avgScore)} subtitle={`${applicationStats.total} application${applicationStats.total !== 1 ? "s" : ""}`} />
       </div>
-
-      {/* Trees Progress - Large Visual */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <TreePine className="w-5 h-5 text-green-600" />
-            Tree Planting Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-4xl font-bold text-green-600">
-                  {summary.totalTreesPlanted.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  trees planted (estimated)
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-muted-foreground">
-                  {summary.totalTreesTarget.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">target</p>
-              </div>
-            </div>
-            <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-green-400 to-emerald-600 rounded-full transition-all"
-                style={{
-                  width: `${Math.min(100, summary.totalTreesTarget > 0 ? (summary.totalTreesPlanted / summary.totalTreesTarget) * 100 : 0)}%`,
-                }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0</span>
-              <span>25%</span>
-              <span>50%</span>
-              <span>75%</span>
-              <span>100%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Budget vs Spend + Milestone Completion */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Budget Overview */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-teal" />
-              Budget vs Spend
-            </CardTitle>
+            <CardTitle className="text-lg">Budget vs Spend</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-xl font-bold">
                   {formatSAR(summary.totalBudget)}
@@ -221,13 +171,13 @@ export default function ImpactDashboardPage() {
                 <p className="text-xs text-muted-foreground">Total Budget</p>
               </div>
               <div>
-                <p className="text-xl font-bold text-teal">
+                <p className="text-xl font-bold text-cyan-600">
                   {formatSAR(summary.totalAwardAmount)}
                 </p>
                 <p className="text-xs text-muted-foreground">Awarded</p>
               </div>
               <div>
-                <p className="text-xl font-bold text-amber-600">
+                <p className="text-xl font-bold text-green-600">
                   {formatSAR(summary.totalDisbursed)}
                 </p>
                 <p className="text-xs text-muted-foreground">Disbursed</p>
@@ -246,11 +196,11 @@ export default function ImpactDashboardPage() {
                 <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div className="h-full flex">
                     <div
-                      className="bg-teal h-full"
+                      className="bg-green-500 h-full"
                       style={{ width: `${p.disbursedPct}%` }}
                     />
                     <div
-                      className="bg-teal/30 h-full"
+                      className="bg-cyan-400 h-full"
                       style={{
                         width: `${Math.max(0, p.allocationPct - p.disbursedPct)}%`,
                       }}
@@ -258,8 +208,9 @@ export default function ImpactDashboardPage() {
                   </div>
                 </div>
                 <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span>Allocated: {p.allocationPct}%</span>
-                  <span>Disbursed: {p.disbursedPct}%</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-400" /> Awarded: {p.allocationPct}%</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Disbursed: {p.disbursedPct}%</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200" /> Remaining</span>
                 </div>
               </div>
             ))}
@@ -275,80 +226,24 @@ export default function ImpactDashboardPage() {
         {/* Milestone Completion */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Target className="w-5 h-5 text-teal" />
-              Milestone Completion
-            </CardTitle>
+            <CardTitle className="text-lg">Milestone Completion</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Completion Rate Ring */}
             <div className="flex items-center justify-center">
-              <div className="relative w-36 h-36">
-                <svg
-                  className="w-full h-full -rotate-90"
-                  viewBox="0 0 120 120"
-                >
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="50"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="12"
-                  />
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="50"
-                    fill="none"
-                    stroke="#14b8a6"
-                    strokeWidth="12"
-                    strokeDasharray={`${milestoneStats.completionRate * 3.14} 314`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold">
-                    {milestoneStats.completionRate}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Complete
-                  </span>
-                </div>
-              </div>
+              <ScoreRing score={milestoneStats.completionRate} size={140} strokeWidth={12} label="Milestone Completion" />
             </div>
 
             {/* Milestone Breakdown */}
             <div className="space-y-2">
-              <StatRow
-                icon={CheckCircle2}
-                iconColor="text-green-500"
-                label="Verified"
-                value={milestoneStats.verified}
-                total={milestoneStats.total}
-              />
-              <StatRow
-                icon={Clock}
-                iconColor="text-amber-500"
-                label="Evidence Submitted"
-                value={milestoneStats.evidenceSubmitted}
-                total={milestoneStats.total}
-              />
-              <StatRow
-                icon={AlertTriangle}
-                iconColor="text-gray-400"
-                label="Pending"
-                value={milestoneStats.pending}
-                total={milestoneStats.total}
-              />
+              <StatRow label="Verified" value={milestoneStats.verified} total={milestoneStats.total} dotColor="bg-green-500" />
+              <StatRow label="Evidence Submitted" value={milestoneStats.evidenceSubmitted} total={milestoneStats.total} dotColor="bg-amber-500" />
+              <StatRow label="Pending" value={milestoneStats.pending} total={milestoneStats.total} dotColor="bg-gray-400" />
             </div>
 
             {/* Evidence Stats */}
             <div className="mt-4 pt-4 border-t">
-              <p className="font-semibold text-sm mb-2 flex items-center gap-1">
-                <BarChart3 className="w-4 h-4 text-teal" />
-                Evidence Review
-              </p>
+              <p className="font-semibold text-sm mb-2">Evidence Review</p>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-2 bg-green-50 rounded-lg">
                   <p className="text-lg font-bold text-green-600">
@@ -377,10 +272,7 @@ export default function ImpactDashboardPage() {
       {/* Contractor Performance Rankings */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="w-5 h-5 text-teal" />
-            Contractor Performance Rankings
-          </CardTitle>
+          <CardTitle className="text-lg">Contractor Performance Rankings</CardTitle>
         </CardHeader>
         <CardContent>
           {contractorPerformance.length === 0 ? (
@@ -449,7 +341,7 @@ export default function ImpactDashboardPage() {
                             : "text-red-600"
                       }`}
                     >
-                      {cp.aiScore || "\u2014"}
+                      {cp.aiScore || "-"}
                     </span>
                   </div>
 
@@ -510,27 +402,24 @@ export default function ImpactDashboardPage() {
       {/* Application Funnel */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-teal" />
-            Application Funnel
-          </CardTitle>
+          <CardTitle className="text-lg">Application Funnel</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between gap-4 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 py-4">
             <FunnelStep
               label="Received"
               value={applicationStats.total}
               color="bg-blue-500"
               pct={100}
             />
-            <div className="text-muted-foreground">&rarr;</div>
+            <FunnelArrow pct={applicationStats.total > 0 ? 100 : 0} />
             <FunnelStep
               label="Scored"
               value={applicationStats.total > 0 ? applicationStats.total : 0}
               color="bg-yellow-500"
               pct={applicationStats.total > 0 ? 80 : 0}
             />
-            <div className="text-muted-foreground">&rarr;</div>
+            <FunnelArrow pct={applicationStats.total > 0 ? Math.round((applicationStats.approved / applicationStats.total) * 100) : 0} />
             <FunnelStep
               label="Approved"
               value={applicationStats.approved}
@@ -544,11 +433,11 @@ export default function ImpactDashboardPage() {
                   : 0
               }
             />
-            <div className="text-muted-foreground">&rarr;</div>
+            <FunnelArrow />
             <FunnelStep
-              label="Avg AI Score"
+              label="Avg Score"
               value={applicationStats.avgScore}
-              color="bg-teal"
+              color="bg-leaf-600"
               pct={applicationStats.avgScore}
               isScore
             />
@@ -567,61 +456,44 @@ function KPICard({
   label,
   value,
   subtitle,
-  icon: Icon,
-  color,
 }: {
   label: string;
   value: string;
   subtitle?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
 }) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              {label}
-            </p>
-            <p className="text-3xl font-bold mt-1">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {subtitle}
-              </p>
-            )}
-          </div>
-          <div className={`p-2.5 rounded-lg ${color}`}>
-            <Icon className="w-5 h-5" />
-          </div>
-        </div>
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-3xl font-bold mt-1 text-slate-900">{value}</p>
+        {subtitle && (
+          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+        )}
       </CardContent>
     </Card>
   );
 }
 
 function StatRow({
-  icon: Icon,
-  iconColor,
   label,
   value,
   total,
+  dotColor,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
-  iconColor: string;
   label: string;
   value: number;
   total: number;
+  dotColor: string;
 }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <Icon className={`w-4 h-4 ${iconColor} shrink-0`} />
+      <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
       <span className="text-sm flex-1">{label}</span>
       <span className="text-sm font-semibold">{value}</span>
       <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
-          className="h-full bg-teal rounded-full"
+          className="h-full bg-leaf-600 rounded-full"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -646,18 +518,29 @@ function FunnelStep({
   isScore?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 flex-1">
+    <div className="flex flex-col items-center gap-2 flex-1 min-w-[60px]">
       <div
         className={`w-full rounded-lg ${color} flex items-center justify-center transition-all`}
         style={{
-          height: `${Math.max(30, pct * 0.8)}px`,
-          opacity: Math.max(0.3, pct / 100),
+          height: "60px",
+          opacity: Math.max(0.4, pct / 100),
         }}
       >
         <span className="text-white font-bold text-lg">{value}</span>
       </div>
       <p className="text-xs text-muted-foreground text-center">{label}</p>
       {!isScore && <p className="text-xs font-semibold">{pct}%</p>}
+    </div>
+  );
+}
+
+function FunnelArrow({ pct }: { pct?: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1 hidden sm:flex">
+      <span className="text-muted-foreground text-lg">&rarr;</span>
+      {pct !== undefined && (
+        <span className="text-xs font-semibold text-muted-foreground">{pct}%</span>
+      )}
     </div>
   );
 }

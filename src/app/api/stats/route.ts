@@ -13,17 +13,31 @@ export async function GET() {
   const role = session.user.role;
 
   if (role === "ADMIN") {
-    const [userCount, orgCount, programCount, auditCount] = await Promise.all([
+    const [userCount, orgCount, programCount, auditCount, scoredAppCount, lastScoringEvent, recentActivity] = await Promise.all([
       prisma.user.count(),
       prisma.organization.count(),
       prisma.program.count({ where: { status: "ACTIVE" } }),
       prisma.auditEvent.count(),
+      prisma.application.count({ where: { compositeScore: { not: null } } }),
+      prisma.auditEvent.findFirst({
+        where: { action: { contains: "SCOR" } },
+        orderBy: { timestamp: "desc" },
+        select: { timestamp: true, action: true },
+      }),
+      prisma.auditEvent.findMany({
+        take: 5,
+        orderBy: { timestamp: "desc" },
+        include: { actor: { select: { name: true, email: true, role: true } } },
+      }),
     ]);
-    return NextResponse.json({ userCount, orgCount, programCount, auditCount });
+    return NextResponse.json({
+      userCount, orgCount, programCount, auditCount,
+      scoredAppCount, lastScoringEvent, recentActivity,
+    });
   }
 
   if (role === "FUND_MANAGER") {
-    const [openRfps, applicationsInReview, activeGrants, programs, recentAudit] = await Promise.all([
+    const [openRfps, applicationsInReview, activeGrants, programs, recentAudit, rfpPipelines] = await Promise.all([
       prisma.rFP.count({ where: { status: "OPEN" } }),
       prisma.application.count({
         where: { status: { in: ["SUBMITTED", "SCORING", "IN_REVIEW", "SHORTLISTED", "QUESTIONNAIRE_PENDING", "QUESTIONNAIRE_SUBMITTED"] } },
@@ -35,7 +49,15 @@ export async function GET() {
       prisma.auditEvent.findMany({
         take: 20,
         orderBy: { timestamp: "desc" },
+        where: { action: { notIn: ["AUTH_LOGIN", "AUTH_LOGOUT"] } },
         include: { actor: { select: { name: true, role: true } } },
+      }),
+      prisma.rFP.findMany({
+        where: { status: { in: ["OPEN", "CLOSED", "AWARDED"] } },
+        select: {
+          id: true, title: true, status: true,
+          applications: { select: { status: true } },
+        },
       }),
     ]);
 
@@ -49,6 +71,7 @@ export async function GET() {
       atRiskProjects: 0,
       programs,
       recentActivity: recentAudit,
+      rfpPipelines,
     });
   }
 
@@ -63,7 +86,12 @@ export async function GET() {
       prisma.rFP.count({ where: { status: "OPEN" } }),
       orgId ? prisma.application.findMany({
         where: { organizationId: orgId },
-        include: { rfp: { select: { title: true, deadline: true } } },
+        select: {
+          id: true, rfpId: true, status: true, proposedBudget: true,
+          compositeScore: true, questionnaireStatus: true,
+          createdAt: true, submittedAt: true,
+          rfp: { select: { title: true, deadline: true } },
+        },
         orderBy: { createdAt: "desc" },
       }) : [],
       orgId ? prisma.contract.count({ where: { organizationId: orgId, status: "ACTIVE" } }) : 0,
@@ -91,25 +119,36 @@ export async function GET() {
       take: 5,
     });
 
+    const appList = Array.isArray(applications) ? applications : [];
+    const appliedRfpIds = appList.map((a: { rfpId: string }) => a.rfpId);
+
     return NextResponse.json({
       organization: org,
       openRfps,
-      applications: Array.isArray(applications) ? applications : [],
+      applications: appList,
       activeContracts: contracts,
       pendingMilestones: milestones,
       totalReceived: 0,
       statusCounts,
       upcomingDeadlines,
+      appliedRfpIds,
     });
   }
 
   if (role === "AUDITOR") {
     const now = new Date();
     const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const [totalEvents, eventsToday, boostCount, recentEvents, boostActions, scoringEvents] = await Promise.all([
+    const [
+      totalEvents, eventsToday, eventsLast7d, boostCount,
+      recentEvents, boostActions, scoringEvents,
+      scoredAppCount, scoreAgg, lastScored,
+      recommendCount, conditionalCount, notRecommendCount,
+    ] = await Promise.all([
       prisma.auditEvent.count(),
       prisma.auditEvent.count({ where: { timestamp: { gte: dayAgo } } }),
+      prisma.auditEvent.count({ where: { timestamp: { gte: weekAgo } } }),
       prisma.boostAction.count(),
       prisma.auditEvent.findMany({
         take: 25,
@@ -125,15 +164,36 @@ export async function GET() {
       prisma.auditEvent.count({
         where: { action: { in: ["AI_SCORING_COMPLETED", "APPLICATION_SHORTLISTED", "QUESTIONNAIRE_SENT", "CONTRACT_AWARDED"] } },
       }),
+      // AI Scoring summary
+      prisma.application.count({ where: { compositeScore: { not: null } } }),
+      prisma.application.aggregate({ where: { compositeScore: { not: null } }, _avg: { compositeScore: true } }),
+      prisma.application.findFirst({ where: { compositeScore: { not: null } }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+      // Score distribution via compositeScore ranges
+      prisma.application.count({ where: { compositeScore: { gte: 70 } } }),
+      prisma.application.count({ where: { compositeScore: { gte: 50, lt: 70 } } }),
+      prisma.application.count({ where: { compositeScore: { not: null, lt: 50 } } }),
     ]);
+
+    const eventsAvg7d = Math.round(eventsLast7d / 7);
 
     return NextResponse.json({
       totalEvents,
       eventsToday,
+      eventsAvg7d,
       boostCount,
       flaggedEvents: scoringEvents,
       recentEvents,
       boostActions,
+      scoredAppCount,
+      avgCompositeScore: scoreAgg._avg.compositeScore
+        ? Math.round(scoreAgg._avg.compositeScore * 10) / 10
+        : null,
+      lastScoredAt: lastScored?.updatedAt || null,
+      scoreDistribution: {
+        recommended: recommendCount,
+        conditional: conditionalCount,
+        notRecommended: notRecommendCount,
+      },
     });
   }
 

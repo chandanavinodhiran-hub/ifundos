@@ -1,30 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* iFundOS Government Theme — Navy/Teal */
-    --background: 210 25% 97%;
-    --foreground: 213 45% 10%;
+    /* iFundOS Visual Identity — Palantir meets Stripe */
+    --background: 210 40% 98%;          /* #f8fafc — slate-50 */
+    --foreground: 222 47% 11%;          /* #0f172a — slate-900 */
     --card: 0 0% 100%;
-    --card-foreground: 213 45% 10%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 213 45% 10%;
-    --primary: 195 100% 42%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 160 84% 39%;             /* #059669 — leaf emerald */
     --primary-foreground: 0 0% 100%;
-    --secondary: 213 45% 15%;
+    --secondary: 192 91% 36%;           /* #0891B2 — ocean cyan */
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 195 100% 42%;
+    --muted: 210 40% 96%;               /* slate-100 */
+    --muted-foreground: 215 16% 47%;    /* slate-500 */
+    --accent: 263 70% 58%;              /* #7c3aed — violet */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 195 100% 42%;
-    --radius: 0.5rem;
+    --border: 214 32% 91%;              /* slate-200 */
+    --input: 214 32% 91%;
+    --ring: 263 70% 58%;                /* violet focus ring */
+    --radius: 0.75rem;
+
+    /* AI accent */
+    --ai-color: 263 70% 58%;            /* violet-600 */
+    --ai-bg: 263 87% 97%;               /* violet-50 */
   }
 }
 
@@ -35,4 +41,149 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+}
+
+/* Dot grid background pattern */
+.dot-grid-bg {
+  background-image: radial-gradient(circle, #94a3b8 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+  opacity: 0.04;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Breathing animation for Navigator button */
+@keyframes breathing {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(124, 58, 237, 0);
+    transform: scale(1.05);
+  }
+}
+
+.animate-breathing {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+/* Fade-in-up animation for status transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Score counter animation */
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-count-up {
+  animation: countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Sleek scrollbar — dark neutral */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.4);
+}
+
+/* AI monospace utility */
+.font-ai {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ─── Navigator Avatar Orb Animations ─────────────────────────────── */
+
+/* Idle: gentle floating/breathing */
+@keyframes orbIdle {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
+  }
+  50% {
+    transform: scale(1.03) translateY(-4px);
+    box-shadow: 0 0 50px rgba(124, 58, 237, 0.35);
+  }
+}
+
+.animate-orb-idle {
+  animation: orbIdle 3s ease-in-out infinite;
+}
+
+/* Listening: expand + bright glow */
+@keyframes orbListen {
+  0%, 100% {
+    transform: scale(1.1);
+    box-shadow: 0 0 60px rgba(124, 58, 237, 0.5);
+  }
+  50% {
+    transform: scale(1.14);
+    box-shadow: 0 0 70px rgba(124, 58, 237, 0.6);
+  }
+}
+
+.animate-orb-listen {
+  animation: orbListen 1s ease-in-out infinite;
+}
+
+/* Thinking: rhythmic pulse */
+@keyframes orbThink {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.35);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 55px rgba(124, 58, 237, 0.5);
+  }
+}
+
+.animate-orb-think {
+  animation: orbThink 0.8s ease-in-out infinite;
+}
+
+/* Speaking: oscillating size shifts */
+@keyframes orbSpeak {
+  0%, 100% {
+    transform: scale(1) scaleX(1);
+    box-shadow: 0 0 45px rgba(124, 58, 237, 0.4);
+  }
+  25% {
+    transform: scale(1.04) scaleX(1.06);
+  }
+  50% {
+    transform: scale(1.02) scaleX(0.97);
+    box-shadow: 0 0 50px rgba(124, 58, 237, 0.45);
+  }
+  75% {
+    transform: scale(1.05) scaleX(1.03);
+  }
+}
+
+.animate-orb-speak {
+  animation: orbSpeak 1.2s ease-in-out infinite;
 }

@@ -118,10 +118,10 @@ const DEFAULT_QUESTIONS: QuestionItem[] = [
 ];
 
 const DEFAULT_SCORING: ScoringDimension[] = [
-  { name: "Procurement Integrity", weight: 25, criteria: "" },
-  { name: "Vision Alignment", weight: 25, criteria: "" },
-  { name: "Scientific Viability", weight: 25, criteria: "" },
-  { name: "Impact Potential", weight: 25, criteria: "" },
+  { name: "Procurement Integrity", weight: 25, criteria: "Compliance with procurement regulations, documentation completeness, and conflict-of-interest checks" },
+  { name: "Vision Alignment", weight: 25, criteria: "Alignment with Saudi Green Initiative goals, program objectives, and environmental sustainability targets" },
+  { name: "Scientific Viability", weight: 25, criteria: "Technical feasibility, methodology rigor, species selection rationale, and survival rate projections" },
+  { name: "Impact Potential", weight: 25, criteria: "Estimated environmental impact, scalability, community benefit, and long-term sustainability plan" },
 ];
 
 const STATUS_BADGE: Record<string, string> = {
@@ -318,7 +318,7 @@ export default function RFPManagerPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -326,17 +326,17 @@ export default function RFPManagerPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-navy-800">RFP Manager</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">RFP Manager</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             Create and manage Requests for Proposals
           </p>
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <button className="inline-flex items-center gap-2 rounded-md bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors">
+            <button className="inline-flex items-center justify-center gap-2 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-600 transition-colors w-full sm:w-auto">
               <Plus className="w-4 h-4" />
               Create New RFP
             </button>
@@ -345,10 +345,26 @@ export default function RFPManagerPage() {
           {/* ===== CREATE DIALOG ===== */}
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-xl text-navy-800">
+              <DialogTitle className="text-xl text-slate-900">
                 Create New RFP
               </DialogTitle>
+              <p className="text-sm text-muted-foreground">6 sections to complete</p>
             </DialogHeader>
+
+            {/* Step Indicator */}
+            <div className="flex items-center justify-between px-2 py-3 mb-2">
+              {["Basic Info", "Eligibility", "Scoring", "Evidence", "Questionnaire", "Deadline"].map((step, idx) => (
+                <div key={step} className="flex items-center">
+                  {idx > 0 && <div className="w-4 sm:w-6 h-0.5 bg-gray-200 mx-0.5" />}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-6 h-6 rounded-full bg-leaf-100 text-leaf-700 flex items-center justify-center text-xs font-bold">
+                      {idx + 1}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground hidden sm:block">{step}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <div className="space-y-6 mt-2">
               {/* Program */}
@@ -496,7 +512,7 @@ export default function RFPManagerPage() {
                         {certifications.map((cert, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-1 rounded-full bg-teal/10 text-teal-700 px-2.5 py-0.5 text-xs font-medium"
+                            className="inline-flex items-center gap-1 rounded-full bg-leaf-600/10 text-leaf-700 px-2.5 py-0.5 text-xs font-medium"
                           >
                             {cert}
                             <button
@@ -594,6 +610,7 @@ export default function RFPManagerPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground -mt-1 mb-3">These questions will be sent to shortlisted contractors during the interview phase of the pipeline.</p>
                   {questions.map((q, idx) => (
                     <div
                       key={idx}
@@ -691,7 +708,7 @@ export default function RFPManagerPage() {
 
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-md border border-dashed border-gray-300 px-4 py-2 text-sm text-muted-foreground hover:border-teal hover:text-teal transition-colors"
+                    className="inline-flex items-center gap-2 rounded-md border border-dashed border-gray-300 px-4 py-2 text-sm text-muted-foreground hover:border-leaf-500 hover:text-leaf-600 transition-colors"
                     onClick={() =>
                       setQuestions((prev) => [
                         ...prev,
@@ -738,7 +755,7 @@ export default function RFPManagerPage() {
                 <button
                   type="button"
                   disabled={saving || !programId || !title}
-                  className="inline-flex items-center gap-2 rounded-md bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-600 transition-colors disabled:opacity-50"
                   onClick={() => handleSubmit("OPEN")}
                 >
                   {saving && (
@@ -771,25 +788,32 @@ export default function RFPManagerPage() {
                     <th className="text-left font-medium p-4 text-muted-foreground">
                       Title
                     </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground">
+                    <th className="text-left font-medium p-4 text-muted-foreground hidden md:table-cell">
                       Program
                     </th>
                     <th className="text-left font-medium p-4 text-muted-foreground">
                       Status
                     </th>
                     <th className="text-center font-medium p-4 text-muted-foreground">
-                      Applications
+                      Apps
                     </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground">
+                    <th className="text-left font-medium p-4 text-muted-foreground hidden sm:table-cell">
                       Deadline
                     </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground">
+                    <th className="text-center font-medium p-4 text-muted-foreground hidden sm:table-cell">
+                      Days Left
+                    </th>
+                    <th className="text-left font-medium p-4 text-muted-foreground hidden lg:table-cell">
                       Created
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rfps.map((rfp) => (
+                  {rfps.map((rfp) => {
+                    const daysLeft = rfp.deadline ? Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+                    const daysColor = daysLeft === null ? "text-gray-400" : daysLeft <= 0 ? "text-gray-400" : daysLeft <= 3 ? "text-red-600 font-semibold" : daysLeft <= 7 ? "text-amber-600 font-medium" : "text-green-600";
+                    const daysLabel = daysLeft === null ? "—" : daysLeft <= 0 ? "Closed" : `${daysLeft}d left`;
+                    return (
                     <tr
                       key={rfp.id}
                       className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
@@ -798,7 +822,7 @@ export default function RFPManagerPage() {
                       }
                     >
                       <td className="p-4 font-medium">{rfp.title}</td>
-                      <td className="p-4 text-muted-foreground">
+                      <td className="p-4 text-muted-foreground hidden md:table-cell">
                         {rfp.program?.name ?? "—"}
                       </td>
                       <td className="p-4">
@@ -811,18 +835,30 @@ export default function RFPManagerPage() {
                         </span>
                       </td>
                       <td className="p-4 text-center">
-                        {rfp._count?.applications ?? 0}
+                        <button
+                          className="text-ocean-600 hover:underline font-semibold cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dashboard/rfps/${rfp.id}?tab=applications`);
+                          }}
+                        >
+                          {rfp._count?.applications ?? 0}
+                        </button>
                       </td>
-                      <td className="p-4 text-muted-foreground">
+                      <td className="p-4 text-muted-foreground hidden sm:table-cell">
                         {rfp.deadline
                           ? new Date(rfp.deadline).toLocaleDateString()
                           : "—"}
                       </td>
-                      <td className="p-4 text-muted-foreground">
+                      <td className={`p-4 text-center text-xs hidden sm:table-cell ${daysColor}`}>
+                        {daysLabel}
+                      </td>
+                      <td className="p-4 text-muted-foreground hidden lg:table-cell">
                         {new Date(rfp.createdAt).toLocaleDateString()}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

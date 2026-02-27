@@ -368,7 +368,7 @@ export default function ApplicationBuilderPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -398,7 +398,7 @@ export default function ApplicationBuilderPage({
         >
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to RFP
         </Button>
-        <h1 className="text-2xl font-bold text-navy-800">Apply to RFP</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Apply to RFP</h1>
         {rfp && (
           <p className="text-muted-foreground mt-1">
             {rfp.title} &mdash; {rfp.program.name}
@@ -423,7 +423,7 @@ export default function ApplicationBuilderPage({
                 key={i}
                 onClick={() => setCurrentStep(i + 1)}
                 className={`flex-1 h-2 rounded-full transition-colors ${
-                  i + 1 <= currentStep ? "bg-teal" : "bg-gray-200"
+                  i + 1 <= currentStep ? "bg-leaf-600" : "bg-gray-200"
                 }`}
                 title={name}
               />
@@ -436,7 +436,7 @@ export default function ApplicationBuilderPage({
                 onClick={() => setCurrentStep(i + 1)}
                 className={`text-[10px] hidden sm:block ${
                   i + 1 === currentStep
-                    ? "text-teal font-medium"
+                    ? "text-leaf-600 font-medium"
                     : "text-muted-foreground"
                 }`}
               >
@@ -1126,7 +1126,7 @@ export default function ApplicationBuilderPage({
                     <td colSpan={4} className="p-2 text-right font-semibold">
                       Grand Total:
                     </td>
-                    <td className="p-2 font-mono font-bold text-navy-800">
+                    <td className="p-2 font-mono font-bold text-slate-900">
                       SAR {formatNumber(grandTotal)}
                     </td>
                     <td />
@@ -1146,7 +1146,7 @@ export default function ApplicationBuilderPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Upload className="w-5 h-5 text-teal" /> Documents & Evidence
+              <Upload className="w-5 h-5 text-leaf-600" /> Documents & Evidence
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -1274,13 +1274,13 @@ export default function ApplicationBuilderPage({
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5 text-teal" /> Application Summary
+                <FileText className="w-5 h-5 text-leaf-600" /> Application Summary
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Step 1 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-navy-800 mb-1">
+                <h4 className="font-semibold text-sm text-slate-900 mb-1">
                   Project Overview
                 </h4>
                 <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
@@ -1319,7 +1319,7 @@ export default function ApplicationBuilderPage({
 
               {/* Step 2 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-navy-800 mb-1">
+                <h4 className="font-semibold text-sm text-slate-900 mb-1">
                   Technical Proposal
                 </h4>
                 <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
@@ -1338,7 +1338,7 @@ export default function ApplicationBuilderPage({
 
               {/* Step 3 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-navy-800 mb-1">
+                <h4 className="font-semibold text-sm text-slate-900 mb-1">
                   Team & Credentials
                 </h4>
                 <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
@@ -1363,7 +1363,7 @@ export default function ApplicationBuilderPage({
 
               {/* Step 4 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-navy-800 mb-1">
+                <h4 className="font-semibold text-sm text-slate-900 mb-1">
                   Budget Breakdown
                 </h4>
                 <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
@@ -1387,7 +1387,7 @@ export default function ApplicationBuilderPage({
 
               {/* Step 5 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-navy-800 mb-1">
+                <h4 className="font-semibold text-sm text-slate-900 mb-1">
                   Documents
                 </h4>
                 <div className="bg-muted/50 rounded-lg p-3 text-sm">
@@ -1418,7 +1418,7 @@ export default function ApplicationBuilderPage({
             <Button
               onClick={() => handleSubmit("SUBMITTED")}
               disabled={submitting || !allRequiredComplete}
-              className="bg-teal hover:bg-teal-600 text-white gap-2"
+              className="bg-leaf-600 hover:bg-leaf-600 text-white gap-2"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1448,7 +1448,7 @@ export default function ApplicationBuilderPage({
         {currentStep < 6 && (
           <Button
             onClick={() => setCurrentStep(Math.min(6, currentStep + 1))}
-            className="bg-teal hover:bg-teal-600 text-white"
+            className="bg-leaf-600 hover:bg-leaf-600 text-white"
           >
             Next <ArrowRight className="w-4 h-4 ml-1" />
           </Button>

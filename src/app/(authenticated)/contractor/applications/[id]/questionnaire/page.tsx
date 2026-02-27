@@ -178,7 +178,7 @@ export default function QuestionnaireResponsePage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -219,8 +219,8 @@ export default function QuestionnaireResponsePage({
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-800 flex items-center gap-2">
-          <ClipboardList className="w-6 h-6 text-teal" />
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <ClipboardList className="w-6 h-6 text-leaf-600" />
           Interview Questionnaire
         </h1>
         {data.rfpTitle && (
@@ -293,7 +293,7 @@ export default function QuestionnaireResponsePage({
               <Card key={q.id}>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-medium flex items-start gap-2">
-                    <span className="bg-teal-50 text-teal-700 text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="bg-leaf-50 text-leaf-700 text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <span>
@@ -355,7 +355,7 @@ export default function QuestionnaireResponsePage({
                                 value={opt}
                                 checked={currentAnswer === opt}
                                 onChange={() => updateAnswer(q.id, opt)}
-                                className="w-4 h-4 text-teal accent-teal-500"
+                                className="w-4 h-4 text-leaf-600 accent-leaf-500"
                               />
                               <span className="text-sm">{opt}</span>
                             </label>
@@ -416,7 +416,7 @@ export default function QuestionnaireResponsePage({
             <Button
               onClick={handleSubmit}
               disabled={submitting}
-              className="bg-teal hover:bg-teal-600 text-white gap-2"
+              className="bg-leaf-600 hover:bg-leaf-600 text-white gap-2"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

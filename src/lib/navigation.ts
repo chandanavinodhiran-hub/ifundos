@@ -29,16 +29,16 @@ export const roleNavigation: Record<string, NavItem[]> = {
     { label: "Dashboard", href: "/contractor", icon: LayoutDashboard },
     { label: "Browse RFPs", href: "/contractor/rfps", icon: Search },
     { label: "My Applications", href: "/contractor/applications", icon: FileText },
-    { label: "My Contracts", href: "/contractor/contracts", icon: FolderKanban },
-    { label: "Evidence Upload", href: "/contractor/evidence", icon: Upload },
-    { label: "Payments", href: "/contractor/payments", icon: CreditCard },
+    { label: "Awarded Contracts", href: "/contractor/contracts", icon: FolderKanban },
+    { label: "Submit Evidence", href: "/contractor/evidence", icon: Upload },
+    { label: "My Payments", href: "/contractor/payments", icon: CreditCard },
   ],
   FUND_MANAGER: [
     { label: "Portfolio Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "RFP Manager", href: "/dashboard/rfps", icon: Briefcase },
-    { label: "Application Pipeline", href: "/dashboard/applications", icon: GitPullRequest },
+    { label: "AI Review Pipeline", href: "/dashboard/applications", icon: GitPullRequest },
     { label: "Active Grants", href: "/dashboard/grants", icon: FolderKanban },
-    { label: "Evidence Review", href: "/dashboard/evidence", icon: Eye },
+    { label: "AI Evidence Review", href: "/dashboard/evidence", icon: Eye },
     { label: "Impact Dashboard", href: "/dashboard/impact", icon: TrendingUp },
   ],
   ADMIN: [
@@ -64,8 +64,8 @@ export const roleLabels: Record<string, string> = {
 
 /** Badge color per role */
 export const roleBadgeVariant: Record<string, string> = {
-  CONTRACTOR: "bg-emerald-100 text-emerald-800",
-  FUND_MANAGER: "bg-blue-100 text-blue-800",
-  ADMIN: "bg-purple-100 text-purple-800",
-  AUDITOR: "bg-amber-100 text-amber-800",
+  CONTRACTOR: "bg-slate-100 text-slate-700",
+  FUND_MANAGER: "bg-violet-100 text-violet-700",
+  ADMIN: "bg-slate-800 text-white",
+  AUDITOR: "bg-amber-100 text-amber-700",
 };

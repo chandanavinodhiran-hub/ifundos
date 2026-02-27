@@ -131,7 +131,7 @@ const APP_STATUS_BADGE: Record<string, string> = {
   SUBMITTED: "bg-blue-100 text-blue-700",
   SCORING: "bg-yellow-100 text-yellow-700 animate-pulse",
   IN_REVIEW: "bg-orange-100 text-orange-700",
-  SHORTLISTED: "bg-teal-100 text-teal-700",
+  SHORTLISTED: "bg-leaf-100 text-leaf-700",
   QUESTIONNAIRE_PENDING: "bg-purple-100 text-purple-700",
   QUESTIONNAIRE_SUBMITTED: "bg-indigo-100 text-indigo-700",
   APPROVED: "bg-green-100 text-green-700",
@@ -349,7 +349,7 @@ export default function RFPDetailPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -399,7 +399,7 @@ export default function RFPDetailPage({
       {/* ============ Header ============ */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-800">{rfp.title}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{rfp.title}</h1>
           <p className="text-muted-foreground mt-1">
             {rfp.program?.name ?? "—"}
           </p>
@@ -430,7 +430,7 @@ export default function RFPDetailPage({
             key={key}
             className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === key
-                ? "border-teal text-teal"
+                ? "border-leaf-500 text-leaf-600"
                 : "border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300"
             }`}
             onClick={() => setActiveTab(key)}
@@ -484,7 +484,7 @@ export default function RFPDetailPage({
                       {eligibility.businessCategories.map((c) => (
                         <span
                           key={c}
-                          className="inline-flex items-center rounded-full bg-teal/10 text-teal-700 px-2.5 py-0.5 text-xs font-medium"
+                          className="inline-flex items-center rounded-full bg-leaf-600/10 text-leaf-700 px-2.5 py-0.5 text-xs font-medium"
                         >
                           {c}
                         </span>
@@ -584,7 +584,7 @@ export default function RFPDetailPage({
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {evidenceReqs.map((ev) => (
                     <li key={ev} className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="w-4 h-4 text-teal shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-leaf-600 shrink-0" />
                       {ev}
                     </li>
                   ))}
@@ -612,7 +612,7 @@ export default function RFPDetailPage({
             {submittedApps.length > 0 && (
               <button
                 disabled={scoringAll}
-                className="inline-flex items-center gap-2 rounded-md bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-600 transition-colors disabled:opacity-50"
                 onClick={handleScoreAll}
               >
                 {scoringAll && (
@@ -624,7 +624,7 @@ export default function RFPDetailPage({
             {selectedApps.size > 0 && (
               <button
                 disabled={shortlisting}
-                className="inline-flex items-center gap-2 rounded-md bg-navy-800 px-4 py-2 text-sm font-medium text-white hover:bg-navy-700 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-md bg-leaf-900 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-800 transition-colors disabled:opacity-50"
                 onClick={handleShortlist}
               >
                 {shortlisting && (
@@ -923,7 +923,7 @@ export default function RFPDetailPage({
                                     {/* Proposal details */}
                                     {app.proposalData && (
                                       <details className="group">
-                                        <summary className="text-sm font-semibold cursor-pointer hover:text-teal transition-colors">
+                                        <summary className="text-sm font-semibold cursor-pointer hover:text-leaf-600 transition-colors">
                                           Full Proposal Details
                                         </summary>
                                         <div className="mt-2 p-3 bg-white rounded border text-xs text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
@@ -944,7 +944,7 @@ export default function RFPDetailPage({
                                     {["SUBMITTED", "SCORING", "IN_REVIEW"].includes(app.status) && (
                                       <div className="pt-2 border-t flex items-center gap-3">
                                         <button
-                                          className="inline-flex items-center gap-2 rounded-md bg-navy-800 px-4 py-2 text-sm font-medium text-white hover:bg-navy-700 transition-colors"
+                                          className="inline-flex items-center gap-2 rounded-md bg-leaf-900 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-800 transition-colors"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             setSelectedApps((prev) => {
@@ -1162,7 +1162,7 @@ export default function RFPDetailPage({
                                                     disabled={
                                                       savingEval === evalKey
                                                     }
-                                                    className="inline-flex items-center gap-1 rounded-md bg-teal px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-600 transition-colors disabled:opacity-50"
+                                                    className="inline-flex items-center gap-1 rounded-md bg-leaf-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-leaf-600 transition-colors disabled:opacity-50"
                                                     onClick={() =>
                                                       handleSaveEvaluation(
                                                         app.id,
@@ -1562,7 +1562,7 @@ export default function RFPDetailPage({
                               </span>
                             ) : (
                               <button
-                                className="inline-flex items-center gap-1 rounded-md bg-teal px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-600 transition-colors"
+                                className="inline-flex items-center gap-1 rounded-md bg-leaf-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-leaf-600 transition-colors"
                                 onClick={() => {
                                   setAwardDialog({
                                     open: true,
@@ -1601,7 +1601,7 @@ export default function RFPDetailPage({
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg text-navy-800">
+            <DialogTitle className="text-lg text-slate-900">
               Confirm Award
             </DialogTitle>
           </DialogHeader>
@@ -1648,7 +1648,7 @@ export default function RFPDetailPage({
               </button>
               <button
                 disabled={awarding || !awardJustification.trim()}
-                className="inline-flex items-center gap-2 rounded-md bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-600 transition-colors disabled:opacity-50"
                 onClick={handleAward}
               >
                 {awarding && (

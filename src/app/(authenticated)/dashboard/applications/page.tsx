@@ -17,12 +17,10 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
-  FileText,
-  AlertTriangle,
-  Clock,
-  Zap,
   ArrowRight,
 } from "lucide-react";
+import { AIScreeningModal } from "@/components/ai/ai-screening-modal";
+import { useToast } from "@/components/ui/toast";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -33,6 +31,7 @@ interface Application {
   status: string;
   compositeScore: number | null;
   dimensionScores: string | null;
+  confidenceLevels: string | null;
   aiFindings: string | null;
   proposalData: string | null;
   proposedBudget: number;
@@ -59,6 +58,8 @@ interface Application {
     executiveSummary: string | null;
     strengths: string | null;
     risks: string | null;
+    questionsForContractor: string | null;
+    impactAssessment: string | null;
     createdByModel: string | null;
   } | null;
 }
@@ -72,7 +73,7 @@ const STATUS_COLORS: Record<string, string> = {
   SUBMITTED: "bg-blue-100 text-blue-700 border-blue-200",
   SCORING: "bg-yellow-100 text-yellow-700 border-yellow-200",
   IN_REVIEW: "bg-orange-100 text-orange-700 border-orange-200",
-  SHORTLISTED: "bg-teal-100 text-teal-700 border-teal-200",
+  SHORTLISTED: "bg-leaf-100 text-leaf-700 border-leaf-200",
   QUESTIONNAIRE_PENDING: "bg-purple-100 text-purple-700 border-purple-200",
   QUESTIONNAIRE_SUBMITTED: "bg-indigo-100 text-indigo-700 border-indigo-200",
   APPROVED: "bg-green-100 text-green-700 border-green-200",
@@ -96,6 +97,7 @@ const STATUS_LABELS: Record<string, string> = {
 /* ------------------------------------------------------------------ */
 
 export default function ApplicationPipelinePage() {
+  const { toast } = useToast();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +105,7 @@ export default function ApplicationPipelinePage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [rfpFilter, setRfpFilter] = useState("ALL");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [screeningApp, setScreeningApp] = useState<Application | null>(null);
 
   useEffect(() => {
     fetch("/api/applications")
@@ -143,7 +146,7 @@ export default function ApplicationPipelinePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -160,9 +163,9 @@ export default function ApplicationPipelinePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-800">Application Pipeline</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Application Pipeline</h1>
         <p className="text-muted-foreground mt-1">
-          All applications across all RFPs &mdash; {applications.length} total
+          All applications across all RFPs: {applications.length} total
         </p>
       </div>
 
@@ -224,13 +227,42 @@ export default function ApplicationPipelinePage() {
         </CardContent>
       </Card>
 
+      {/* AI Screening Banner */}
+      <div className="rounded-xl bg-gradient-to-br from-violet-950 to-indigo-900 p-5 sm:p-6 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold">AI Screening</h3>
+            <p className="text-sm text-violet-200/80 mt-0.5">
+              4-dimension evaluation that scores applications in seconds
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm">
+            <div className="text-center">
+              <p className="text-xl font-bold">{applications.filter(a => a.compositeScore != null).length}</p>
+              <p className="text-white/70 text-xs">AI Scored</p>
+            </div>
+            <div className="w-px h-10 bg-white/20 hidden sm:block" />
+            <div className="text-center">
+              <p className="text-xl font-bold">
+                {applications.filter(a => a.compositeScore != null).length > 0
+                  ? (applications.filter(a => a.compositeScore != null).reduce((s, a) => s + (a.compositeScore || 0), 0) / applications.filter(a => a.compositeScore != null).length).toFixed(0)
+                  : "-"}
+              </p>
+              <p className="text-white/70 text-xs">Avg Score</p>
+            </div>
+            <div className="w-px h-10 bg-white/20 hidden sm:block" />
+            <div className="text-center">
+              <p className="text-xl font-bold">~45s</p>
+              <p className="text-white/70 text-xs">Per Review</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Applications Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <FileText className="w-5 h-5 text-teal" />
-            Applications ({filtered.length})
-          </CardTitle>
+          <CardTitle className="text-lg">Applications ({filtered.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
@@ -279,7 +311,7 @@ export default function ApplicationPipelinePage() {
                       <p className="text-sm font-mono">
                         {app.proposedBudget > 0
                           ? formatSAR(app.proposedBudget)
-                          : "\u2014"}
+                          : "-"}
                       </p>
                     </div>
 
@@ -287,26 +319,12 @@ export default function ApplicationPipelinePage() {
                     <div className="col-span-1 text-center">
                       {app.compositeScore != null ? (
                         <div className="flex flex-col items-center gap-1">
-                          <span
-                            className={`text-sm font-bold ${
-                              app.compositeScore >= 75
-                                ? "text-green-600"
-                                : app.compositeScore >= 50
-                                  ? "text-yellow-600"
-                                  : "text-red-600"
-                            }`}
-                          >
+                          <span className="text-lg font-bold text-violet-600 font-mono">
                             {app.compositeScore}
                           </span>
-                          <div className="w-12 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="w-12 h-1.5 bg-violet-100 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${
-                                app.compositeScore >= 75
-                                  ? "bg-green-500"
-                                  : app.compositeScore >= 50
-                                    ? "bg-yellow-500"
-                                    : "bg-red-500"
-                              }`}
+                              className="h-full rounded-full bg-violet-500"
                               style={{
                                 width: `${app.compositeScore}%`,
                               }}
@@ -314,9 +332,7 @@ export default function ApplicationPipelinePage() {
                           </div>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">
-                          &mdash;
-                        </span>
+                        <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </div>
 
@@ -326,9 +342,6 @@ export default function ApplicationPipelinePage() {
                         variant="outline"
                         className={`text-xs ${STATUS_COLORS[app.status] || "bg-gray-100"}`}
                       >
-                        {app.status === "SCORING" && (
-                          <Zap className="w-3 h-3 mr-1 animate-pulse" />
-                        )}
                         {STATUS_LABELS[app.status] || app.status}
                       </Badge>
                     </div>
@@ -338,7 +351,7 @@ export default function ApplicationPipelinePage() {
                       <p className="text-xs text-muted-foreground">
                         {app.submittedAt
                           ? new Date(app.submittedAt).toLocaleDateString()
-                          : "\u2014"}
+                          : "-"}
                       </p>
                     </div>
 
@@ -359,10 +372,7 @@ export default function ApplicationPipelinePage() {
                         {/* Dimension Scores */}
                         {app.dimensionScores && (
                           <div>
-                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                              <Zap className="w-4 h-4 text-teal" />
-                              AI Dimension Scores
-                            </h4>
+                            <h4 className="font-semibold text-sm mb-2">AI Dimension Scores</h4>
                             {(() => {
                               try {
                                 const scores = JSON.parse(app.dimensionScores);
@@ -380,18 +390,18 @@ export default function ApplicationPipelinePage() {
                                           key={dim}
                                           className="flex items-center gap-2"
                                         >
-                                          <span className="text-xs text-muted-foreground w-28">
+                                          <span className="text-xs text-muted-foreground min-w-20 sm:min-w-28 shrink-0">
                                             {dimLabels[dim] || dim}
                                           </span>
-                                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                          <div className="flex-1 h-2 bg-violet-100 rounded-full overflow-hidden">
                                             <div
-                                              className="h-full bg-teal rounded-full"
+                                              className="h-full bg-violet-500 rounded-full"
                                               style={{
                                                 width: `${val}%`,
                                               }}
                                             />
                                           </div>
-                                          <span className="text-xs font-mono w-8 text-right">
+                                          <span className="text-xs font-mono w-8 text-right text-violet-600 font-semibold">
                                             {String(val)}
                                           </span>
                                         </div>
@@ -411,11 +421,11 @@ export default function ApplicationPipelinePage() {
                           {app.decisionPacket?.recommendation && (
                             <div className="mb-3">
                               <h4 className="font-semibold text-sm mb-1">Recommendation</h4>
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-bold font-mono ${
                                 app.decisionPacket.recommendation === "RECOMMEND"
-                                  ? "bg-green-100 text-green-700"
+                                  ? "bg-violet-600 text-white"
                                   : app.decisionPacket.recommendation === "RECOMMEND_WITH_CONDITIONS"
-                                  ? "bg-yellow-100 text-yellow-700"
+                                  ? "bg-amber-100 text-amber-700"
                                   : "bg-red-100 text-red-700"
                               }`}>
                                 {app.decisionPacket.recommendation.replace(/_/g, " ")}
@@ -430,18 +440,17 @@ export default function ApplicationPipelinePage() {
                           )}
                           {app.aiFindings && (
                             <div>
-                              <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
-                                <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                AI Findings
-                              </h4>
+                              <h4 className="font-semibold text-sm mb-2">AI Findings</h4>
                               {(() => {
                                 try {
-                                  const findings = JSON.parse(app.aiFindings);
+                                  const rawFindings = JSON.parse(app.aiFindings);
+                                  const findingsTexts = (Array.isArray(rawFindings) ? rawFindings : []).map((f: unknown) =>
+                                    typeof f === "string" ? f : typeof f === "object" && f !== null && "text" in f ? (f as { text: string }).text : JSON.stringify(f)
+                                  );
+                                  const findings = [...new Set(findingsTexts)].slice(0, 5);
                                   return (
                                     <ul className="space-y-1">
-                                      {(Array.isArray(findings) ? findings : [])
-                                        .slice(0, 5)
-                                        .map((f: string, i: number) => (
+                                      {findings.map((f: string, i: number) => (
                                           <li key={i} className="text-xs text-muted-foreground flex gap-1">
                                             <span className="text-amber-500">•</span>
                                             {f}
@@ -460,32 +469,17 @@ export default function ApplicationPipelinePage() {
                         {/* Quick Info */}
                         <div className="space-y-2 text-xs">
                           <div className="flex items-center gap-2">
-                            <Clock className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              Created:
-                            </span>
-                            <span>
-                              {new Date(app.createdAt).toLocaleDateString()}
-                            </span>
+                            <span className="text-muted-foreground">Created:</span>
+                            <span>{new Date(app.createdAt).toLocaleDateString()}</span>
                           </div>
                           {app.shortlistedAt && (
                             <div className="flex items-center gap-2">
-                              <FileText className="w-3 h-3 text-teal" />
-                              <span className="text-muted-foreground">
-                                Shortlisted:
-                              </span>
-                              <span>
-                                {new Date(
-                                  app.shortlistedAt
-                                ).toLocaleDateString()}
-                              </span>
+                              <span className="text-muted-foreground">Shortlisted:</span>
+                              <span>{new Date(app.shortlistedAt).toLocaleDateString()}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-2">
-                            <FileText className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              Questionnaire:
-                            </span>
+                            <span className="text-muted-foreground">Questionnaire:</span>
                             <Badge variant="outline" className="text-xs">
                               {(app.questionnaireStatus || "NOT_SENT").replace(/_/g, " ")}
                             </Badge>
@@ -506,6 +500,9 @@ export default function ApplicationPipelinePage() {
                                       ))}
                                     </div>
                                   )}
+                                  {Array.isArray(strengths) && strengths.length > 0 && Array.isArray(risks) && risks.length > 0 && (
+                                    <div className="border-t border-gray-200 my-3" />
+                                  )}
                                   {Array.isArray(risks) && risks.length > 0 && (
                                     <div className="mt-2">
                                       <p className="font-medium text-foreground mb-1">Risks</p>
@@ -522,18 +519,66 @@ export default function ApplicationPipelinePage() {
                               return null;
                             }
                           })()}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="mt-2 text-teal border-teal hover:bg-teal/10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.location.href = `/dashboard/rfps/${app.rfp.id}`;
-                            }}
-                          >
-                            View in RFP{" "}
-                            <ArrowRight className="w-3 h-3 ml-1" />
-                          </Button>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {app.compositeScore != null && (
+                              <Button
+                                size="sm"
+                                className="bg-violet-600 hover:bg-violet-700 text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setScreeningApp(app);
+                                }}
+                              >
+                                Watch AI Screen
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-leaf-600 border-leaf-500 hover:bg-leaf-600/10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.location.href = `/dashboard/rfps/${app.rfp.id}`;
+                              }}
+                            >
+                              View in RFP{" "}
+                              <ArrowRight className="w-3 h-3 ml-1" />
+                            </Button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-100">
+                            <Button
+                              size="sm"
+                              className="bg-leaf-600 text-white hover:bg-leaf-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast({ type: "info", title: "Shortlist action queued", description: "Coming in next release" });
+                              }}
+                            >
+                              Shortlist Contractor
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-leaf-600 border-leaf-300 hover:bg-leaf-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast({ type: "info", title: "Request sent", description: "Coming in next release" });
+                              }}
+                            >
+                              Request More Info
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast({ type: "info", title: "Rejection queued", description: "Coming in next release" });
+                              }}
+                            >
+                              Reject Application
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -544,6 +589,30 @@ export default function ApplicationPipelinePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* AI Screening Modal */}
+      <AIScreeningModal
+        open={!!screeningApp}
+        onClose={() => setScreeningApp(null)}
+        application={screeningApp ? {
+          id: screeningApp.id,
+          orgName: screeningApp.organization.name,
+          rfpTitle: screeningApp.rfp.title,
+          compositeScore: screeningApp.compositeScore || 0,
+          dimensionScores: safeJSON(screeningApp.dimensionScores, { procurement: 0, vision: 0, viability: 0, impact: 0 }),
+          confidenceLevels: safeJSON(screeningApp.confidenceLevels, { procurement: 0.85, vision: 0.82, viability: 0.78, impact: 0.88 }),
+          aiFindings: safeJSON(screeningApp.aiFindings, []),
+          decisionPacket: {
+            recommendation: screeningApp.decisionPacket?.recommendation || "RECOMMEND",
+            executiveSummary: screeningApp.decisionPacket?.executiveSummary || "",
+            strengths: safeJSON(screeningApp.decisionPacket?.strengths, []),
+            risks: safeJSON(screeningApp.decisionPacket?.risks, []),
+            questionsForContractor: safeJSON(screeningApp.decisionPacket?.questionsForContractor, []),
+            impactAssessment: screeningApp.decisionPacket?.impactAssessment || "",
+            narrative: screeningApp.decisionPacket?.narrative || "",
+          },
+        } : null}
+      />
     </div>
   );
 }
@@ -576,4 +645,9 @@ function formatSAR(amount: number): string {
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
   if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
   return String(amount);
+}
+
+function safeJSON<T>(value: string | null | undefined, fallback: T): T {
+  if (!value) return fallback;
+  try { return JSON.parse(value); } catch { return fallback; }
 }

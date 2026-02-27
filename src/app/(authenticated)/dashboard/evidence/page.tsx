@@ -158,7 +158,7 @@ export default function EvidenceReviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -175,9 +175,9 @@ export default function EvidenceReviewPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-800">Evidence Review</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Evidence Review</h1>
         <p className="text-muted-foreground mt-1">
-          Review submitted evidence for milestone verification
+          AI-verified evidence review for milestone deliverables
         </p>
       </div>
 
@@ -221,9 +221,9 @@ export default function EvidenceReviewPage() {
       )}
 
       {/* Filters */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Review Status" />
           </SelectTrigger>
           <SelectContent>
@@ -234,7 +234,7 @@ export default function EvidenceReviewPage() {
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Evidence Type" />
           </SelectTrigger>
           <SelectContent>
@@ -251,7 +251,7 @@ export default function EvidenceReviewPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Shield className="w-5 h-5 text-teal" />
+            <Shield className="w-5 h-5 text-leaf-600" />
             Evidence Queue ({filtered.length})
           </CardTitle>
         </CardHeader>
@@ -259,7 +259,7 @@ export default function EvidenceReviewPage() {
           {filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">
               {counts.total === 0
-                ? "No evidence has been submitted yet. Evidence will appear here once contractors submit milestone deliverables."
+                ? "No evidence submitted yet. Once contractors upload milestone deliverables, AI will automatically verify them here."
                 : "No evidence matches your filters."}
             </p>
           ) : (
@@ -375,7 +375,7 @@ export default function EvidenceReviewPage() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Eye className="w-5 h-5 text-teal" />
+                <Eye className="w-5 h-5 text-leaf-600" />
                 Evidence Detail
               </DialogTitle>
             </DialogHeader>
@@ -435,7 +435,7 @@ export default function EvidenceReviewPage() {
               {/* SlideSolve Status */}
               <div className="p-3 rounded-lg bg-gray-50 border">
                 <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4 text-teal" />
+                  <Shield className="w-4 h-4 text-leaf-600" />
                   <p className="font-semibold text-sm">
                     SlideSolve AI Check
                   </p>

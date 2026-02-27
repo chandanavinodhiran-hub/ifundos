@@ -96,7 +96,7 @@ function getDaysLeft(deadline: string | null): number | null {
 function getDaysLeftBadgeClass(daysLeft: number): string {
   if (daysLeft < 7) return "bg-red-100 text-red-800 border-red-200";
   if (daysLeft <= 14) return "bg-orange-100 text-orange-800 border-orange-200";
-  return "bg-green-100 text-green-800 border-green-200";
+  return "bg-leaf-100 text-leaf-800 border-leaf-200";
 }
 
 const TIER_ORDER: Record<string, number> = {
@@ -220,7 +220,7 @@ export default function ContractorRFPDetailPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -319,13 +319,13 @@ export default function ContractorRFPDetailPage({
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-xl text-navy-800">
+              <CardTitle className="text-xl text-slate-900">
                 {rfp.title}
               </CardTitle>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <Badge
                   variant="outline"
-                  className="bg-teal-50 text-teal-700 border-teal-200"
+                  className="bg-leaf-50 text-leaf-700 border-leaf-200"
                 >
                   {rfp.program.name}
                 </Badge>
@@ -333,7 +333,7 @@ export default function ContractorRFPDetailPage({
                   variant="outline"
                   className={
                     isOpen
-                      ? "bg-green-100 text-green-800 border-green-200"
+                      ? "bg-leaf-100 text-leaf-800 border-leaf-200"
                       : "bg-gray-100 text-gray-600 border-gray-200"
                   }
                 >
@@ -373,8 +373,8 @@ export default function ContractorRFPDetailPage({
         <CardContent>
           {/* Deadline prominently */}
           {rfp.deadline && (
-            <div className="flex items-center gap-2 p-3 bg-surface-200 rounded-lg mb-4">
-              <Calendar className="w-5 h-5 text-navy-600" />
+            <div className="flex items-center gap-2 p-3 bg-leaf-50 rounded-lg mb-4">
+              <Calendar className="w-5 h-5 text-leaf-700" />
               <div>
                 <p className="text-sm font-medium">Submission Deadline</p>
                 <p className="text-sm text-muted-foreground">
@@ -394,7 +394,7 @@ export default function ContractorRFPDetailPage({
           {/* Description */}
           {rfp.description && (
             <div>
-              <h3 className="font-semibold text-navy-800 mb-2 flex items-center gap-2">
+              <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
                 <FileText className="w-4 h-4" /> Description
               </h3>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -410,7 +410,7 @@ export default function ContractorRFPDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-teal" /> Eligibility Criteria
+              <ShieldCheck className="w-5 h-5 text-leaf-600" /> Eligibility Criteria
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -488,7 +488,7 @@ export default function ContractorRFPDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-teal" /> Evidence
+              <ClipboardList className="w-5 h-5 text-leaf-600" /> Evidence
               Requirements
             </CardTitle>
           </CardHeader>
@@ -502,7 +502,7 @@ export default function ContractorRFPDetailPage({
                   <div
                     className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
                       req.required !== false
-                        ? "bg-teal-100 text-teal-700"
+                        ? "bg-leaf-100 text-leaf-700"
                         : "bg-gray-100 text-gray-500"
                     }`}
                   >
@@ -538,7 +538,7 @@ export default function ContractorRFPDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Scale className="w-5 h-5 text-teal" /> Scoring Rubric
+              <Scale className="w-5 h-5 text-leaf-600" /> Scoring Rubric
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -568,7 +568,7 @@ export default function ContractorRFPDetailPage({
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-teal rounded-full"
+                              className="h-full bg-leaf-600 rounded-full"
                               style={{ width: `${dim.weight}%` }}
                             />
                           </div>
@@ -621,7 +621,7 @@ export default function ContractorRFPDetailPage({
         ) : canApply ? (
           <Button
             size="lg"
-            className="bg-teal hover:bg-teal-600 text-white"
+            className="bg-leaf-600 hover:bg-leaf-600 text-white"
             onClick={() => router.push(`/contractor/rfps/${id}/apply`)}
           >
             <Target className="w-5 h-5 mr-2" /> Apply to this RFP

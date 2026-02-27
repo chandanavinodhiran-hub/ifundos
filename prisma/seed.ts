@@ -89,6 +89,23 @@ async function main() {
   });
   console.log("  Created organization:", auditOrg.name);
 
+  const redSeaOrg = await prisma.organization.upsert({
+    where: { registrationNumber: "RSE-2024-0892" },
+    update: {},
+    create: {
+      name: "Red Sea Environmental Corp",
+      type: "CONTRACTOR",
+      registrationNumber: "RSE-2024-0892",
+      capitalization: 12_000_000,
+      trustTier: "SUSPENDED",
+      status: "SUSPENDED",
+      preQualificationScore: 41.2,
+      businessCategories: JSON.stringify(["Environmental", "Marine Conservation"]),
+      certifications: JSON.stringify(["ISO 14001 Environmental Management"]),
+    },
+  });
+  console.log("  Created organization:", redSeaOrg.name);
+
   // ── Users ──────────────────────────────────────────────────
   const passwordHash = await bcrypt.hash("admin123", 12);
   const managerHash = await bcrypt.hash("manager123", 12);
@@ -170,6 +187,22 @@ async function main() {
     },
   });
   console.log("  Created user:", auditor.email, "(AUDITOR)");
+
+  const suspendedHash = await bcrypt.hash("contractor123", 12);
+  const suspendedUser = await prisma.user.upsert({
+    where: { email: "khalid@redsea-env.sa" },
+    update: {},
+    create: {
+      email: "khalid@redsea-env.sa",
+      name: "Khalid Al-Faris",
+      passwordHash: suspendedHash,
+      role: "CONTRACTOR",
+      organizationId: redSeaOrg.id,
+      clearanceLevel: 1,
+      status: "SUSPENDED",
+    },
+  });
+  console.log("  Created user:", suspendedUser.email, "(CONTRACTOR - SUSPENDED)");
 
   // ── Program ────────────────────────────────────────────────
   // Check if program already exists
@@ -366,6 +399,7 @@ async function main() {
   console.log("  Contractor:  contractor@tabuk-green.sa / contractor123");
   console.log("  Contractor2: contractor2@greenplanet.sa / contractor123");
   console.log("  Auditor:     auditor@ifundos.sa / auditor123");
+  console.log("  Suspended:   khalid@redsea-env.sa / contractor123 (SUSPENDED)");
 }
 
 main()

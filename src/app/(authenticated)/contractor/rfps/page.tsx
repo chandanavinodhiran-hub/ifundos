@@ -12,7 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Search, FileText, Calendar, AlertCircle } from "lucide-react";
+import { Loader2, Search, FileText, Calendar, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+
+/* ------------------------------------------------------------------ */
+/* Types                                                               */
+/* ------------------------------------------------------------------ */
 
 interface RFP {
   id: string;
@@ -24,8 +28,21 @@ interface RFP {
   program: {
     id: string;
     name: string;
+    budgetTotal: number;
+    budgetAllocated: number;
   };
 }
+
+interface OrgInfo {
+  trustTier: string;
+  capitalization: number | null;
+  businessCategories: string | null;
+  certifications: string | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
 
 function getDaysLeft(deadline: string | null): number | null {
   if (!deadline) return null;
@@ -36,7 +53,7 @@ function getDaysLeft(deadline: string | null): number | null {
 function getDaysLeftBadgeClass(daysLeft: number): string {
   if (daysLeft < 7) return "bg-red-100 text-red-800 border-red-200";
   if (daysLeft <= 14) return "bg-orange-100 text-orange-800 border-orange-200";
-  return "bg-green-100 text-green-800 border-green-200";
+  return "bg-leaf-100 text-leaf-800 border-leaf-200";
 }
 
 function parseEligibilityHighlights(criteria: string | null): string[] {
@@ -67,6 +84,56 @@ function parseEligibilityHighlights(criteria: string | null): string[] {
   }
 }
 
+const TIER_ORDER: Record<string, number> = { T0: 0, T1: 1, T2: 2, T3: 3, T4: 4 };
+
+function checkEligibility(
+  criteria: string | null,
+  org: OrgInfo | null
+): { eligible: boolean; reason: string | null } {
+  if (!org || !criteria) return { eligible: true, reason: null };
+  try {
+    const parsed = JSON.parse(criteria);
+    // Check trust tier
+    if (parsed.minimumTrustTier) {
+      const required = TIER_ORDER[parsed.minimumTrustTier] ?? 0;
+      const current = TIER_ORDER[org.trustTier] ?? 0;
+      if (current < required) {
+        return { eligible: false, reason: `Requires ${parsed.minimumTrustTier}+` };
+      }
+    }
+    // Check capitalization
+    if (parsed.minimumCapitalization && org.capitalization !== null) {
+      if (org.capitalization < Number(parsed.minimumCapitalization)) {
+        return { eligible: false, reason: `Min capital: SAR ${Number(parsed.minimumCapitalization).toLocaleString()}` };
+      }
+    }
+    // Check categories
+    if (parsed.requiredCategories && Array.isArray(parsed.requiredCategories) && org.businessCategories) {
+      try {
+        const orgCats: string[] = JSON.parse(org.businessCategories);
+        const hasCat = parsed.requiredCategories.some((c: string) => orgCats.includes(c));
+        if (!hasCat) {
+          return { eligible: false, reason: `Requires: ${parsed.requiredCategories.join(", ")}` };
+        }
+      } catch { /* skip */ }
+    }
+    return { eligible: true, reason: null };
+  } catch {
+    return { eligible: true, reason: null };
+  }
+}
+
+function formatSAR(amount: number): string {
+  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B SAR`;
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M SAR`;
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K SAR`;
+  return `${amount} SAR`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Component                                                           */
+/* ------------------------------------------------------------------ */
+
 export default function BrowseRFPsPage() {
   const router = useRouter();
   const [rfps, setRfps] = useState<RFP[]>([]);
@@ -74,21 +141,32 @@ export default function BrowseRFPsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [programFilter, setProgramFilter] = useState("all");
+  const [org, setOrg] = useState<OrgInfo | null>(null);
 
   useEffect(() => {
-    async function fetchRfps() {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/rfps?open=true");
-        if (!res.ok) throw new Error("Failed to fetch RFPs");
-        const data = await res.json();
-        setRfps(data.rfps || []);
+        const [rfpRes, statsRes] = await Promise.all([
+          fetch("/api/rfps?open=true"),
+          fetch("/api/stats"),
+        ]);
+        if (!rfpRes.ok) throw new Error("Failed to fetch RFPs");
+        const rfpData = await rfpRes.json();
+        setRfps(rfpData.rfps || []);
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          if (statsData.organization) {
+            setOrg(statsData.organization);
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load RFPs");
       } finally {
         setLoading(false);
       }
     }
-    fetchRfps();
+    fetchData();
   }, []);
 
   const programs = useMemo(() => {
@@ -111,7 +189,7 @@ export default function BrowseRFPsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" />
+        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
       </div>
     );
   }
@@ -129,7 +207,7 @@ export default function BrowseRFPsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-800">Browse Open RFPs</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Browse Open RFPs</h1>
         <p className="text-muted-foreground mt-1">
           Find and apply for available funding opportunities
         </p>
@@ -180,46 +258,74 @@ export default function BrowseRFPsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredRfps.map((rfp) => {
             const daysLeft = getDaysLeft(rfp.deadline);
-            const highlights = parseEligibilityHighlights(
-              rfp.eligibilityCriteria
-            );
+            const highlights = parseEligibilityHighlights(rfp.eligibilityCriteria);
+            const eligibility = checkEligibility(rfp.eligibilityCriteria, org);
 
             return (
               <Card
                 key={rfp.id}
-                className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-teal"
+                className="cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-l-leaf-500"
                 onClick={() => router.push(`/contractor/rfps/${rfp.id}`)}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-navy-800 text-base truncate">
+                      <h3 className="font-bold text-slate-900 text-base truncate">
                         {rfp.title}
                       </h3>
-                      <Badge
-                        variant="outline"
-                        className="mt-1 bg-teal-50 text-teal-700 border-teal-200 text-xs"
-                      >
-                        {rfp.program.name}
-                      </Badge>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <Badge
+                          variant="outline"
+                          className="bg-leaf-50 text-leaf-700 border-leaf-200 text-xs"
+                        >
+                          {rfp.program.name}
+                        </Badge>
+                        {rfp.program.budgetTotal > 0 && (
+                          <span className="text-xs text-muted-foreground font-mono">
+                            Budget: {formatSAR(rfp.program.budgetTotal)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {daysLeft !== null && daysLeft >= 0 && (
-                      <Badge
-                        variant="outline"
-                        className={getDaysLeftBadgeClass(daysLeft)}
-                      >
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {daysLeft} days left
-                      </Badge>
-                    )}
-                    {daysLeft !== null && daysLeft < 0 && (
-                      <Badge
-                        variant="outline"
-                        className="bg-gray-100 text-gray-500 border-gray-200"
-                      >
-                        Expired
-                      </Badge>
-                    )}
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      {/* Eligibility Badge */}
+                      {eligibility.eligible ? (
+                        <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 text-xs">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          Eligible
+                        </Badge>
+                      ) : (
+                        <div className="relative group">
+                          <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200 text-xs cursor-help">
+                            <XCircle className="w-3 h-3 mr-1" />
+                            Not Eligible
+                          </Badge>
+                          {eligibility.reason && (
+                            <div className="invisible group-hover:visible absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 text-xs text-gray-600">
+                              {eligibility.reason}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {/* Days Left Badge */}
+                      {daysLeft !== null && daysLeft >= 0 && (
+                        <Badge
+                          variant="outline"
+                          className={getDaysLeftBadgeClass(daysLeft)}
+                        >
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {daysLeft} days left
+                        </Badge>
+                      )}
+                      {daysLeft !== null && daysLeft < 0 && (
+                        <Badge
+                          variant="outline"
+                          className="bg-gray-100 text-gray-500 border-gray-200"
+                        >
+                          Expired
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   {rfp.description && (
@@ -237,7 +343,7 @@ export default function BrowseRFPsPage() {
                           key={i}
                           className="flex items-center gap-2 text-xs text-muted-foreground"
                         >
-                          <div className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-leaf-400 shrink-0" />
                           {h}
                         </div>
                       ))}

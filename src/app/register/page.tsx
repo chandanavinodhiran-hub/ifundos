@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Hexagon } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -66,24 +67,31 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-200 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4 relative overflow-hidden">
+      {/* Dot grid pattern */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: "radial-gradient(circle, rgba(148,163,184,0.08) 0.5px, transparent 0.5px)",
+        backgroundSize: "24px 24px",
+      }} />
+      <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-3xl" />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo / Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-navy flex items-center justify-center">
-              <span className="text-white font-bold text-lg">iF</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <Hexagon className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-navy">iFundOS</h1>
+            <h1 className="text-2xl font-bold text-white">iFundOS</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-400">
             Contractor Registration
           </p>
         </div>
 
-        <Card>
+        <Card className="shadow-2xl shadow-black/20 border-slate-700/50 bg-white">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Create Account</CardTitle>
+            <CardTitle className="text-xl text-slate-900">Create Account</CardTitle>
             <CardDescription>
               Register your organization to apply for funding
             </CardDescription>
@@ -91,7 +99,7 @@ export default function RegisterPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
                   {error}
                 </div>
               )}
@@ -154,7 +162,7 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700" disabled={loading}>
                 {loading ? "Creating account..." : "Register"}
               </Button>
             </form>
@@ -163,7 +171,7 @@ export default function RegisterPage() {
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-teal-600 hover:text-teal-700 font-medium"
+                className="text-violet-600 hover:text-violet-700 font-medium"
               >
                 Sign in
               </Link>
@@ -171,7 +179,7 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-xs text-slate-500 mt-6">
           Saudi Environmental Fund &mdash; Saudi Green Initiative
         </p>
       </div>

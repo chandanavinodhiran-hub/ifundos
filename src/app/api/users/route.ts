@@ -14,16 +14,21 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
+  const role = searchParams.get("role") || "";
+
+  const where: Record<string, unknown> = {};
+  if (search) {
+    where.OR = [
+      { name: { contains: search } },
+      { email: { contains: search } },
+    ];
+  }
+  if (role && role !== "ALL") {
+    where.role = role;
+  }
 
   const users = await prisma.user.findMany({
-    where: search
-      ? {
-          OR: [
-            { name: { contains: search } },
-            { email: { contains: search } },
-          ],
-        }
-      : undefined,
+    where: Object.keys(where).length > 0 ? where : undefined,
     include: { organization: { select: { id: true, name: true, trustTier: true } } },
     orderBy: { createdAt: "desc" },
   });
