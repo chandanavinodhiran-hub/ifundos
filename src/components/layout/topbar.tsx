@@ -67,26 +67,26 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
             <button
               type="button"
               onClick={onMenuToggle}
-              className="p-2 -ml-1 md:hidden rounded-lg cursor-pointer shrink-0 hover:bg-sovereign-parchment"
+              className="p-2 -ml-1 desktop:hidden rounded-lg cursor-pointer shrink-0 hover:bg-sovereign-parchment"
             >
               <Menu className="w-5 h-5 text-sovereign-charcoal" />
             </button>
           )}
-          {/* Mobile: show iFundOS logo */}
-          <div className="flex items-center gap-2 md:hidden">
+          {/* Mobile + Tablet: show iFundOS logo (hidden on desktop where sidebar has it) */}
+          <div className="flex items-center gap-2 desktop:hidden">
             <div className="w-7 h-7 rounded-lg bg-sovereign-gold flex items-center justify-center shrink-0">
               <Hexagon className="w-4 h-4 text-sovereign-charcoal" />
             </div>
             <span className="font-bold text-sm text-sovereign-charcoal">iFundOS</span>
           </div>
-          {/* Desktop: show org name */}
-          <Building2 className="w-4 h-4 hidden md:block shrink-0" />
-          <span className="font-medium truncate hidden md:inline">{user?.organizationName ?? "iFundOS"}</span>
+          {/* Desktop: show org name (sidebar has the logo) */}
+          <Building2 className="w-4 h-4 hidden desktop:block shrink-0" />
+          <span className="font-medium truncate hidden desktop:inline">{user?.organizationName ?? "iFundOS"}</span>
         </div>
 
         {/* Right: User info + avatar */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0 relative" ref={dropdownRef}>
-          {/* Desktop: name + role badge */}
+          {/* Tablet+Desktop: name + role badge */}
           <div className={cn("text-right", useTabBar ? "hidden md:block" : "hidden sm:block")}>
             <p className="text-sm font-medium text-sovereign-charcoal leading-tight truncate max-w-[120px]">
               {user?.name ?? "User"}

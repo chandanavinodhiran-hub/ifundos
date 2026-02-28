@@ -123,145 +123,183 @@ export default function ContractorHome() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-  // Count active applications (not draft, not rejected)
   const activeApps = stats.applications.filter(
     (a) => !["DRAFT", "REJECTED"].includes(a.status)
   ).length;
 
-  // Build pulse — most urgent action item
   const pulse = buildPulse(stats);
-
-  // Build timeline events
   const timeline = buildTimeline(stats);
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto pb-[100px] md:pb-0">
-      {/* ── Date + Greeting ──────────────────────────────────── */}
-      <div>
-        <p
-          className="text-[10px] font-semibold uppercase tracking-[0.15em]"
-          style={{ color: "#b8943f" }}
-        >
-          {new Date().toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-        <h1 className="text-2xl font-extrabold text-sovereign-charcoal mt-1">
-          {greeting}, {firstName}
-        </h1>
-        <p className="text-[13px] text-sovereign-stone mt-0.5">
-          {org?.name ?? "Your Organization"}
-        </p>
-      </div>
-
-      {/* ── Tier Badge ───────────────────────────────────────── */}
-      <div>
-        <Badge variant="neu" className="inline-flex items-center gap-1.5 px-3 py-1.5">
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ background: tierInfo.dot }}
-          />
-          <span className="text-[11px] font-bold text-sovereign-charcoal">
-            {tierInfo.label} · {trustTier}
-          </span>
-        </Badge>
-      </div>
-
-      {/* ── Signal Strip — 3 wells ───────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "Active", value: activeApps, isMoney: false },
-          { label: "Contracts", value: stats.activeContracts, isMoney: false },
-          { label: "Pending", value: stats.totalReceived, isMoney: true },
-        ].map((well) => (
-          <div
-            key={well.label}
-            className="p-3 text-center rounded-[18px]"
-            style={{
-              background: "#e8e0d0",
-              boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-            }}
+    <div className="desktop:flex desktop:gap-8">
+      {/* ── Primary Zone ─────────────────────────────────────── */}
+      <div className="flex-1 min-w-0 space-y-5 desktop:max-w-[720px] pb-[100px] desktop:pb-0">
+        {/* Date + Greeting */}
+        <div>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+            style={{ color: "#b8943f" }}
           >
-            <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
-              {well.label}
-            </p>
-            {well.isMoney ? (
-              <>
-                <p className="text-[26px] font-extrabold leading-none mt-1 font-mono" style={{ color: "#b8943f" }}>
-                  {formatSAR(well.value)}
-                </p>
-                <p className="text-[9px] text-sovereign-stone">SAR</p>
-              </>
-            ) : (
-              <p className="text-[26px] font-extrabold text-sovereign-charcoal leading-none mt-1">
-                <AnimatedCounter end={well.value} duration={800} />
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* ── Pulse Card ───────────────────────────────────────── */}
-      {pulse ? (
-        <Card
-          variant="neu-raised"
-          className={`p-5 cursor-pointer neu-press ${pulse.accent}`}
-          onClick={() => router.push(pulse.href)}
-        >
-          <div className="flex items-start gap-3">
-            <div className="shrink-0 mt-0.5">
-              <pulse.icon className="w-5 h-5" style={{ color: pulse.iconColor }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-bold text-sovereign-charcoal leading-snug">
-                {pulse.title}
-              </p>
-              <p className="text-[12px] text-sovereign-stone mt-1 leading-relaxed">
-                {pulse.subtitle}
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-sovereign-stone shrink-0 mt-1" />
-          </div>
-        </Card>
-      ) : (
-        <Card variant="neu-inset" className="p-5 text-center">
-          <CheckCircle2 className="w-6 h-6 mx-auto mb-2" style={{ color: "#4a7c59" }} />
-          <p className="text-[14px] font-bold text-sovereign-charcoal">All caught up</p>
-          <p className="text-[12px] text-sovereign-stone mt-1">
-            No urgent actions right now
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
-        </Card>
-      )}
+          <h1 className="text-2xl font-extrabold text-sovereign-charcoal mt-1">
+            {greeting}, {firstName}
+          </h1>
+          <p className="text-[13px] text-sovereign-stone mt-0.5">
+            {org?.name ?? "Your Organization"}
+          </p>
+        </div>
 
-      {/* ── Timeline Feed ────────────────────────────────────── */}
-      {timeline.length > 0 && (
-        <div className="space-y-0">
-          {timeline.map((item, i) => (
+        {/* Tier Badge */}
+        <div>
+          <Badge variant="neu" className="inline-flex items-center gap-1.5 px-3 py-1.5">
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ background: tierInfo.dot }}
+            />
+            <span className="text-[11px] font-bold text-sovereign-charcoal">
+              {tierInfo.label} · {trustTier}
+            </span>
+          </Badge>
+        </div>
+
+        {/* Signal Strip — 3 wells */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Active", value: activeApps, isMoney: false },
+            { label: "Contracts", value: stats.activeContracts, isMoney: false },
+            { label: "Pending", value: stats.totalReceived, isMoney: true },
+          ].map((well) => (
             <div
-              key={item.id}
-              className="flex items-start gap-3 py-3"
+              key={well.label}
+              className="p-3 text-center rounded-[18px]"
               style={{
-                borderBottom: i < timeline.length - 1 ? "1px solid rgba(156,148,130,0.15)" : "none",
+                background: "#e8e0d0",
+                boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
               }}
             >
-              <span
-                className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                style={{ background: item.dotColor }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] text-sovereign-charcoal leading-snug">
-                  {item.text}
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
+                {well.label}
+              </p>
+              {well.isMoney ? (
+                <>
+                  <p className="text-[26px] font-extrabold leading-none mt-1 font-mono" style={{ color: "#b8943f" }}>
+                    {formatSAR(well.value)}
+                  </p>
+                  <p className="text-[9px] text-sovereign-stone">SAR</p>
+                </>
+              ) : (
+                <p className="text-[26px] font-extrabold text-sovereign-charcoal leading-none mt-1">
+                  <AnimatedCounter end={well.value} duration={800} />
                 </p>
-              </div>
-              <span className="text-[11px] font-mono text-sovereign-stone whitespace-nowrap shrink-0">
-                {item.time}
-              </span>
+              )}
             </div>
           ))}
         </div>
-      )}
+
+        {/* Pulse Card */}
+        {pulse ? (
+          <Card
+            variant="neu-raised"
+            className={`p-5 cursor-pointer neu-press ${pulse.accent}`}
+            onClick={() => router.push(pulse.href)}
+          >
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <pulse.icon className="w-5 h-5" style={{ color: pulse.iconColor }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-bold text-sovereign-charcoal leading-snug">
+                  {pulse.title}
+                </p>
+                <p className="text-[12px] text-sovereign-stone mt-1 leading-relaxed">
+                  {pulse.subtitle}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-sovereign-stone shrink-0 mt-1" />
+            </div>
+          </Card>
+        ) : (
+          <Card variant="neu-inset" className="p-5 text-center">
+            <CheckCircle2 className="w-6 h-6 mx-auto mb-2" style={{ color: "#4a7c59" }} />
+            <p className="text-[14px] font-bold text-sovereign-charcoal">All caught up</p>
+            <p className="text-[12px] text-sovereign-stone mt-1">
+              No urgent actions right now
+            </p>
+          </Card>
+        )}
+
+        {/* Timeline Feed — mobile/tablet only */}
+        {timeline.length > 0 && (
+          <div className="desktop:hidden space-y-0">
+            {timeline.map((item, i) => (
+              <div
+                key={item.id}
+                className="flex items-start gap-3 py-3"
+                style={{
+                  borderBottom: i < timeline.length - 1 ? "1px solid rgba(156,148,130,0.15)" : "none",
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                  style={{ background: item.dotColor }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] text-sovereign-charcoal leading-snug">
+                    {item.text}
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono text-sovereign-stone whitespace-nowrap shrink-0">
+                  {item.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Side Zone (desktop only) ─────────────────────────── */}
+      <div className="hidden desktop:block desktop:w-[340px] desktop:shrink-0 desktop:sticky desktop:top-0 desktop:self-start space-y-5 pt-1">
+        {/* Timeline Feed */}
+        {timeline.length > 0 && (
+          <div>
+            <h2
+              className="text-[11px] font-semibold uppercase tracking-widest mb-3"
+              style={{ color: "#7a7265" }}
+            >
+              Recent Activity
+            </h2>
+            <div className="space-y-0">
+              {timeline.map((item, i) => (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-3 py-3"
+                  style={{
+                    borderBottom: i < timeline.length - 1 ? "1px solid rgba(156,148,130,0.15)" : "none",
+                  }}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                    style={{ background: item.dotColor }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] text-sovereign-charcoal leading-snug">
+                      {item.text}
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-sovereign-stone whitespace-nowrap shrink-0">
+                    {item.time}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -284,7 +322,6 @@ function buildPulse(stats: ContractorStats): PulseItem | null {
   const items: PulseItem[] = [];
 
   for (const app of stats.applications) {
-    // Questionnaire pending — highest urgency
     if (app.questionnaireStatus === "PENDING" || app.status === "QUESTIONNAIRE_PENDING") {
       items.push({
         accent: "accent-left-amber",
@@ -295,9 +332,7 @@ function buildPulse(stats: ContractorStats): PulseItem | null {
         href: `/contractor/applications/${app.id}/questionnaire`,
         urgency: 0,
       });
-    }
-    // App scored — show score
-    else if (app.status === "IN_REVIEW" && app.compositeScore !== null) {
+    } else if (app.status === "IN_REVIEW" && app.compositeScore !== null) {
       items.push({
         accent: "accent-left-gold",
         icon: Sparkles,
@@ -307,9 +342,7 @@ function buildPulse(stats: ContractorStats): PulseItem | null {
         href: "/contractor/applications",
         urgency: 1,
       });
-    }
-    // App approved
-    else if (app.status === "APPROVED") {
+    } else if (app.status === "APPROVED") {
       items.push({
         accent: "accent-left-green",
         icon: CheckCircle2,
@@ -341,7 +374,6 @@ function buildTimeline(stats: ContractorStats): TimelineItem[] {
   const items: TimelineItem[] = [];
 
   for (const app of stats.applications) {
-    // Scored
     if (app.compositeScore !== null) {
       items.push({
         id: `scored-${app.id}`,
@@ -350,7 +382,6 @@ function buildTimeline(stats: ContractorStats): TimelineItem[] {
         time: app.submittedAt ? relativeTime(app.submittedAt) : relativeTime(app.createdAt),
       });
     }
-    // Submitted
     if (app.submittedAt) {
       items.push({
         id: `submitted-${app.id}`,
@@ -361,7 +392,6 @@ function buildTimeline(stats: ContractorStats): TimelineItem[] {
     }
   }
 
-  // Registration event (always at bottom)
   items.push({
     id: "registered",
     text: "Registration completed",

@@ -26,25 +26,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         "app-shell flex h-screen overflow-hidden",
         useTabBarNav ? "bg-neu-base" : "bg-sovereign-parchment"
       )}>
+        {/* Sidebar: hidden on mobile+tablet, visible at desktop (≥1200px) */}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} disableMobileDrawer={useTabBarNav} />
         <div className="flex flex-col flex-1 overflow-hidden min-w-0">
           <Topbar onMenuToggle={() => setSidebarOpen(true)} />
           <main className={cn(
-            "flex-1 overflow-y-auto p-4 md:p-6 relative",
-            useTabBarNav && "pb-safe md:pb-6"
+            "flex-1 overflow-y-auto p-4 md:p-6 desktop:p-8 relative",
+            useTabBarNav && "pb-safe desktop:pb-8"
           )}>
             <div className="dot-grid-bg" />
             <div className="relative z-10 stagger-children">{children}</div>
           </main>
         </div>
 
-        {/* Bottom Tab Bar — mobile only, for roles with tab bar nav */}
+        {/* Bottom Tab Bar — visible on mobile+tablet, hidden at desktop */}
         {useTabBarNav && (
           <TabBar tabs={isFundManager ? FM_TABS : isContractor ? CONTRACTOR_TABS : isAuditor ? AUDITOR_TABS : ADMIN_TABS} />
         )}
 
-        {/* Navigator — floating button hidden on mobile when tab bar is active */}
-        <div className={cn(useTabBarNav && "hidden md:block")}>
+        {/* Navigator — floating button hidden on mobile when tab bar is active, always visible on desktop */}
+        <div className={cn(useTabBarNav && "hidden desktop:block")}>
           <NavigatorButton />
         </div>
         <NavigatorChat />

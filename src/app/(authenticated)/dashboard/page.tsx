@@ -53,6 +53,35 @@ function formatSARParts(amount: number): { num: number; suffix: string } {
   return { num: amount, suffix: " SAR" };
 }
 
+function relativeTime(ts: string): string {
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function roleDotColor(role: string): string {
+  if (role === "FUND_MANAGER") return "#4a7c59";
+  if (role === "CONTRACTOR") return "#7a7265";
+  if (role === "AUDITOR") return "#b87a3f";
+  if (role === "ADMIN") return "#1a1714";
+  return "#9a9488";
+}
+
+function formatAction(action: string): string {
+  return action
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace("Auth ", "")
+    .replace("Ai ", "AI ");
+}
+
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
@@ -122,115 +151,162 @@ export default function FundManagerDashboard() {
   }
 
   decisions.sort((a, b) => a.urgency - b.urgency);
-
-  /* Single most-urgent item */
   const pulse = decisions[0] ?? null;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto md:max-w-none">
-      {/* ── Greeting ──────────────────────────────────────────── */}
-      <div>
-        <p
-          className="text-[10px] font-semibold uppercase tracking-[0.15em]"
-          style={{ color: "#b8943f" }}
-        >
-          {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-        </p>
-        <h1 className="text-2xl md:text-3xl font-bold text-sovereign-charcoal mt-1">
-          {greeting}, Fatimah
-        </h1>
-      </div>
-
-      {/* ── Stat Strip — equal 4 columns ──────────────────────── */}
-      <div className="grid grid-cols-4 gap-3">
-        {/* Total Disbursed */}
-        <Card variant="neu-inset" className="p-3">
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
-            Disbursed
-          </p>
-          <p className="font-mono text-lg font-bold text-sovereign-gold mt-1 tabular-nums leading-none">
-            {(() => {
-              const parts = formatSARParts(stats.totalDisbursed);
-              return (
-                <AnimatedCounter end={parts.num} decimals={parts.num === 0 ? 0 : 1} suffix={parts.suffix} duration={1800} delay={0} />
-              );
-            })()}
-          </p>
-          <p className="text-[9px] text-sovereign-stone mt-2">Released</p>
-        </Card>
-
-        {/* Open RFPs */}
-        <Card variant="neu-inset" className="p-3">
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
-            Open RFPs
-          </p>
-          <p className="font-sans text-xl font-extrabold text-sovereign-charcoal mt-1 leading-none">
-            <AnimatedCounter end={stats.openRfps} duration={1500} delay={100} />
-          </p>
-          <p className="text-[9px] text-sovereign-stone mt-2">Accepting</p>
-        </Card>
-
-        {/* In Review */}
-        <Card variant="neu-inset" className="p-3">
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
-            In Review
-          </p>
-          <p className="font-sans text-xl font-extrabold text-sovereign-gold mt-1 leading-none">
-            <AnimatedCounter end={stats.applicationsInReview} duration={1500} delay={200} />
-          </p>
-          <p className="text-[9px] text-sovereign-stone mt-2">Awaiting</p>
-        </Card>
-
-        {/* Active Grants */}
-        <Card variant="neu-inset" className="p-3">
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
-            Grants
-          </p>
-          <p className="font-sans text-xl font-extrabold text-sovereign-charcoal mt-1 leading-none">
-            <AnimatedCounter end={stats.activeGrants} duration={1500} delay={300} />
-          </p>
-          {stats.atRiskProjects > 0 ? (
-            <p className="text-[9px] text-critical font-semibold mt-2">
-              {stats.atRiskProjects} at risk
-            </p>
-          ) : (
-            <p className="text-[9px] text-sovereign-stone mt-2">On track</p>
-          )}
-        </Card>
-      </div>
-
-      {/* ── Pulse — Single Most Urgent Item ─────────────────── */}
-      <div>
-        {pulse ? (
-          <button
-            onClick={() => router.push(pulse.href)}
-            className="w-full text-left cursor-pointer"
+    <div className="desktop:flex desktop:gap-8">
+      {/* ── Primary Zone ─────────────────────────────────────── */}
+      <div className="flex-1 min-w-0 space-y-6 desktop:max-w-[720px]">
+        {/* Greeting */}
+        <div>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+            style={{ color: "#b8943f" }}
           >
-            <Card variant="neu-raised" className="relative overflow-hidden transition-all hover:scale-[1.01]">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
-                >
-                  <pulse.icon className="w-5 h-5 text-sovereign-stone" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-sovereign-charcoal">{pulse.title}</p>
-                  <p className="text-xs text-sovereign-stone mt-0.5">{pulse.subtitle}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-sovereign-stone shrink-0" />
-              </CardContent>
-            </Card>
-          </button>
-        ) : (
-          <Card variant="neu-inset" className="p-5">
-            <p className="text-sm text-sovereign-charcoal font-medium text-center">
-              All on track. No urgent items.
+            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+          <h1 className="text-2xl md:text-3xl font-bold text-sovereign-charcoal mt-1">
+            {greeting}, Fatimah
+          </h1>
+        </div>
+
+        {/* Stat Strip — 4 columns, horizontal row on all sizes */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Total Disbursed */}
+          <Card variant="neu-inset" className="p-3 md:col-span-1 col-span-2">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
+              Disbursed
             </p>
+            <p className="font-mono text-lg md:text-xl font-bold text-sovereign-gold mt-1 tabular-nums leading-none">
+              {(() => {
+                const parts = formatSARParts(stats.totalDisbursed);
+                return (
+                  <AnimatedCounter end={parts.num} decimals={parts.num === 0 ? 0 : 1} suffix={parts.suffix} duration={1800} delay={0} />
+                );
+              })()}
+            </p>
+            <p className="text-[9px] text-sovereign-stone mt-2">Released</p>
           </Card>
-        )}
+
+          {/* Open RFPs */}
+          <Card variant="neu-inset" className="p-3">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
+              Open RFPs
+            </p>
+            <p className="font-sans text-xl font-extrabold text-sovereign-charcoal mt-1 leading-none">
+              <AnimatedCounter end={stats.openRfps} duration={1500} delay={100} />
+            </p>
+            <p className="text-[9px] text-sovereign-stone mt-2">Accepting</p>
+          </Card>
+
+          {/* In Review */}
+          <Card variant="neu-inset" className="p-3">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
+              In Review
+            </p>
+            <p className="font-sans text-xl font-extrabold text-sovereign-gold mt-1 leading-none">
+              <AnimatedCounter end={stats.applicationsInReview} duration={1500} delay={200} />
+            </p>
+            <p className="text-[9px] text-sovereign-stone mt-2">Awaiting</p>
+          </Card>
+
+          {/* Active Grants */}
+          <Card variant="neu-inset" className="p-3">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-sovereign-stone leading-tight">
+              Grants
+            </p>
+            <p className="font-sans text-xl font-extrabold text-sovereign-charcoal mt-1 leading-none">
+              <AnimatedCounter end={stats.activeGrants} duration={1500} delay={300} />
+            </p>
+            {stats.atRiskProjects > 0 ? (
+              <p className="text-[9px] text-critical font-semibold mt-2">
+                {stats.atRiskProjects} at risk
+              </p>
+            ) : (
+              <p className="text-[9px] text-sovereign-stone mt-2">On track</p>
+            )}
+          </Card>
+        </div>
+
+        {/* Pulse — Single Most Urgent Item */}
+        <div>
+          {pulse ? (
+            <button
+              onClick={() => router.push(pulse.href)}
+              className="w-full text-left cursor-pointer"
+            >
+              <Card variant="neu-raised" className="relative overflow-hidden transition-all hover:scale-[1.01]">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
+                    }}
+                  >
+                    <pulse.icon className="w-5 h-5 text-sovereign-stone" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-sovereign-charcoal">{pulse.title}</p>
+                    <p className="text-xs text-sovereign-stone mt-0.5">{pulse.subtitle}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-sovereign-stone shrink-0" />
+                </CardContent>
+              </Card>
+            </button>
+          ) : (
+            <Card variant="neu-inset" className="p-5">
+              <p className="text-sm text-sovereign-charcoal font-medium text-center">
+                All on track. No urgent items.
+              </p>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* ── Side Zone (desktop only) ─────────────────────────── */}
+      <div className="hidden desktop:block desktop:w-[340px] desktop:shrink-0 desktop:sticky desktop:top-0 desktop:self-start space-y-5 pt-1">
+        {/* Activity Stream */}
+        <div>
+          <h2
+            className="text-[11px] font-semibold uppercase tracking-widest mb-3"
+            style={{ color: "#7a7265" }}
+          >
+            Activity Stream
+          </h2>
+          <div className="space-y-0">
+            {stats.recentActivity.slice(0, 15).map((event) => (
+              <button
+                key={event.id}
+                className="w-full flex items-start gap-3 py-2.5 border-b cursor-pointer text-left"
+                style={{ borderColor: "rgba(156,148,130,0.15)" }}
+                onClick={() => {
+                  if (event.resourceType === "RFP") router.push("/dashboard/rfps");
+                  else if (event.resourceType === "APPLICATION") router.push("/dashboard/applications");
+                  else router.push("/dashboard");
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0 mt-1.5"
+                  style={{ background: roleDotColor(event.actor?.role ?? "") }}
+                />
+                <span className="flex-1 min-w-0 text-[13px] leading-snug" style={{ color: "#1a1714" }}>
+                  {event.actor?.name ?? "System"} — {formatAction(event.action)}
+                </span>
+                <span
+                  className="text-[11px] font-mono shrink-0 whitespace-nowrap"
+                  style={{ color: "#9a9488" }}
+                >
+                  {relativeTime(event.timestamp)}
+                </span>
+              </button>
+            ))}
+            {(!stats.recentActivity || stats.recentActivity.length === 0) && (
+              <p className="text-[13px] py-6 text-center" style={{ color: "#9a9488" }}>
+                No recent activity
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

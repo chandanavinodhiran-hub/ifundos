@@ -29,22 +29,22 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
 
   return (
     <>
-      {/* Desktop sidebar — neumorphic, warm surface */}
+      {/* Desktop sidebar — visible at ≥1200px, neumorphic warm surface */}
       <aside
-        className="hidden md:flex flex-col shrink-0"
+        className="hidden desktop:flex flex-col shrink-0"
         style={{
-          width: 240,
-          minHeight: "calc(100vh - 64px)",
-          background: "#e8e0d0",
-          boxShadow: "2px 0 8px rgba(156,148,130,0.1)",
+          width: 220,
+          height: "100vh",
+          background: "#f8f5ef",
+          borderRight: "1px solid #e8e2d4",
           padding: "24px 16px",
           position: "sticky",
-          top: 64,
+          top: 0,
           alignSelf: "flex-start",
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-6 px-2">
+        <div className="flex items-center gap-3 mb-8 px-2">
           <div className="w-9 h-9 rounded-xl bg-sovereign-gold flex items-center justify-center shrink-0">
             <Hexagon className="w-5 h-5 text-sovereign-charcoal" />
           </div>
@@ -65,28 +65,30 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3.5 px-4 py-3 rounded-[14px] text-[14px] font-medium cursor-pointer transition-all duration-200",
-                  active ? "font-bold" : "hover:bg-[rgba(184,148,63,0.06)]"
+                  active
+                    ? "font-semibold"
+                    : "hover:bg-[rgba(184,148,63,0.06)]"
                 )}
                 style={
                   active
                     ? {
                         color: "#1a1714",
-                        background: "#e8e0d0",
-                        boxShadow: "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+                        background: "#f2efe7",
+                        borderLeft: "3px solid #1a1714",
+                        paddingLeft: "13px",
                       }
-                    : { color: "#7a7265" }
+                    : { color: "#8a8275" }
                 }
               >
-                <Icon className="w-5 h-5 shrink-0" style={{ color: active ? "#b8943f" : "#7a7265" }} />
+                <Icon className="w-5 h-5 shrink-0" style={{ color: active ? "#1a1714" : "#8a8275" }} />
                 <span>{item.label}</span>
               </Link>
             );
           })}
-
         </nav>
 
         {/* Footer */}
-        <p className="text-[10px] text-center mt-6" style={{ color: "#9a9488" }}>
+        <p className="text-[9px] text-center mt-6" style={{ color: "#9a9488" }}>
           Powered by Iozera Technologies
         </p>
       </aside>
@@ -94,7 +96,7 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
       {/* Mobile drawer overlay — only for roles that don't use tab bar */}
       {!disableMobileDrawer && isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-40 desktop:hidden backdrop-blur-sm"
           onClick={onClose}
         />
       )}
@@ -103,7 +105,7 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
       {!disableMobileDrawer && (
         <aside
           className={cn(
-            "fixed left-0 top-0 h-full w-56 bg-sovereign-charcoal flex flex-col z-50 md:hidden border-r border-sovereign-ink shadow-2xl transition-transform duration-300",
+            "fixed left-0 top-0 h-full w-56 bg-sovereign-charcoal flex flex-col z-50 desktop:hidden border-r border-sovereign-ink shadow-2xl transition-transform duration-300",
             isOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >

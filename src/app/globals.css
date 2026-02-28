@@ -640,17 +640,14 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   RESPONSIVE DESKTOP LAYOUT — Sidebar + Full-width Content
+   RESPONSIVE DESKTOP LAYOUT — Three-tier breakpoints
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── Desktop (≥ 768px): Full-width content, no tab bar padding ── */
-@media (min-width: 768px) {
-  /* Desktop: content fills available space, sidebar handles nav */
+/* ─── Desktop (≥ 1200px): Sidebar + full-width content, no tab bar ── */
+@media (min-width: 1200px) {
   .app-shell main {
     padding-bottom: 40px !important;
   }
-
-  /* Desktop: remove mobile-specific bottom padding override */
   .pb-safe {
     padding-bottom: 40px !important;
   }
