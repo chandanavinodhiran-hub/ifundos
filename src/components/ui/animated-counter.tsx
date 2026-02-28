@@ -10,6 +10,7 @@ export interface AnimatedCounterProps {
   suffix?: string;
   decimals?: number;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function AnimatedCounter({
@@ -20,6 +21,7 @@ export function AnimatedCounter({
   suffix = "",
   decimals = 0,
   className = "",
+  style,
 }: AnimatedCounterProps) {
   const [value, setValue] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -54,7 +56,7 @@ export function AnimatedCounter({
   }, [end, duration, delay]);
 
   return (
-    <span ref={ref} className={className}>
+    <span ref={ref} className={className} style={style}>
       {prefix}
       {decimals > 0 ? value.toFixed(decimals) : Math.round(value).toLocaleString()}
       {suffix}

@@ -2,13 +2,12 @@
 
 import { use, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -368,7 +367,7 @@ export default function ApplicationBuilderPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
@@ -376,9 +375,9 @@ export default function ApplicationBuilderPage({
   if (error && !rfp) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <AlertTriangle className="w-8 h-8 text-red-500" />
-        <p className="text-muted-foreground">{error}</p>
-        <Button variant="outline" onClick={() => router.push(`/contractor/rfps/${rfpId}`)}>
+        <AlertTriangle className="w-8 h-8" style={{ color: "#9c4a4a" }} />
+        <p className="text-sovereign-stone">{error}</p>
+        <Button variant="neu-outline" onClick={() => router.push(`/contractor/rfps/${rfpId}`)}>
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to RFP
         </Button>
       </div>
@@ -387,87 +386,100 @@ export default function ApplicationBuilderPage({
 
   // ── Render ─────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl pb-[100px] md:pb-0">
       {/* Header */}
       <div>
         <Button
-          variant="ghost"
+          variant="neu-ghost"
           size="sm"
           onClick={() => router.push(`/contractor/rfps/${rfpId}`)}
-          className="text-muted-foreground mb-2"
+          className="text-sovereign-stone mb-2"
         >
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to RFP
         </Button>
-        <h1 className="text-2xl font-bold text-slate-900">Apply to RFP</h1>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "#b8943f" }}>APPLICATION</p>
+        <h1 className="text-[22px] font-extrabold text-sovereign-charcoal">Apply to RFP</h1>
         {rfp && (
-          <p className="text-muted-foreground mt-1">
+          <p className="text-[13px] text-sovereign-stone mt-1">
             {rfp.title} &mdash; {rfp.program.name}
           </p>
         )}
       </div>
 
       {/* Progress Bar */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium">
-              Step {currentStep}/6: {STEP_NAMES[currentStep - 1]}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {Math.round(((currentStep - 1) / 5) * 100)}% complete
-            </p>
-          </div>
-          <div className="flex gap-1">
-            {STEP_NAMES.map((name, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentStep(i + 1)}
-                className={`flex-1 h-2 rounded-full transition-colors ${
-                  i + 1 <= currentStep ? "bg-leaf-600" : "bg-gray-200"
-                }`}
-                title={name}
-              />
-            ))}
-          </div>
-          <div className="flex justify-between mt-2">
-            {STEP_NAMES.map((name, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentStep(i + 1)}
-                className={`text-[10px] hidden sm:block ${
-                  i + 1 === currentStep
-                    ? "text-leaf-600 font-medium"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        </CardContent>
+      <Card variant="neu-raised" className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-sovereign-charcoal">
+            Step {currentStep}/6: {STEP_NAMES[currentStep - 1]}
+          </p>
+          <p className="text-xs text-sovereign-stone">
+            {Math.round(((currentStep - 1) / 5) * 100)}% complete
+          </p>
+        </div>
+        <div className="flex gap-2 items-center">
+          {STEP_NAMES.map((name, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentStep(i + 1)}
+              className="flex flex-col items-center gap-1 flex-1"
+              title={name}
+            >
+              {i + 1 < currentStep ? (
+                <div className="w-8 h-8 rounded-full shadow-neu-raised bg-neu-base flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4" style={{ color: "#4a7c59" }} />
+                </div>
+              ) : i + 1 === currentStep ? (
+                <div className="w-8 h-8 rounded-full shadow-neu-raised bg-neu-base flex items-center justify-center ring-2 ring-sovereign-gold">
+                  <span className="text-xs font-bold text-sovereign-charcoal">{i + 1}</span>
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-full shadow-neu-inset bg-neu-dark/20 flex items-center justify-center">
+                  <span className="text-xs text-sovereign-stone">{i + 1}</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+        <div className="flex justify-between mt-2">
+          {STEP_NAMES.map((name, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentStep(i + 1)}
+              className={`text-[10px] hidden sm:block ${
+                i + 1 === currentStep
+                  ? "font-medium"
+                  : "text-sovereign-stone"
+              }`}
+              style={i + 1 === currentStep ? { color: "#b8943f" } : undefined}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
       </Card>
 
       {/* Error banner */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-600" />
-          <p className="text-sm text-red-700">{error}</p>
-          <button
-            onClick={() => setError(null)}
-            className="ml-auto text-red-600 hover:text-red-800 text-xs font-medium"
-          >
-            Dismiss
-          </button>
-        </div>
+        <Card variant="neu-inset" className="p-3 accent-left-red">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" style={{ color: "#9c4a4a" }} />
+            <p className="text-sm" style={{ color: "#9c4a4a" }}>{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="ml-auto text-xs font-medium"
+              style={{ color: "#9c4a4a" }}
+            >
+              Dismiss
+            </button>
+          </div>
+        </Card>
       )}
 
       {/* ============ STEP 1: Project Overview ============ */}
       {currentStep === 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Project Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3">Project Overview</h3>
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="projectTitle">
                 Project Title <span className="text-red-500">*</span>
@@ -477,6 +489,7 @@ export default function ApplicationBuilderPage({
                 value={projectTitle}
                 onChange={(e) => setProjectTitle(e.target.value)}
                 placeholder="Enter your project title"
+                className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
               />
             </div>
             <div className="space-y-2">
@@ -493,8 +506,9 @@ export default function ApplicationBuilderPage({
                 }}
                 placeholder="Provide a comprehensive overview of your proposed project..."
                 rows={6}
+                className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
               />
-              <p className="text-xs text-muted-foreground text-right">
+              <p className="text-xs text-sovereign-stone text-right">
                 {executiveSummary.length}/2500
               </p>
             </div>
@@ -506,6 +520,7 @@ export default function ApplicationBuilderPage({
                   value={projectLocation}
                   onChange={(e) => setProjectLocation(e.target.value)}
                   placeholder="e.g., Riyadh Province"
+                  className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -523,6 +538,7 @@ export default function ApplicationBuilderPage({
                     )
                   }
                   placeholder="e.g., 24"
+                  className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                 />
               </div>
             </div>
@@ -539,44 +555,43 @@ export default function ApplicationBuilderPage({
                   )
                 }
                 placeholder="e.g., 5000000"
+                className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
               />
               {typeof totalBudgetRequested === "number" &&
                 totalBudgetRequested > 0 && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-sovereign-stone">
                     SAR {formatNumber(totalBudgetRequested)}
                   </p>
                 )}
             </div>
-          </CardContent>
+          </div>
         </Card>
       )}
 
       {/* ============ STEP 2: Technical Proposal ============ */}
       {currentStep === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Technical Proposal</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3">Technical Proposal</h3>
+          <div className="space-y-6">
             {/* Species Table */}
             <div>
               <Label className="mb-2 block">
                 Species Selection <span className="text-red-500">*</span>
               </Label>
-              <div className="overflow-x-auto border rounded-lg">
+              <div className="overflow-x-auto rounded-xl shadow-neu-inset bg-neu-dark/20">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
+                  <thead className="bg-neu-dark/20 shadow-neu-inset rounded-xl">
                     <tr>
-                      <th className="text-left p-2 font-medium">Species Name</th>
-                      <th className="text-left p-2 font-medium">Quantity</th>
-                      <th className="text-left p-2 font-medium">Source</th>
-                      <th className="text-left p-2 font-medium">Survival %</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Species Name</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Quantity</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Source</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Survival %</th>
                       <th className="p-2 w-10" />
                     </tr>
                   </thead>
                   <tbody>
                     {species.map((s, i) => (
-                      <tr key={i} className="border-t">
+                      <tr key={i} className="border-t border-neu-dark/10">
                         <td className="p-2">
                           <Input
                             value={s.speciesName}
@@ -584,7 +599,7 @@ export default function ApplicationBuilderPage({
                               updateSpecies(i, "speciesName", e.target.value)
                             }
                             placeholder="e.g., Acacia tortilis"
-                            className="h-8 text-sm"
+                            className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -600,7 +615,7 @@ export default function ApplicationBuilderPage({
                               )
                             }
                             placeholder="0"
-                            className="h-8 text-sm w-24"
+                            className="h-8 text-sm w-24 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -608,7 +623,7 @@ export default function ApplicationBuilderPage({
                             value={s.source}
                             onValueChange={(v) => updateSpecies(i, "source", v)}
                           >
-                            <SelectTrigger className="h-8 text-sm w-36">
+                            <SelectTrigger className="h-8 text-sm w-36 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -633,15 +648,16 @@ export default function ApplicationBuilderPage({
                               )
                             }
                             placeholder="%"
-                            className="h-8 text-sm w-20"
+                            className="h-8 text-sm w-20 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
                           {species.length > 1 && (
                             <Button
-                              variant="ghost"
+                              variant="neu-ghost"
                               size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-700"
+                              className="h-8 w-8"
+                              style={{ color: "#9c4a4a" }}
                               onClick={() => removeSpecies(i)}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -654,7 +670,7 @@ export default function ApplicationBuilderPage({
                 </table>
               </div>
               <Button
-                variant="outline"
+                variant="neu-outline"
                 size="sm"
                 className="mt-2"
                 onClick={addSpecies}
@@ -670,10 +686,9 @@ export default function ApplicationBuilderPage({
                 onChange={(e) => setPlantingMethodology(e.target.value)}
                 placeholder="Describe your planting approach, techniques, and timeline..."
                 rows={4}
+                className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
               />
             </div>
-
-            <Separator />
 
             <div>
               <Label className="mb-3 block font-semibold">Irrigation Plan</Label>
@@ -684,7 +699,7 @@ export default function ApplicationBuilderPage({
                     value={irrigationMethod}
                     onValueChange={setIrrigationMethod}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -699,7 +714,7 @@ export default function ApplicationBuilderPage({
                 <div className="space-y-2">
                   <Label>Water Source</Label>
                   <Select value={waterSource} onValueChange={setWaterSource}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -723,6 +738,7 @@ export default function ApplicationBuilderPage({
                       )
                     }
                     placeholder="Liters"
+                    className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                   />
                 </div>
               </div>
@@ -735,6 +751,7 @@ export default function ApplicationBuilderPage({
                 onChange={(e) => setSoilPreparation(e.target.value)}
                 placeholder="Describe soil testing, amendment, and preparation plans..."
                 rows={3}
+                className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
               />
             </div>
 
@@ -745,38 +762,37 @@ export default function ApplicationBuilderPage({
                 onChange={(e) => setMaintenancePlan(e.target.value)}
                 placeholder="Describe ongoing maintenance schedule, monitoring, and replanting strategy..."
                 rows={4}
+                className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
               />
             </div>
-          </CardContent>
+          </div>
         </Card>
       )}
 
       {/* ============ STEP 3: Team & Credentials ============ */}
       {currentStep === 3 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Team & Credentials</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3">Team & Credentials</h3>
+          <div className="space-y-6">
             {/* Team Members */}
             <div>
               <Label className="mb-2 block">
                 Key Team Members <span className="text-red-500">*</span>
               </Label>
-              <div className="overflow-x-auto border rounded-lg">
+              <div className="overflow-x-auto rounded-xl shadow-neu-inset bg-neu-dark/20">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
+                  <thead className="bg-neu-dark/20 shadow-neu-inset rounded-xl">
                     <tr>
-                      <th className="text-left p-2 font-medium">Name</th>
-                      <th className="text-left p-2 font-medium">Role</th>
-                      <th className="text-left p-2 font-medium">Yrs Exp</th>
-                      <th className="text-left p-2 font-medium">Qualifications</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Name</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Role</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Yrs Exp</th>
+                      <th className="text-left p-2 font-medium text-sovereign-charcoal">Qualifications</th>
                       <th className="p-2 w-10" />
                     </tr>
                   </thead>
                   <tbody>
                     {teamMembers.map((m, i) => (
-                      <tr key={i} className="border-t">
+                      <tr key={i} className="border-t border-neu-dark/10">
                         <td className="p-2">
                           <Input
                             value={m.name}
@@ -784,7 +800,7 @@ export default function ApplicationBuilderPage({
                               updateTeamMember(i, "name", e.target.value)
                             }
                             placeholder="Full name"
-                            className="h-8 text-sm"
+                            className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -794,7 +810,7 @@ export default function ApplicationBuilderPage({
                               updateTeamMember(i, "role", e.target.value)
                             }
                             placeholder="e.g., Project Manager"
-                            className="h-8 text-sm"
+                            className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -810,7 +826,7 @@ export default function ApplicationBuilderPage({
                               )
                             }
                             placeholder="0"
-                            className="h-8 text-sm w-20"
+                            className="h-8 text-sm w-20 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -824,15 +840,16 @@ export default function ApplicationBuilderPage({
                               )
                             }
                             placeholder="Degrees, certifications..."
-                            className="h-8 text-sm"
+                            className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
                           {teamMembers.length > 1 && (
                             <Button
-                              variant="ghost"
+                              variant="neu-ghost"
                               size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-700"
+                              className="h-8 w-8"
+                              style={{ color: "#9c4a4a" }}
                               onClick={() => removeTeamMember(i)}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -845,7 +862,7 @@ export default function ApplicationBuilderPage({
                 </table>
               </div>
               <Button
-                variant="outline"
+                variant="neu-outline"
                 size="sm"
                 className="mt-2"
                 onClick={addTeamMember}
@@ -853,8 +870,6 @@ export default function ApplicationBuilderPage({
                 <Plus className="w-4 h-4 mr-1" /> Add Team Member
               </Button>
             </div>
-
-            <Separator />
 
             {/* Organizational Experience */}
             <div>
@@ -874,6 +889,7 @@ export default function ApplicationBuilderPage({
                       )
                     }
                     placeholder="0"
+                    className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
@@ -888,6 +904,7 @@ export default function ApplicationBuilderPage({
                       )
                     }
                     placeholder="0"
+                    className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
@@ -902,12 +919,11 @@ export default function ApplicationBuilderPage({
                       )
                     }
                     placeholder="0"
+                    className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                   />
                 </div>
               </div>
             </div>
-
-            <Separator />
 
             {/* Past Project References */}
             <div>
@@ -916,32 +932,34 @@ export default function ApplicationBuilderPage({
                   Past Project References (up to 5)
                 </Label>
                 {references.length < 5 && (
-                  <Button variant="outline" size="sm" onClick={addReference}>
+                  <Button variant="neu-outline" size="sm" onClick={addReference}>
                     <Plus className="w-4 h-4 mr-1" /> Add Reference
                   </Button>
                 )}
               </div>
               {references.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">
+                <p className="text-sm text-sovereign-stone py-4 text-center">
                   No references added yet. Click &quot;Add Reference&quot; to
                   include past project details.
                 </p>
               ) : (
                 <div className="space-y-3">
                   {references.map((ref, i) => (
-                    <div
+                    <Card
                       key={i}
-                      className="border rounded-lg p-3 space-y-3 relative"
+                      variant="neu-inset"
+                      className="p-3 space-y-3 relative"
                     >
                       <Button
-                        variant="ghost"
+                        variant="neu-ghost"
                         size="icon"
-                        className="absolute top-2 right-2 h-7 w-7 text-red-500 hover:text-red-700"
+                        className="absolute top-2 right-2 h-7 w-7"
+                        style={{ color: "#9c4a4a" }}
                         onClick={() => removeReference(i)}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
-                      <p className="text-xs font-medium text-muted-foreground">
+                      <p className="text-xs font-medium text-sovereign-stone">
                         Reference #{i + 1}
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -951,7 +969,7 @@ export default function ApplicationBuilderPage({
                             updateReference(i, "projectName", e.target.value)
                           }
                           placeholder="Project name"
-                          className="h-8 text-sm"
+                          className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                         <Input
                           value={ref.client}
@@ -959,7 +977,7 @@ export default function ApplicationBuilderPage({
                             updateReference(i, "client", e.target.value)
                           }
                           placeholder="Client"
-                          className="h-8 text-sm"
+                          className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                         <Input
                           type="number"
@@ -972,7 +990,7 @@ export default function ApplicationBuilderPage({
                             )
                           }
                           placeholder="Year"
-                          className="h-8 text-sm"
+                          className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -982,7 +1000,7 @@ export default function ApplicationBuilderPage({
                             updateReference(i, "scope", e.target.value)
                           }
                           placeholder="Scope (e.g., 50,000 trees, 200 hectares)"
-                          className="h-8 text-sm"
+                          className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                         <Input
                           value={ref.outcome}
@@ -990,49 +1008,49 @@ export default function ApplicationBuilderPage({
                             updateReference(i, "outcome", e.target.value)
                           }
                           placeholder="Outcome"
-                          className="h-8 text-sm"
+                          className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               )}
             </div>
-          </CardContent>
+          </div>
         </Card>
       )}
 
       {/* ============ STEP 4: Budget Breakdown ============ */}
       {currentStep === 4 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Budget Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3">Budget Breakdown</h3>
+          <div className="space-y-4">
             {budgetMismatch && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                <p className="text-sm text-amber-700">
-                  Budget mismatch: Total line items SAR{" "}
-                  {formatNumber(grandTotal)} vs requested budget SAR{" "}
-                  {formatNumber(
-                    typeof totalBudgetRequested === "number"
-                      ? totalBudgetRequested
-                      : 0
-                  )}
-                </p>
-              </div>
+              <Card variant="neu-inset" className="p-3 accent-left-amber">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: "#b8943f" }} />
+                  <p className="text-sm" style={{ color: "#b8943f" }}>
+                    Budget mismatch: Total line items SAR{" "}
+                    {formatNumber(grandTotal)} vs requested budget SAR{" "}
+                    {formatNumber(
+                      typeof totalBudgetRequested === "number"
+                        ? totalBudgetRequested
+                        : 0
+                    )}
+                  </p>
+                </div>
+              </Card>
             )}
 
-            <div className="overflow-x-auto border rounded-lg">
+            <div className="overflow-x-auto rounded-xl shadow-neu-inset bg-neu-dark/20">
               <table className="w-full text-sm">
-                <thead className="bg-muted/50">
+                <thead className="bg-neu-dark/20 shadow-neu-inset rounded-xl">
                   <tr>
-                    <th className="text-left p-2 font-medium">Category</th>
-                    <th className="text-left p-2 font-medium">Description</th>
-                    <th className="text-left p-2 font-medium">Qty</th>
-                    <th className="text-left p-2 font-medium">Unit Cost (SAR)</th>
-                    <th className="text-left p-2 font-medium">Total (SAR)</th>
+                    <th className="text-left p-2 font-medium text-sovereign-charcoal">Category</th>
+                    <th className="text-left p-2 font-medium text-sovereign-charcoal">Description</th>
+                    <th className="text-left p-2 font-medium text-sovereign-charcoal">Qty</th>
+                    <th className="text-left p-2 font-medium text-sovereign-charcoal">Unit Cost (SAR)</th>
+                    <th className="text-left p-2 font-medium text-sovereign-charcoal">Total (SAR)</th>
                     <th className="p-2 w-10" />
                   </tr>
                 </thead>
@@ -1040,7 +1058,7 @@ export default function ApplicationBuilderPage({
                   {budgetItems.map((item, i) => {
                     const total = lineItemTotal(item);
                     return (
-                      <tr key={i} className="border-t">
+                      <tr key={i} className="border-t border-neu-dark/10">
                         <td className="p-2">
                           <Select
                             value={item.category}
@@ -1048,7 +1066,7 @@ export default function ApplicationBuilderPage({
                               updateBudgetItem(i, "category", v)
                             }
                           >
-                            <SelectTrigger className="h-8 text-sm w-32">
+                            <SelectTrigger className="h-8 text-sm w-32 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -1067,7 +1085,7 @@ export default function ApplicationBuilderPage({
                               updateBudgetItem(i, "description", e.target.value)
                             }
                             placeholder="Item description"
-                            className="h-8 text-sm"
+                            className="h-8 text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -1083,7 +1101,7 @@ export default function ApplicationBuilderPage({
                               )
                             }
                             placeholder="0"
-                            className="h-8 text-sm w-20"
+                            className="h-8 text-sm w-20 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2">
@@ -1099,18 +1117,19 @@ export default function ApplicationBuilderPage({
                               )
                             }
                             placeholder="0"
-                            className="h-8 text-sm w-28"
+                            className="h-8 text-sm w-28 bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                         </td>
                         <td className="p-2 font-mono text-sm">
-                          {total > 0 ? formatNumber(total) : "—"}
+                          {total > 0 ? formatNumber(total) : "\u2014"}
                         </td>
                         <td className="p-2">
                           {budgetItems.length > 1 && (
                             <Button
-                              variant="ghost"
+                              variant="neu-ghost"
                               size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-700"
+                              className="h-8 w-8"
+                              style={{ color: "#9c4a4a" }}
                               onClick={() => removeBudgetItem(i)}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1122,11 +1141,11 @@ export default function ApplicationBuilderPage({
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t bg-muted/30">
-                    <td colSpan={4} className="p-2 text-right font-semibold">
+                  <tr className="border-t border-neu-dark/10 bg-neu-dark/10">
+                    <td colSpan={4} className="p-2 text-right font-semibold text-sovereign-charcoal">
                       Grand Total:
                     </td>
-                    <td className="p-2 font-mono font-bold text-slate-900">
+                    <td className="p-2 font-mono font-bold text-sovereign-charcoal">
                       SAR {formatNumber(grandTotal)}
                     </td>
                     <td />
@@ -1134,24 +1153,22 @@ export default function ApplicationBuilderPage({
                 </tfoot>
               </table>
             </div>
-            <Button variant="outline" size="sm" onClick={addBudgetItem}>
+            <Button variant="neu-outline" size="sm" onClick={addBudgetItem}>
               <Plus className="w-4 h-4 mr-1" /> Add Line Item
             </Button>
-          </CardContent>
+          </div>
         </Card>
       )}
 
       {/* ============ STEP 5: Documents & Evidence ============ */}
       {currentStep === 5 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Upload className="w-5 h-5 text-leaf-600" /> Documents & Evidence
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3 flex items-center gap-2">
+            <Upload className="w-5 h-5" style={{ color: "#4a7c59" }} /> Documents & Evidence
+          </h3>
+          <div className="space-y-4">
             {evidenceReqs.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">
+              <p className="text-sm text-sovereign-stone text-center py-6">
                 No specific evidence requirements for this RFP.
               </p>
             ) : (
@@ -1161,29 +1178,27 @@ export default function ApplicationBuilderPage({
                     (f) => f.requirementName === req.name
                   );
                   return (
-                    <div
+                    <Card
                       key={i}
-                      className="p-4 border rounded-lg space-y-2"
+                      variant="neu-inset"
+                      className="p-4 space-y-2"
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="text-sm font-medium text-sovereign-charcoal">
                             {req.name}
                             {req.required !== false && (
                               <span className="text-red-500 ml-1">*</span>
                             )}
                           </p>
                           {req.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
+                            <p className="text-xs text-sovereign-stone mt-0.5">
                               {req.description}
                             </p>
                           )}
                         </div>
                         {existingFile && (
-                          <Badge
-                            variant="outline"
-                            className="bg-green-50 text-green-700 border-green-200"
-                          >
+                          <Badge variant="neu-verified">
                             <CheckCircle2 className="w-3 h-3 mr-1" />
                             Selected
                           </Badge>
@@ -1198,30 +1213,30 @@ export default function ApplicationBuilderPage({
                             e.target.files?.[0] || null
                           )
                         }
-                        className="text-sm"
+                        className="text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                       />
                       {existingFile && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-sovereign-stone">
                           {existingFile.fileName} (
                           {(existingFile.fileSize / 1024).toFixed(1)} KB)
                         </p>
                       )}
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-sovereign-stone">
                         Accepted formats: PDF, JPG, PNG, DOCX
                       </p>
-                    </div>
+                    </Card>
                   );
                 })}
               </div>
             )}
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-              <p className="text-xs text-blue-700">
+            <Card variant="neu-inset" className="p-3 mt-4">
+              <p className="text-xs text-sovereign-stone">
                 <strong>Note:</strong> For MVP, files are tracked by reference.
                 Full upload coming in next phase.
               </p>
-            </div>
-          </CardContent>
+            </Card>
+          </div>
         </Card>
       )}
 
@@ -1229,84 +1244,77 @@ export default function ApplicationBuilderPage({
       {currentStep === 6 && (
         <div className="space-y-4">
           {/* Completeness Checklist */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Completeness Checklist</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {[
-                  { label: "Project title", ok: checks.projectTitle },
-                  { label: "Executive summary", ok: checks.executiveSummary },
-                  {
-                    label: "At least 1 species selected",
-                    ok: checks.atLeastOneSpecies,
-                  },
-                  {
-                    label: "At least 1 team member",
-                    ok: checks.atLeastOneTeamMember,
-                  },
-                  {
-                    label: "At least 1 budget line item",
-                    ok: checks.atLeastOneBudgetItem,
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    {item.ok ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-500" />
-                    )}
-                    <span
-                      className={`text-sm ${
-                        item.ok ? "text-green-700" : "text-red-600"
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+          <Card variant="neu-raised" className="p-5">
+            <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3">Completeness Checklist</h3>
+            <div className="space-y-2">
+              {[
+                { label: "Project title", ok: checks.projectTitle },
+                { label: "Executive summary", ok: checks.executiveSummary },
+                {
+                  label: "At least 1 species selected",
+                  ok: checks.atLeastOneSpecies,
+                },
+                {
+                  label: "At least 1 team member",
+                  ok: checks.atLeastOneTeamMember,
+                },
+                {
+                  label: "At least 1 budget line item",
+                  ok: checks.atLeastOneBudgetItem,
+                },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  {item.ok ? (
+                    <CheckCircle2 className="w-4 h-4" style={{ color: "#4a7c59" }} />
+                  ) : (
+                    <XCircle className="w-4 h-4" style={{ color: "#9c4a4a" }} />
+                  )}
+                  <span
+                    className="text-sm"
+                    style={{ color: item.ok ? "#4a7c59" : "#9c4a4a" }}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </Card>
 
           {/* Review Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5 text-leaf-600" /> Application Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <Card variant="neu-raised" className="p-5">
+            <h3 className="text-[15px] font-bold text-sovereign-charcoal mb-3 flex items-center gap-2">
+              <FileText className="w-5 h-5" style={{ color: "#4a7c59" }} /> Application Summary
+            </h3>
+            <div className="space-y-4">
               {/* Step 1 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-slate-900 mb-1">
+                <h4 className="font-semibold text-sm text-sovereign-charcoal mb-1">
                   Project Overview
                 </h4>
-                <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                <div className="bg-neu-dark/20 shadow-neu-inset rounded-xl p-3 text-sm space-y-1">
                   <p>
-                    <span className="text-muted-foreground">Title:</span>{" "}
-                    {projectTitle || "—"}
+                    <span className="text-sovereign-stone">Title:</span>{" "}
+                    {projectTitle || "\u2014"}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Location:</span>{" "}
-                    {projectLocation || "—"}
+                    <span className="text-sovereign-stone">Location:</span>{" "}
+                    {projectLocation || "\u2014"}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Duration:</span>{" "}
+                    <span className="text-sovereign-stone">Duration:</span>{" "}
                     {typeof estimatedDuration === "number"
                       ? `${estimatedDuration} months`
-                      : "—"}
+                      : "\u2014"}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Budget:</span>{" "}
+                    <span className="text-sovereign-stone">Budget:</span>{" "}
                     {typeof totalBudgetRequested === "number"
                       ? `SAR ${formatNumber(totalBudgetRequested)}`
-                      : "—"}
+                      : "\u2014"}
                   </p>
                   {executiveSummary && (
                     <p className="mt-2">
-                      <span className="text-muted-foreground">Summary:</span>{" "}
+                      <span className="text-sovereign-stone">Summary:</span>{" "}
                       {executiveSummary.length > 200
                         ? executiveSummary.slice(0, 200) + "..."
                         : executiveSummary}
@@ -1315,95 +1323,87 @@ export default function ApplicationBuilderPage({
                 </div>
               </div>
 
-              <Separator />
-
               {/* Step 2 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-slate-900 mb-1">
+                <h4 className="font-semibold text-sm text-sovereign-charcoal mb-1">
                   Technical Proposal
                 </h4>
-                <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                <div className="bg-neu-dark/20 shadow-neu-inset rounded-xl p-3 text-sm space-y-1">
                   <p>
-                    <span className="text-muted-foreground">Species:</span>{" "}
+                    <span className="text-sovereign-stone">Species:</span>{" "}
                     {species.filter((s) => s.speciesName.trim()).length} selected
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Irrigation:</span>{" "}
+                    <span className="text-sovereign-stone">Irrigation:</span>{" "}
                     {irrigationMethod} / {waterSource}
                   </p>
                 </div>
               </div>
 
-              <Separator />
-
               {/* Step 3 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-slate-900 mb-1">
+                <h4 className="font-semibold text-sm text-sovereign-charcoal mb-1">
                   Team & Credentials
                 </h4>
-                <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                <div className="bg-neu-dark/20 shadow-neu-inset rounded-xl p-3 text-sm space-y-1">
                   <p>
-                    <span className="text-muted-foreground">Team members:</span>{" "}
+                    <span className="text-sovereign-stone">Team members:</span>{" "}
                     {teamMembers.filter((m) => m.name.trim()).length}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">
+                    <span className="text-sovereign-stone">
                       Similar projects:
                     </span>{" "}
                     {typeof similarProjects === "number" ? similarProjects : 0}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">References:</span>{" "}
+                    <span className="text-sovereign-stone">References:</span>{" "}
                     {references.filter((r) => r.projectName.trim()).length}
                   </p>
                 </div>
               </div>
 
-              <Separator />
-
               {/* Step 4 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-slate-900 mb-1">
+                <h4 className="font-semibold text-sm text-sovereign-charcoal mb-1">
                   Budget Breakdown
                 </h4>
-                <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                <div className="bg-neu-dark/20 shadow-neu-inset rounded-xl p-3 text-sm space-y-1">
                   <p>
-                    <span className="text-muted-foreground">Line items:</span>{" "}
+                    <span className="text-sovereign-stone">Line items:</span>{" "}
                     {budgetItems.filter((b) => b.description.trim()).length}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Grand total:</span>{" "}
+                    <span className="text-sovereign-stone">Grand total:</span>{" "}
                     SAR {formatNumber(grandTotal)}
                   </p>
                   {budgetMismatch && (
-                    <p className="text-amber-600 text-xs mt-1">
+                    <p className="text-xs mt-1" style={{ color: "#b8943f" }}>
                       Warning: Budget mismatch with requested amount
                     </p>
                   )}
                 </div>
               </div>
 
-              <Separator />
-
               {/* Step 5 summary */}
               <div>
-                <h4 className="font-semibold text-sm text-slate-900 mb-1">
+                <h4 className="font-semibold text-sm text-sovereign-charcoal mb-1">
                   Documents
                 </h4>
-                <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                <div className="bg-neu-dark/20 shadow-neu-inset rounded-xl p-3 text-sm">
                   <p>
-                    <span className="text-muted-foreground">Files selected:</span>{" "}
+                    <span className="text-sovereign-stone">Files selected:</span>{" "}
                     {fileRefs.length} of {evidenceReqs.length} requirements
                   </p>
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Submit Actions */}
           <div className="flex items-center gap-3 flex-wrap">
             <Button
-              variant="outline"
+              variant="neu-outline"
               onClick={() => handleSubmit("DRAFT")}
               disabled={submitting}
               className="gap-2"
@@ -1416,9 +1416,10 @@ export default function ApplicationBuilderPage({
               Save as Draft
             </Button>
             <Button
+              variant="neu-gold"
               onClick={() => handleSubmit("SUBMITTED")}
               disabled={submitting || !allRequiredComplete}
-              className="bg-leaf-600 hover:bg-leaf-600 text-white gap-2"
+              className="gap-2"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1428,7 +1429,7 @@ export default function ApplicationBuilderPage({
               Submit Application
             </Button>
             {!allRequiredComplete && (
-              <p className="text-xs text-red-500">
+              <p className="text-xs" style={{ color: "#9c4a4a" }}>
                 Complete all required fields to submit
               </p>
             )}
@@ -1439,7 +1440,7 @@ export default function ApplicationBuilderPage({
       {/* ============ Navigation Buttons ============ */}
       <div className="flex items-center justify-between pt-2">
         <Button
-          variant="outline"
+          variant="neu-outline"
           onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
           disabled={currentStep === 1}
         >
@@ -1447,8 +1448,8 @@ export default function ApplicationBuilderPage({
         </Button>
         {currentStep < 6 && (
           <Button
+            variant="neu-gold"
             onClick={() => setCurrentStep(Math.min(6, currentStep + 1))}
-            className="bg-leaf-600 hover:bg-leaf-600 text-white"
           >
             Next <ArrowRight className="w-4 h-4 ml-1" />
           </Button>

@@ -11,16 +11,17 @@ import { useState } from "react";
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  disableMobileDrawer?: boolean;
 }
 
-/** AI-related nav items get violet icon accent */
+/** AI-related nav items get gold icon accent */
 const AI_NAV_LABELS = new Set([
   "AI Review Pipeline",
   "AI Evidence Review",
   "AI Scoring Overview",
 ]);
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [collapsed, setCollapsed] = useState(false);
@@ -41,22 +42,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navContent = (
     <>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-700/50 shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center shrink-0">
-          <Hexagon className="w-5 h-5 text-white" />
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-sovereign-ink shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-sovereign-gold flex items-center justify-center shrink-0">
+          <Hexagon className="w-5 h-5 text-sovereign-charcoal" />
         </div>
         {!collapsed && (
           <div className="flex-1">
-            <h1 className="font-bold text-base leading-tight text-white">iFundOS</h1>
-            <p className="text-[10px] text-slate-400 leading-tight font-medium">Saudi Green Initiative</p>
+            <h1 className="font-bold text-base leading-tight text-sovereign-ivory">iFundOS</h1>
+            <p className="text-[10px] text-sovereign-stone leading-tight font-medium">Saudi Green Initiative</p>
           </div>
         )}
         {/* Close button for mobile drawer */}
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-slate-700 md:hidden ml-auto"
+          className="p-1.5 rounded-lg hover:bg-sovereign-ink md:hidden ml-auto"
         >
-          <X className="w-4 h-4 text-slate-400" />
+          <X className="w-4 h-4 text-sovereign-stone" />
         </button>
       </div>
 
@@ -78,8 +79,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer relative",
                     isActive
-                      ? "bg-slate-800 text-white border-l-2 border-violet-500 pl-[10px]"
-                      : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
+                      ? "bg-sovereign-ink text-sovereign-ivory border-l-2 border-sovereign-gold pl-[10px]"
+                      : "text-sovereign-warm hover:bg-sovereign-ink/50 hover:text-sovereign-ivory"
                   )}
                   title={collapsed ? item.label : undefined}
                 >
@@ -87,8 +88,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     className={cn(
                       "w-5 h-5 shrink-0",
                       isActive
-                        ? isAiItem ? "text-violet-400" : "text-white"
-                        : isAiItem ? "text-violet-400" : "text-slate-400"
+                        ? isAiItem ? "text-sovereign-gold" : "text-sovereign-ivory"
+                        : isAiItem ? "text-sovereign-gold" : "text-sovereign-stone"
                     )}
                   />
                   {!collapsed && <span>{item.label}</span>}
@@ -101,14 +102,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* User Avatar + Role (bottom) */}
       {!collapsed && (
-        <div className="px-3 py-3 border-t border-slate-700/50">
+        <div className="px-3 py-3 border-t border-sovereign-ink">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center shrink-0 text-xs font-bold text-white">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sovereign-gold to-sovereign-goldLight flex items-center justify-center shrink-0 text-xs font-bold text-sovereign-charcoal">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{userName}</p>
-              <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 mt-0.5">
+              <p className="text-sm font-medium text-sovereign-ivory truncate">{userName}</p>
+              <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sovereign-gold/10 text-sovereign-gold mt-0.5">
                 {roleLabel}
               </span>
             </div>
@@ -119,7 +120,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sign Out (mobile only) */}
       <button
         onClick={() => signOut({ callbackUrl: "/login" })}
-        className="flex md:hidden items-center gap-3 px-4 py-3 border-t border-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+        className="flex md:hidden items-center gap-3 px-4 py-3 border-t border-sovereign-ink text-sovereign-stone hover:text-sovereign-ivory hover:bg-sovereign-ink transition-colors cursor-pointer"
       >
         <LogOut className="w-4 h-4" />
         {!collapsed && <span className="text-sm font-medium">Sign Out</span>}
@@ -128,7 +129,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Collapse Toggle (desktop only) */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="hidden md:flex items-center justify-center h-12 border-t border-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+        className="hidden md:flex items-center justify-center h-12 border-t border-sovereign-ink text-sovereign-stone hover:text-sovereign-ivory hover:bg-sovereign-ink transition-colors cursor-pointer"
       >
         {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
       </button>
@@ -140,7 +141,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden md:flex h-screen bg-slate-900 flex-col transition-all duration-300 border-r border-slate-800",
+          "hidden md:flex h-screen bg-sovereign-charcoal flex-col transition-all duration-300 border-r border-sovereign-ink",
           collapsed ? "w-16" : "w-56"
         )}
       >
@@ -148,7 +149,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </aside>
 
       {/* Mobile drawer overlay */}
-      {isOpen && (
+      {!disableMobileDrawer && isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
           onClick={onClose}
@@ -156,14 +157,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       )}
 
       {/* Mobile drawer */}
-      <aside
-        className={cn(
-          "fixed left-0 top-0 h-full w-56 bg-slate-900 flex flex-col z-50 md:hidden border-r border-slate-800 shadow-2xl transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        {navContent}
-      </aside>
+      {!disableMobileDrawer && (
+        <aside
+          className={cn(
+            "fixed left-0 top-0 h-full w-56 bg-sovereign-charcoal flex flex-col z-50 md:hidden border-r border-sovereign-ink shadow-2xl transition-transform duration-300",
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          {navContent}
+        </aside>
+      )}
     </>
   );
 }

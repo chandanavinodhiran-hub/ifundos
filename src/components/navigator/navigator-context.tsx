@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
-export type NavigatorMode = "closed" | "chat" | "avatar";
+export type NavigatorMode = "closed" | "chat" | "avatar" | "bottom-sheet";
 
 export interface ChatMessage {
   id: string;

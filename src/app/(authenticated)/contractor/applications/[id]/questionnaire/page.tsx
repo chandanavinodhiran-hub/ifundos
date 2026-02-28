@@ -2,12 +2,11 @@
 
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import {
   Loader2,
   ArrowLeft,
@@ -15,7 +14,6 @@ import {
   Send,
   CheckCircle2,
   AlertTriangle,
-  ClipboardList,
   Calendar,
 } from "lucide-react";
 
@@ -178,7 +176,7 @@ export default function QuestionnaireResponsePage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
@@ -187,9 +185,9 @@ export default function QuestionnaireResponsePage({
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <AlertTriangle className="w-8 h-8 text-red-500" />
-        <p className="text-muted-foreground">{error}</p>
+        <p className="text-sovereign-stone">{error}</p>
         <Button
-          variant="outline"
+          variant="neu-outline"
           onClick={() => router.push("/contractor/applications")}
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Applications
@@ -206,47 +204,47 @@ export default function QuestionnaireResponsePage({
   );
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl pb-[100px] md:pb-0">
       {/* Back button */}
       <Button
-        variant="ghost"
+        variant="neu-ghost"
         size="sm"
         onClick={() => router.push("/contractor/applications")}
-        className="text-muted-foreground"
+        className="text-sovereign-stone"
       >
         <ArrowLeft className="w-4 h-4 mr-1" /> Back to Applications
       </Button>
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <ClipboardList className="w-6 h-6 text-leaf-600" />
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "#b8943f" }}>QUESTIONNAIRE</p>
+        <h1 className="text-[22px] font-extrabold text-sovereign-charcoal">
           Interview Questionnaire
         </h1>
         {data.rfpTitle && (
-          <p className="text-muted-foreground mt-1">{data.rfpTitle}</p>
+          <p className="text-[13px] text-sovereign-stone mt-1">{data.rfpTitle}</p>
         )}
       </div>
 
       {/* Submitted Banner */}
       {isSubmitted && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+        <Card variant="neu-inset" className="p-4 flex items-center gap-3 accent-left-green">
           <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
           <div>
-            <p className="font-medium text-green-800">
+            <p className="font-medium text-sovereign-charcoal">
               Responses submitted successfully
             </p>
-            <p className="text-sm text-green-700 mt-0.5">
+            <p className="text-sm text-sovereign-stone mt-0.5">
               Your questionnaire responses have been submitted and are now under
               review.
             </p>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Deadline info */}
       {data.rfpDeadline && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-sovereign-stone">
           <Calendar className="w-4 h-4" />
           <span>
             RFP Deadline:{" "}
@@ -261,7 +259,7 @@ export default function QuestionnaireResponsePage({
 
       {/* Error banner */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+        <Card variant="neu-inset" className="p-3 flex items-center gap-2 accent-left-red">
           <AlertTriangle className="w-4 h-4 text-red-600" />
           <p className="text-sm text-red-700">{error}</p>
           <button
@@ -270,18 +268,17 @@ export default function QuestionnaireResponsePage({
           >
             Dismiss
           </button>
-        </div>
+        </Card>
       )}
 
       {/* Questions */}
       {questions.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <ClipboardList className="w-10 h-10 text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">
+        <Card variant="neu-raised" className="p-4">
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-sovereign-stone">
               No questionnaire questions found for this application.
             </p>
-          </CardContent>
+          </div>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -290,10 +287,10 @@ export default function QuestionnaireResponsePage({
             const currentAnswer = answers[q.id] || "";
 
             return (
-              <Card key={q.id}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-medium flex items-start gap-2">
-                    <span className="bg-leaf-50 text-leaf-700 text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+              <Card key={q.id} variant="neu-raised" className="p-4">
+                <div className="flex flex-col space-y-1.5 pb-3">
+                  <div className="text-base font-medium flex items-start gap-2">
+                    <span className="shadow-neu-inset bg-neu-dark/30 text-sovereign-charcoal text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <span>
@@ -302,21 +299,21 @@ export default function QuestionnaireResponsePage({
                         <span className="text-red-500 ml-1">*</span>
                       )}
                     </span>
-                  </CardTitle>
+                  </div>
                   <Badge
-                    variant="outline"
-                    className="w-fit text-xs bg-muted/50 ml-8"
+                    variant="neu"
+                    className="w-fit text-xs ml-8"
                   >
                     {q.questionType.replace(/_/g, " ")}
                   </Badge>
-                </CardHeader>
-                <CardContent className="ml-8">
+                </div>
+                <div className="ml-8">
                   {isSubmitted ? (
                     // Read-only view
-                    <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="bg-neu-dark/20 shadow-neu-inset rounded-xl p-3">
                       <p className="text-sm">
                         {currentAnswer || (
-                          <span className="text-muted-foreground italic">
+                          <span className="text-sovereign-stone italic">
                             No response provided
                           </span>
                         )}
@@ -330,6 +327,7 @@ export default function QuestionnaireResponsePage({
                           value={currentAnswer}
                           onChange={(e) => updateAnswer(q.id, e.target.value)}
                           placeholder="Enter your answer..."
+                          className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                       )}
 
@@ -339,6 +337,7 @@ export default function QuestionnaireResponsePage({
                           onChange={(e) => updateAnswer(q.id, e.target.value)}
                           placeholder="Enter your detailed response..."
                           rows={4}
+                          className="bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                         />
                       )}
 
@@ -347,7 +346,7 @@ export default function QuestionnaireResponsePage({
                           {options.map((opt, oi) => (
                             <label
                               key={oi}
-                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
+                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-neu-dark/20 cursor-pointer"
                             >
                               <input
                                 type="radio"
@@ -355,7 +354,7 @@ export default function QuestionnaireResponsePage({
                                 value={opt}
                                 checked={currentAnswer === opt}
                                 onChange={() => updateAnswer(q.id, opt)}
-                                className="w-4 h-4 text-leaf-600 accent-leaf-500"
+                                className="w-4 h-4 accent-[#b8943f]"
                               />
                               <span className="text-sm">{opt}</span>
                             </label>
@@ -374,21 +373,21 @@ export default function QuestionnaireResponsePage({
                                 e.target.files?.[0] || null
                               )
                             }
-                            className="text-sm"
+                            className="text-sm bg-neu-dark/30 border-0 shadow-neu-inset rounded-xl"
                           />
                           {fileNames[q.id] && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-sovereign-stone">
                               Selected: {fileNames[q.id]}
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-sovereign-stone">
                             Accepted formats: PDF, JPG, PNG, DOCX
                           </p>
                         </div>
                       )}
                     </>
                   )}
-                </CardContent>
+                </div>
               </Card>
             );
           })}
@@ -397,36 +396,34 @@ export default function QuestionnaireResponsePage({
 
       {/* Action Buttons */}
       {!isSubmitted && questions.length > 0 && (
-        <>
-          <Separator />
-          <div className="flex items-center gap-3 flex-wrap">
-            <Button
-              variant="outline"
-              onClick={handleSaveDraft}
-              disabled={submitting}
-              className="gap-2"
-            >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              Save Draft
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="bg-leaf-600 hover:bg-leaf-600 text-white gap-2"
-            >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-              Submit Responses
-            </Button>
-          </div>
-        </>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="neu-outline"
+            onClick={handleSaveDraft}
+            disabled={submitting}
+            className="gap-2"
+          >
+            {submitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            Save Draft
+          </Button>
+          <Button
+            variant="neu-gold"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="gap-2"
+          >
+            {submitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+            Submit Responses
+          </Button>
+        </div>
       )}
     </div>
   );

@@ -14,6 +14,13 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-leaf-50 hover:text-leaf-700",
         link: "text-primary underline-offset-4 hover:underline",
+        /* Neumorphic variants */
+        "neu-primary": "bg-sovereign-charcoal text-neu-light shadow-neu-raised-sm neu-press min-h-[44px] font-semibold",
+        "neu-secondary": "bg-neu-base text-sovereign-charcoal shadow-neu-raised-sm neu-press min-h-[44px] font-semibold",
+        "neu-gold": "bg-sovereign-gold text-sovereign-charcoal shadow-neu-raised-sm neu-press min-h-[44px] font-bold",
+        "neu-critical": "bg-critical text-white shadow-neu-raised-sm neu-press min-h-[44px] font-semibold",
+        "neu-ghost": "bg-transparent text-sovereign-stone hover:text-sovereign-charcoal hover:bg-neu-dark/30 min-h-[44px]",
+        "neu-outline": "bg-transparent border-2 border-sovereign-stone/30 text-sovereign-charcoal shadow-neu-raised-sm neu-press min-h-[44px] font-semibold",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { X, Send, Sparkles, Trash2 } from "lucide-react";
+import { X, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigator } from "./navigator-context";
 import { findScriptedResponse, getPageName } from "./navigator-responses";
@@ -53,7 +53,6 @@ export function NavigatorChat() {
     addMessage("user", trimmed);
     setIsThinking(true);
 
-    // Try API first, fall back to scripted
     try {
       const res = await fetch("/api/navigator", {
         method: "POST",
@@ -65,7 +64,6 @@ export function NavigatorChat() {
         const data = await res.json();
         addMessage("navigator", data.response);
       } else {
-        // Fallback to scripted
         const scripted = findScriptedResponse(role, pathname, trimmed);
         addMessage("navigator", scripted ?? "I'm having trouble connecting. Please try again.");
       }
@@ -86,7 +84,6 @@ export function NavigatorChat() {
 
   return (
     <>
-      {/* Backdrop on mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
@@ -94,31 +91,49 @@ export function NavigatorChat() {
         />
       )}
 
-      {/* Chat panel */}
       <div
         className={cn(
-          "fixed z-50 flex flex-col bg-slate-900 shadow-2xl shadow-black/40 transition-transform duration-300 ease-out",
-          // Desktop: right slide-out panel
-          "md:top-0 md:right-0 md:w-[420px] md:h-full md:border-l md:border-slate-700/50",
-          // Mobile: full screen slide up from bottom
+          "fixed z-50 flex flex-col transition-transform duration-300 ease-out",
+          /* Desktop: side panel */
+          "md:top-0 md:right-0 md:w-[420px] md:h-full md:border-l md:border-sovereign-ink md:bg-sovereign-charcoal md:shadow-2xl md:shadow-black/40",
+          /* Mobile: full-screen dark charcoal */
           "top-0 left-0 right-0 bottom-0 md:left-auto",
           isOpen
             ? "translate-x-0 md:translate-x-0 translate-y-0"
             : "translate-x-full md:translate-x-full translate-y-full md:translate-y-0"
         )}
+        style={{ background: "#1a1714" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50 shrink-0">
+        <div
+          className="flex items-center justify-between px-5 py-4 shrink-0"
+          style={{
+            borderBottom: "1px solid rgba(245,240,227,0.08)",
+          }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            {/* Navigator orb — charcoal sphere with gold center */}
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{
+                background: "#2a2520",
+                boxShadow: "4px 4px 10px rgba(0,0,0,0.4), -4px -4px 10px rgba(60,55,48,0.3)",
+              }}
+            >
+              <div
+                className="w-3 h-3 rounded-full animate-orb-pulse"
+                style={{
+                  background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)",
+                  boxShadow: "0 0 10px rgba(184,148,63,0.35)",
+                }}
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-white">Navigator</h2>
-                <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                <h2 className="text-sm font-semibold" style={{ color: "#f5f0e3" }}>Navigator</h2>
+                <span className="w-2 h-2 rounded-full bg-sovereign-gold animate-pulse" />
               </div>
-              <p className="text-xs text-slate-500 font-mono">
+              <p className="text-xs font-mono" style={{ color: "#9a9488" }}>
                 Viewing: {pageName}
               </p>
             </div>
@@ -126,14 +141,16 @@ export function NavigatorChat() {
           <div className="flex items-center gap-1">
             <button
               onClick={clearMessages}
-              className="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+              className="p-2 rounded-xl transition-colors cursor-pointer"
+              style={{ color: "#9a9488" }}
               title="Clear chat"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setMode("closed")}
-              className="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+              className="p-2 rounded-xl transition-colors cursor-pointer"
+              style={{ color: "#9a9488" }}
             >
               <X className="w-4 h-4" />
             </button>
@@ -151,48 +168,94 @@ export function NavigatorChat() {
               )}
             >
               {msg.role === "navigator" && (
-                <div className="w-7 h-7 rounded-lg bg-violet-600/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-violet-400 font-mono">N</span>
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                  style={{
+                    background: "#2a2520",
+                    boxShadow: "2px 2px 6px rgba(0,0,0,0.3), -2px -2px 6px rgba(60,55,48,0.2)",
+                  }}
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)",
+                    }}
+                  />
                 </div>
               )}
               <div
                 className={cn(
                   "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap",
                   msg.role === "user"
-                    ? "bg-violet-900/60 text-violet-100 rounded-br-md"
-                    : "bg-slate-800 text-slate-200 rounded-bl-md"
+                    ? "rounded-br-md"
+                    : "rounded-bl-md"
                 )}
+                style={
+                  msg.role === "user"
+                    ? {
+                        background: "rgba(184,148,63,0.12)",
+                        color: "#d4b665",
+                        border: "1px solid rgba(184,148,63,0.2)",
+                      }
+                    : {
+                        background: "#252119",
+                        color: "#c8c0b0",
+                      }
+                }
               >
                 {formatMessage(msg.content)}
               </div>
             </div>
           ))}
 
-          {/* Thinking indicator */}
           {isThinking && (
             <div className="flex gap-3 animate-fade-in-up">
-              <div className="w-7 h-7 rounded-lg bg-violet-600/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-xs font-bold text-violet-400 font-mono">N</span>
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                style={{
+                  background: "#2a2520",
+                  boxShadow: "2px 2px 6px rgba(0,0,0,0.3), -2px -2px 6px rgba(60,55,48,0.2)",
+                }}
+              >
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)",
+                  }}
+                />
               </div>
-              <div className="bg-slate-800 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div
+                className="rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5"
+                style={{ background: "#252119" }}
+              >
+                <span className="w-2 h-2 rounded-full bg-sovereign-gold animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 rounded-full bg-sovereign-gold animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 rounded-full bg-sovereign-gold animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           )}
         </div>
 
         {/* Input area */}
-        <div className="px-4 py-4 border-t border-slate-700/50 shrink-0">
-          <div className="flex items-center gap-2 bg-slate-800 rounded-xl px-4 py-2 focus-within:ring-2 focus-within:ring-violet-500/40 transition-shadow">
+        <div
+          className="px-4 py-4 shrink-0"
+          style={{ borderTop: "1px solid rgba(245,240,227,0.08)" }}
+        >
+          <div
+            className="flex items-center gap-2 rounded-xl px-4 py-2 transition-shadow"
+            style={{
+              background: "#252119",
+              boxShadow: "inset 3px 3px 8px rgba(0,0,0,0.4), inset -3px -3px 8px rgba(60,55,48,0.15)",
+            }}
+          >
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask Navigator anything..."
-              className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none font-sans"
+              className="flex-1 bg-transparent text-sm outline-none font-sans"
+              style={{ color: "#f5f0e3", }}
               disabled={isThinking}
             />
             <button
@@ -201,14 +264,22 @@ export function NavigatorChat() {
               className={cn(
                 "p-2 rounded-lg transition-all cursor-pointer",
                 input.trim() && !isThinking
-                  ? "bg-violet-600 text-white hover:bg-violet-500"
-                  : "text-slate-600"
+                  ? "text-sovereign-charcoal"
+                  : ""
               )}
+              style={
+                input.trim() && !isThinking
+                  ? {
+                      background: "linear-gradient(135deg, #d4b665, #b8943f)",
+                      boxShadow: "3px 3px 8px rgba(0,0,0,0.3), -2px -2px 6px rgba(60,55,48,0.2)",
+                    }
+                  : { color: "#9a9488" }
+              }
             >
               <Send className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-[10px] text-slate-600 mt-2 text-center font-mono">
+          <p className="text-[10px] mt-2 text-center font-mono" style={{ color: "#7a7265" }}>
             Navigator AI Advisor &middot; Context-aware assistance
           </p>
         </div>
@@ -217,13 +288,12 @@ export function NavigatorChat() {
   );
 }
 
-/** Simple markdown-like formatting for bold text */
 function formatMessage(content: string) {
   const parts = content.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={i} className="font-semibold text-white">
+        <strong key={i} className="font-semibold" style={{ color: "#f5f0e3" }}>
           {part.slice(2, -2)}
         </strong>
       );

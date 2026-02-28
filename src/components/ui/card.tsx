@@ -1,11 +1,39 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { cva, type VariantProps } from "class-variance-authority";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+/* ─── Card Hierarchy — Sovereign + Neumorphic ─────────────────────── */
+const cardVariants = cva(
+  "rounded-2xl text-card-foreground transition-shadow",
+  {
+    variants: {
+      variant: {
+        /* Sovereign (desktop/non-FM) */
+        default:  "bg-sovereign-cream border border-sovereign-warm/20 shadow-sovereign",
+        elevated: "bg-sovereign-ivory border border-sovereign-warm/30 shadow-elevated",
+        recessed: "bg-sovereign-parchment border border-sovereign-warm/15 shadow-none",
+        ai:       "bg-sovereign-charcoal text-sovereign-parchment border-l-2 border-sovereign-gold shadow-sovereign",
+        /* Neumorphic (mobile-first FM) */
+        "neu-raised":  "bg-neu-base rounded-[18px] shadow-neu-raised border-0 neu-press",
+        "neu-inset":   "bg-neu-base rounded-[18px] shadow-neu-inset border-0",
+        "neu-ai":      "bg-sovereign-charcoal text-neu-light rounded-[18px] shadow-neu-raised border-0",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-2xl border border-leaf-100 bg-white text-card-foreground shadow-soft", className)}
+      className={cn(cardVariants({ variant }), className)}
       {...props}
     />
   )
@@ -47,4 +75,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardFooter.displayName = "CardFooter";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export { Card, cardVariants, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };

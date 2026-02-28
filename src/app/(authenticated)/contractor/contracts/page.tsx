@@ -1,26 +1,37 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderKanban, ArrowRight, FileText, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Loader2, FolderKanban, CheckCircle2, Clock } from "lucide-react";
 
 interface AppInfo {
   id: string;
   status: string;
+  proposedBudget: number;
+  createdAt: string;
   rfp: { title: string };
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  SUBMITTED: "submitted",
-  SCORING: "being scored by AI",
-  IN_REVIEW: "in review",
-  SHORTLISTED: "shortlisted",
-  QUESTIONNAIRE_PENDING: "awaiting questionnaire completion",
-  QUESTIONNAIRE_SUBMITTED: "questionnaire submitted",
-  APPROVED: "approved",
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  SUBMITTED: { label: "Submitted", color: "#b87a3f" },
+  SCORING: { label: "AI Scoring", color: "#b8943f" },
+  IN_REVIEW: { label: "In Review", color: "#b8943f" },
+  SHORTLISTED: { label: "Shortlisted", color: "#b8943f" },
+  QUESTIONNAIRE_PENDING: { label: "Questionnaire Pending", color: "#b87a3f" },
+  QUESTIONNAIRE_SUBMITTED: { label: "Questionnaire Submitted", color: "#b8943f" },
+  APPROVED: { label: "Approved", color: "#4a7c59" },
+  AWARDED: { label: "Awarded", color: "#4a7c59" },
 };
 
-export default function MyContractsPage() {
+function formatSAR(amount: number): string {
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
+  return String(amount);
+}
+
+export default function ContractsPage() {
   const [apps, setApps] = useState<AppInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,75 +40,135 @@ export default function MyContractsPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.applications && Array.isArray(data.applications)) {
-          setApps(
-            data.applications.filter(
-              (a: AppInfo) => a.status !== "DRAFT" && a.status !== "REJECTED"
-            )
-          );
+          setApps(data.applications.filter(
+            (a: AppInfo) => a.status === "APPROVED" || a.status === "AWARDED"
+          ));
         }
       })
       .finally(() => setLoading(false));
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+      </div>
+    );
+  }
+
+  const hasContracts = apps.length > 0;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 max-w-2xl mx-auto pb-[100px] md:pb-0">
+      {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Awarded Contracts</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage awarded contracts and track milestone progress
+        <p
+          className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+          style={{ color: "#b8943f" }}
+        >
+          CONTRACTS
+        </p>
+        <h1 className="text-[22px] font-extrabold text-sovereign-charcoal mt-1">
+          Contracts
+        </h1>
+        <p className="text-[13px] text-sovereign-stone mt-0.5">
+          Active work and milestone delivery
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Contract Lifecycle</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-10 text-center space-y-6">
-            {/* Lifecycle visual */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap justify-center">
-              <span className="w-9 h-9 rounded-full bg-leaf-100 flex items-center justify-center text-leaf-600 font-bold text-xs">
-                <FolderKanban className="w-4 h-4" />
-              </span>
-              <span className="font-medium">Award</span>
-              <ArrowRight className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className="w-9 h-9 rounded-full bg-ocean-100 flex items-center justify-center text-ocean-600 font-bold text-xs">
-                <FileText className="w-4 h-4" />
-              </span>
-              <span className="font-medium">Milestones</span>
-              <ArrowRight className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
-                <CheckCircle2 className="w-4 h-4" />
-              </span>
-              <span className="font-medium">Evidence</span>
-              <ArrowRight className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs">
-                <CreditCard className="w-4 h-4" />
-              </span>
-              <span className="font-medium">Payment</span>
-            </div>
+      {hasContracts ? (
+        <div className="space-y-3">
+          {apps.map((app) => {
+            const statusInfo = STATUS_LABELS[app.status] || { label: app.status, color: "#7a7265" };
+            return (
+              <Card key={app.id} variant="neu-raised" className="p-4 accent-left-green">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-bold text-sovereign-charcoal leading-snug">
+                      {app.rfp.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="neu-gold">{statusInfo.label}</Badge>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[18px] font-mono font-bold" style={{ color: "#b8943f" }}>
+                      {formatSAR(app.proposedBudget)}
+                    </p>
+                    <p className="text-[10px] text-sovereign-stone uppercase">SAR</p>
+                  </div>
+                </div>
 
-            <p className="text-muted-foreground text-sm max-w-md">
-              No contracts yet. When your application is approved and awarded,
-              your contract with milestone schedule will appear here.
-            </p>
+                {/* Milestone placeholder */}
+                <div className="mt-4">
+                  <Card variant="neu-inset" className="p-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "#4a7c59" }} />
+                      <div className="flex-1">
+                        <p className="text-[12px] font-semibold text-sovereign-charcoal">Contract awarded</p>
+                        <p className="text-[11px] text-sovereign-stone">Milestones will appear once the fund manager sets them up</p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState
+          icon={FolderKanban}
+          title="No contracts yet"
+          description="When your application is approved, your contract with milestone schedule will appear here."
+        />
+      )}
 
-            {/* Dynamic application status */}
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-            ) : apps.length > 0 ? (
-              <div className="space-y-1.5">
-                {apps.slice(0, 3).map((app) => (
-                  <p key={app.id} className="text-sm text-leaf-700 bg-leaf-50 px-3 py-1.5 rounded-lg">
-                    Your application for <span className="font-medium">{app.rfp.title}</span> is currently{" "}
-                    <span className="font-medium">{STATUS_LABELS[app.status] || app.status.toLowerCase().replace(/_/g, " ")}</span>.
-                  </p>
-                ))}
+      {/* Pipeline info — show non-approved apps */}
+      {!hasContracts && (
+        <PipelineStatus />
+      )}
+    </div>
+  );
+}
+
+function PipelineStatus() {
+  const [apps, setApps] = useState<AppInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.applications && Array.isArray(data.applications)) {
+          setApps(data.applications.filter(
+            (a: AppInfo) => !["DRAFT", "REJECTED", "APPROVED", "AWARDED"].includes(a.status)
+          ));
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || apps.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-sovereign-stone">
+        In the pipeline
+      </p>
+      {apps.slice(0, 3).map((app) => {
+        const statusInfo = STATUS_LABELS[app.status] || { label: app.status, color: "#7a7265" };
+        return (
+          <Card key={app.id} variant="neu-inset" className="p-3">
+            <div className="flex items-center gap-3">
+              <Clock className="w-4 h-4 shrink-0" style={{ color: statusInfo.color }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] text-sovereign-charcoal truncate">{app.rfp.title}</p>
+                <p className="text-[11px] text-sovereign-stone">{statusInfo.label}</p>
               </div>
-            ) : null}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 }

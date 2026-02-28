@@ -2,17 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Search, FileText, Calendar, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Loader2, Search, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -50,38 +43,10 @@ function getDaysLeft(deadline: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-function getDaysLeftBadgeClass(daysLeft: number): string {
-  if (daysLeft < 7) return "bg-red-100 text-red-800 border-red-200";
-  if (daysLeft <= 14) return "bg-orange-100 text-orange-800 border-orange-200";
-  return "bg-leaf-100 text-leaf-800 border-leaf-200";
-}
-
-function parseEligibilityHighlights(criteria: string | null): string[] {
-  if (!criteria) return [];
-  try {
-    const parsed = JSON.parse(criteria);
-    const highlights: string[] = [];
-    if (parsed.minimumCapitalization) {
-      highlights.push(
-        `Min capitalization: SAR ${Number(parsed.minimumCapitalization).toLocaleString()}`
-      );
-    }
-    if (parsed.requiredCategories && Array.isArray(parsed.requiredCategories)) {
-      highlights.push(`Categories: ${parsed.requiredCategories.join(", ")}`);
-    }
-    if (parsed.certifications && Array.isArray(parsed.certifications)) {
-      highlights.push(`Certifications: ${parsed.certifications.join(", ")}`);
-    }
-    if (parsed.minimumTrustTier) {
-      highlights.push(`Trust tier: ${parsed.minimumTrustTier}+`);
-    }
-    if (parsed.geographicRestrictions) {
-      highlights.push(`Region: ${parsed.geographicRestrictions}`);
-    }
-    return highlights.slice(0, 3);
-  } catch {
-    return [];
-  }
+function getDaysLeftColor(daysLeft: number): string {
+  if (daysLeft < 7) return "#9c4a4a";
+  if (daysLeft <= 30) return "#b87a3f";
+  return "#4a7c59";
 }
 
 const TIER_ORDER: Record<string, number> = { T0: 0, T1: 1, T2: 2, T3: 3, T4: 4 };
@@ -140,7 +105,7 @@ export default function BrowseRFPsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [programFilter, setProgramFilter] = useState("all");
+  const [programFilter, setProgramFilter] = useState("matching");
   const [org, setOrg] = useState<OrgInfo | null>(null);
 
   useEffect(() => {
@@ -177,19 +142,23 @@ export default function BrowseRFPsPage() {
 
   const filteredRfps = useMemo(() => {
     return rfps.filter((rfp) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        rfp.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesProgram =
-        programFilter === "all" || rfp.program.id === programFilter;
-      return matchesSearch && matchesProgram;
+      const matchesSearch = searchQuery === "" || rfp.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const eligibility = checkEligibility(rfp.eligibilityCriteria, org);
+
+      if (programFilter === "matching") {
+        return matchesSearch && eligibility.eligible;
+      }
+      if (programFilter === "all") {
+        return matchesSearch;
+      }
+      return matchesSearch && rfp.program.id === programFilter;
     });
-  }, [rfps, searchQuery, programFilter]);
+  }, [rfps, searchQuery, programFilter, org]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
@@ -198,158 +167,173 @@ export default function BrowseRFPsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <AlertCircle className="w-8 h-8 text-red-500" />
-        <p className="text-muted-foreground">{error}</p>
+        <p className="text-sovereign-stone">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-[100px] md:pb-0">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Browse Open RFPs</h1>
-        <p className="text-muted-foreground mt-1">
-          Find and apply for available funding opportunities
+        <p
+          className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+          style={{ color: "#b8943f" }}
+        >
+          OPPORTUNITIES
+        </p>
+        <h1 className="text-[22px] font-extrabold text-sovereign-charcoal mt-1">
+          Opportunities
+        </h1>
+        <p className="text-[13px] text-sovereign-stone mt-0.5">
+          RFPs matching your profile
         </p>
       </div>
 
-      {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search RFPs by title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={programFilter} onValueChange={setProgramFilter}>
-          <SelectTrigger className="w-full sm:w-[240px]">
-            <SelectValue placeholder="Filter by program" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Programs</SelectItem>
-            {programs.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-sovereign-stone/60" />
+        <input
+          type="text"
+          placeholder="Search RFPs by title..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-neu-dark/30 border-0 shadow-neu-inset rounded-2xl px-4 py-3 pl-10 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 outline-none focus:ring-2 focus:ring-sovereign-gold/30"
+        />
       </div>
 
-      {/* RFP Grid */}
+      {/* Filter Pills */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setProgramFilter("matching")}
+          className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+            programFilter === "matching"
+              ? "bg-[rgba(184,148,63,0.12)] text-[#b8943f] font-bold border border-[rgba(184,148,63,0.25)]"
+              : "shadow-neu-inset bg-neu-dark/20 text-sovereign-stone"
+          }`}
+        >
+          ✦ Matching
+        </button>
+        <button
+          onClick={() => setProgramFilter("all")}
+          className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+            programFilter === "all"
+              ? "shadow-neu-raised bg-neu-base text-sovereign-gold"
+              : "shadow-neu-inset bg-neu-dark/20 text-sovereign-stone"
+          }`}
+        >
+          All
+        </button>
+        {programs.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setProgramFilter(p.id)}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+              programFilter === p.id
+                ? "shadow-neu-raised bg-neu-base text-sovereign-gold"
+                : "shadow-neu-inset bg-neu-dark/20 text-sovereign-stone"
+            }`}
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
+
+      {/* RFP Cards */}
       {filteredRfps.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground">
-              No open RFPs available
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {searchQuery || programFilter !== "all"
-                ? "Try adjusting your search or filter criteria"
-                : "Check back later for new funding opportunities"}
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Search}
+          title="No opportunities found"
+          description={
+            searchQuery || (programFilter !== "all" && programFilter !== "matching")
+              ? "Try adjusting your search or filters"
+              : programFilter === "matching"
+              ? "No RFPs currently match your profile criteria"
+              : "Check back later for new funding opportunities"
+          }
+        />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-3">
           {filteredRfps.map((rfp) => {
             const daysLeft = getDaysLeft(rfp.deadline);
-            const highlights = parseEligibilityHighlights(rfp.eligibilityCriteria);
             const eligibility = checkEligibility(rfp.eligibilityCriteria, org);
 
             return (
               <Card
                 key={rfp.id}
-                className="cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-l-4 border-l-leaf-500"
+                variant="neu-raised"
+                className="p-4 cursor-pointer neu-press accent-left-green"
                 onClick={() => router.push(`/contractor/rfps/${rfp.id}`)}
               >
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-slate-900 text-base truncate">
-                        {rfp.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge
-                          variant="outline"
-                          className="bg-leaf-50 text-leaf-700 border-leaf-200 text-xs"
-                        >
-                          {rfp.program.name}
+                {/* Top row: title + eligibility */}
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <h3 className="text-[16px] font-bold text-sovereign-charcoal leading-snug flex-1 min-w-0">
+                    {rfp.title}
+                  </h3>
+                  <div className="shrink-0">
+                    {eligibility.eligible ? (
+                      <Badge variant="neu-verified" className="neu-badge-inset">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                        Eligible
+                      </Badge>
+                    ) : (
+                      <div className="relative group">
+                        <Badge variant="neu-critical" className="cursor-help">
+                          <XCircle className="w-3 h-3 mr-1" />
+                          Not Eligible
                         </Badge>
-                        {rfp.program.budgetTotal > 0 && (
-                          <span className="text-xs text-muted-foreground font-mono">
-                            Budget: {formatSAR(rfp.program.budgetTotal)}
-                          </span>
+                        {eligibility.reason && (
+                          <div className="invisible group-hover:visible absolute right-0 top-full mt-1 w-48 bg-neu-base shadow-neu-raised rounded-xl p-2 z-50 text-xs text-sovereign-stone">
+                            {eligibility.reason}
+                          </div>
                         )}
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      {/* Eligibility Badge */}
-                      {eligibility.eligible ? (
-                        <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 text-xs">
-                          <CheckCircle2 className="w-3 h-3 mr-1" />
-                          Eligible
-                        </Badge>
-                      ) : (
-                        <div className="relative group">
-                          <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200 text-xs cursor-help">
-                            <XCircle className="w-3 h-3 mr-1" />
-                            Not Eligible
-                          </Badge>
-                          {eligibility.reason && (
-                            <div className="invisible group-hover:visible absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50 text-xs text-gray-600">
-                              {eligibility.reason}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {/* Days Left Badge */}
-                      {daysLeft !== null && daysLeft >= 0 && (
-                        <Badge
-                          variant="outline"
-                          className={getDaysLeftBadgeClass(daysLeft)}
-                        >
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {daysLeft} days left
-                        </Badge>
-                      )}
-                      {daysLeft !== null && daysLeft < 0 && (
-                        <Badge
-                          variant="outline"
-                          className="bg-gray-100 text-gray-500 border-gray-200"
-                        >
-                          Expired
-                        </Badge>
-                      )}
-                    </div>
+                    )}
                   </div>
+                </div>
 
-                  {rfp.description && (
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {rfp.description.length > 150
-                        ? rfp.description.slice(0, 150) + "..."
-                        : rfp.description}
-                    </p>
+                {/* Meta row: program badge, budget, deadline */}
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <Badge variant="neu">{rfp.program.name}</Badge>
+                  {rfp.program.budgetTotal > 0 && (
+                    <span
+                      className="text-[13px] font-mono"
+                      style={{ color: "#b8943f" }}
+                    >
+                      {formatSAR(rfp.program.budgetTotal)}
+                    </span>
                   )}
+                  {daysLeft !== null && daysLeft >= 0 && (
+                    <span
+                      className="text-[12px] font-semibold"
+                      style={{ color: getDaysLeftColor(daysLeft) }}
+                    >
+                      {daysLeft}d left
+                    </span>
+                  )}
+                  {daysLeft !== null && daysLeft < 0 && (
+                    <span className="text-[12px] font-semibold text-sovereign-stone/60">
+                      Expired
+                    </span>
+                  )}
+                </div>
 
-                  {highlights.length > 0 && (
-                    <div className="space-y-1">
-                      {highlights.map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-2 text-xs text-muted-foreground"
-                        >
-                          <div className="w-1.5 h-1.5 rounded-full bg-leaf-400 shrink-0" />
-                          {h}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
+                {/* Description */}
+                {rfp.description && (
+                  <p className="text-[13px] text-sovereign-stone line-clamp-2">
+                    {rfp.description}
+                  </p>
+                )}
+
+                {/* AI Match indicator */}
+                {eligibility.eligible && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0 animate-ember" style={{ background: "#b8943f" }} />
+                    <span className="text-[12px]" style={{ color: "#b8943f" }}>
+                      Strong match — your profile meets all eligibility criteria
+                    </span>
+                  </div>
+                )}
               </Card>
             );
           })}

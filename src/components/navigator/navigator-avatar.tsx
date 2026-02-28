@@ -66,7 +66,6 @@ export function NavigatorAvatar() {
     setDisplayedResponse("");
     setOrbState("listening");
 
-    // Brief listening state
     await new Promise((r) => setTimeout(r, 600));
     setOrbState("thinking");
 
@@ -108,19 +107,19 @@ export function NavigatorAvatar() {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[600px] mx-4 md:mx-0 bg-slate-900 rounded-3xl shadow-2xl shadow-black/50 border border-slate-700/50 overflow-hidden animate-fade-in-up flex flex-col"
+      <div className="relative w-full max-w-[600px] mx-4 md:mx-0 bg-neu-base md:bg-sovereign-charcoal rounded-3xl shadow-2xl shadow-black/50 border border-neu-dark/60 md:border-sovereign-ink overflow-hidden animate-fade-in-up flex flex-col"
         style={{ maxHeight: "min(500px, 85vh)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neu-dark/60 md:border-sovereign-ink shrink-0">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-violet-400" />
-            <h2 className="text-sm font-semibold text-white">Navigator Avatar</h2>
-            <span className="text-xs text-slate-500 font-mono">&middot; {pageName}</span>
+            <Sparkles className="w-4 h-4 text-sovereign-gold" />
+            <h2 className="text-sm font-semibold text-sovereign-charcoal md:text-sovereign-ivory">Navigator Avatar</h2>
+            <span className="text-xs text-sovereign-stone font-mono">&middot; {pageName}</span>
           </div>
           <button
             onClick={() => setMode("closed")}
-            className="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+            className="p-2 rounded-xl hover:bg-neu-dark md:hover:bg-sovereign-ink text-sovereign-stone hover:text-sovereign-charcoal md:hover:text-sovereign-warm transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -133,30 +132,30 @@ export function NavigatorAvatar() {
             {/* Outer rotating ring */}
             <div
               className={cn(
-                "absolute inset-[-12px] rounded-full border border-violet-500/20 transition-all duration-700",
-                orbState === "thinking" && "animate-spin border-violet-400/40",
-                orbState === "speaking" && "border-violet-400/30",
-                orbState === "listening" && "border-violet-400/50 scale-110"
+                "absolute inset-[-12px] rounded-full border border-sovereign-gold/20 transition-all duration-700",
+                orbState === "thinking" && "animate-spin border-sovereign-gold/40",
+                orbState === "speaking" && "border-sovereign-gold/30",
+                orbState === "listening" && "border-sovereign-gold/50 scale-110"
               )}
               style={{ animationDuration: "3s" }}
             />
             {/* Middle rotating ring (counter) */}
             <div
               className={cn(
-                "absolute inset-[-6px] rounded-full border border-violet-400/15 transition-all duration-700",
-                orbState === "thinking" && "animate-spin border-violet-400/30",
-                orbState === "listening" && "border-violet-400/40 scale-105"
+                "absolute inset-[-6px] rounded-full border border-sovereign-gold/15 transition-all duration-700",
+                orbState === "thinking" && "animate-spin border-sovereign-gold/30",
+                orbState === "listening" && "border-sovereign-gold/40 scale-105"
               )}
               style={{ animationDuration: "2s", animationDirection: "reverse" }}
             />
             {/* Core orb */}
             <div
               className={cn(
-                "w-[120px] h-[120px] rounded-full bg-gradient-to-br from-violet-500 via-violet-600 to-indigo-700 transition-all duration-500",
-                orbState === "idle" && "animate-orb-idle shadow-[0_0_40px_rgba(124,58,237,0.3)]",
-                orbState === "listening" && "animate-orb-listen shadow-[0_0_60px_rgba(124,58,237,0.5)] scale-110",
-                orbState === "thinking" && "animate-orb-think shadow-[0_0_50px_rgba(124,58,237,0.4)]",
-                orbState === "speaking" && "animate-orb-speak shadow-[0_0_50px_rgba(124,58,237,0.4)]"
+                "w-[120px] h-[120px] rounded-full bg-gradient-to-br from-sovereign-gold via-sovereign-gold to-sovereign-goldLight transition-all duration-500",
+                orbState === "idle" && "animate-orb-idle shadow-[0_0_40px_rgba(184,148,63,0.3)]",
+                orbState === "listening" && "animate-orb-listen shadow-[0_0_60px_rgba(184,148,63,0.5)] scale-110",
+                orbState === "thinking" && "animate-orb-think shadow-[0_0_50px_rgba(184,148,63,0.4)]",
+                orbState === "speaking" && "animate-orb-speak shadow-[0_0_50px_rgba(184,148,63,0.4)]"
               )}
             />
             {/* Inner glow */}
@@ -164,7 +163,7 @@ export function NavigatorAvatar() {
           </div>
 
           {/* State label */}
-          <p className="text-xs text-slate-500 font-mono mb-4 uppercase tracking-wider">
+          <p className="text-xs text-sovereign-stone font-mono mb-4 uppercase tracking-wider">
             {orbState === "idle" && "Ready"}
             {orbState === "listening" && "Listening..."}
             {orbState === "thinking" && "Thinking..."}
@@ -173,25 +172,25 @@ export function NavigatorAvatar() {
 
           {/* Response text */}
           {displayedResponse && (
-            <div className="w-full max-h-[140px] overflow-y-auto bg-slate-800/50 rounded-xl px-5 py-4 text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+            <div className="w-full max-h-[140px] overflow-y-auto bg-neu-dark/50 md:bg-sovereign-ink/50 rounded-xl shadow-neu-inset md:shadow-none px-5 py-4 text-sm text-sovereign-charcoal md:text-sovereign-warm leading-relaxed whitespace-pre-wrap">
               {displayedResponse}
               {displayedResponse.length < (response?.length ?? 0) && (
-                <span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 animate-pulse align-text-bottom" />
+                <span className="inline-block w-0.5 h-4 bg-sovereign-gold ml-0.5 animate-pulse align-text-bottom" />
               )}
             </div>
           )}
         </div>
 
         {/* Input area */}
-        <div className="px-5 py-4 border-t border-slate-700/50 shrink-0">
-          <div className="flex items-center gap-2 bg-slate-800 rounded-xl px-4 py-2 focus-within:ring-2 focus-within:ring-violet-500/40 transition-shadow">
+        <div className="px-5 py-4 border-t border-neu-dark/60 md:border-sovereign-ink shrink-0">
+          <div className="flex items-center gap-2 bg-neu-dark shadow-neu-inset md:bg-sovereign-ink md:shadow-none rounded-xl px-4 py-2 focus-within:ring-2 focus-within:ring-sovereign-gold/40 transition-shadow">
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask Navigator..."
-              className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none font-sans"
+              className="flex-1 bg-transparent text-sm text-sovereign-charcoal md:text-sovereign-ivory placeholder-sovereign-stone outline-none font-sans"
               disabled={orbState === "thinking"}
             />
             <button
@@ -200,8 +199,8 @@ export function NavigatorAvatar() {
               className={cn(
                 "p-2 rounded-lg transition-all cursor-pointer",
                 input.trim() && orbState !== "thinking"
-                  ? "bg-violet-600 text-white hover:bg-violet-500"
-                  : "text-slate-600"
+                  ? "bg-sovereign-gold text-sovereign-charcoal hover:bg-sovereign-goldLight"
+                  : "text-sovereign-stone"
               )}
             >
               <Send className="w-4 h-4" />

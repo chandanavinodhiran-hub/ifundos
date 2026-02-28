@@ -31,18 +31,18 @@ export function ScoreRing({
     score === 0
       ? "text-gray-400 stroke-gray-400"
       : score >= 75
-        ? "text-leaf-500 stroke-leaf-500"
+        ? "text-sovereign-gold stroke-sovereign-gold"
         : score >= 50
-          ? "text-sand-500 stroke-sand-500"
+          ? "text-leaf-500 stroke-leaf-500"
           : "text-red-500 stroke-red-500";
 
   const bgColor =
     score === 0
       ? "stroke-gray-200"
       : score >= 75
-        ? "stroke-leaf-100"
+        ? "stroke-sovereign-goldLight/40"
         : score >= 50
-          ? "stroke-sand-100"
+          ? "stroke-leaf-100"
           : "stroke-red-100";
 
   useEffect(() => {

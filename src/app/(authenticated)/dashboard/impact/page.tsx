@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScoreWell } from "@/components/ui/score-well";
+import { NeuProgress } from "@/components/ui/neu-progress";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
-import { ScoreRing } from "@/components/ui/score-ring";
-import { Loader2 } from "lucide-react";
+import { Loader2, TreePine, Wallet, Target, CheckCircle2 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -82,7 +83,7 @@ export default function ImpactDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
@@ -90,7 +91,7 @@ export default function ImpactDashboardPage() {
   if (error || !data) {
     return (
       <div className="flex items-center justify-center py-24">
-        <p className="text-red-600">{error || "No data"}</p>
+        <p className="text-critical">{error || "No data"}</p>
       </div>
     );
   }
@@ -104,293 +105,181 @@ export default function ImpactDashboardPage() {
     applicationStats,
   } = data;
 
+  const treePct = summary.totalTreesTarget > 0
+    ? Math.round((summary.totalTreesPlanted / summary.totalTreesTarget) * 100)
+    : 0;
+
+  const disbursedPct = summary.totalBudget > 0
+    ? Math.round((summary.totalDisbursed / summary.totalBudget) * 100)
+    : 0;
+
+  const awardedPct = summary.totalBudget > 0
+    ? Math.round((summary.totalAwardAmount / summary.totalBudget) * 100)
+    : 0;
+
   return (
-    <div className="space-y-6">
-      {/* Hero */}
-      <div className="rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-5 sm:p-6 text-white">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Impact Dashboard</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Saudi Green Initiative</p>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-6">
-            <div className="text-center">
-              <p className="text-2xl sm:text-3xl font-bold">
-                <AnimatedCounter end={summary.totalTreesPlanted} duration={2000} />
-              </p>
-              <p className="text-xs text-white/70">Trees Planted</p>
-            </div>
-            <div className="w-px h-10 bg-white/20 hidden sm:block" />
-            <div className="text-center">
-              <p className="text-2xl sm:text-3xl font-bold">
-                {summary.totalTreesTarget > 0
-                  ? <AnimatedCounter end={Math.round((summary.totalTreesPlanted / summary.totalTreesTarget) * 100)} suffix="%" duration={1800} />
-                  : "0%"}
-              </p>
-              <p className="text-xs text-white/70">of SGI Target</p>
-            </div>
-          </div>
+    <div className="space-y-4 pb-safe">
+      {/* Header */}
+      <div>
+        <p className="text-eyebrow">IMPACT</p>
+        <h1 className="text-xl font-bold text-sovereign-charcoal font-display">Environmental Impact</h1>
+      </div>
+
+      {/* ============ Tree Counter Card — prominent inset well ============ */}
+      <div
+        className="rounded-[20px] p-5 space-y-4"
+        style={{
+          boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+        }}
+      >
+        <div className="flex items-center gap-2 text-sovereign-stone">
+          <TreePine className="w-4 h-4" />
+          <span className="text-eyebrow">TREES PLANTED</span>
         </div>
 
-        {/* Tree Progress Bar */}
-        <div className="mt-5 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-white/80">Tree Planting Progress</span>
-            <span className="text-white/60 font-mono text-xs sm:text-sm">{summary.totalTreesPlanted.toLocaleString()} / {summary.totalTreesTarget.toLocaleString()}</span>
+        <div className="flex flex-col items-center gap-1">
+          <div className="score-well score-well-lg">
+            <span className="font-sans font-extrabold leading-none" style={{ fontSize: 40, color: "#4a7c59" }}>
+              <AnimatedCounter end={summary.totalTreesPlanted} duration={1200} />
+            </span>
           </div>
-          <div className="w-full h-3 bg-white/15 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-leaf-300 rounded-full transition-all duration-2000"
-              style={{ width: `${Math.min(100, summary.totalTreesTarget > 0 ? (summary.totalTreesPlanted / summary.totalTreesTarget) * 100 : 0)}%` }}
+          <span className="font-mono text-[8px] font-semibold uppercase tracking-wider text-sovereign-gold">
+            {summary.totalTreesPlanted.toLocaleString()} trees
+          </span>
+          <span className="text-[10px] text-sovereign-stone font-medium">
+            of SGI Target
+          </span>
+        </div>
+
+        <div className="space-y-1">
+          <NeuProgress
+            value={treePct}
+            variant="green"
+            label="Tree Planting Progress"
+            showValue
+          />
+          <p className="text-[11px] font-mono text-sovereign-stone text-right">
+            {summary.totalTreesPlanted.toLocaleString()} / {summary.totalTreesTarget.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* ============ KPI Row ============ */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 text-center">
+          <p className="text-eyebrow text-sovereign-stone">Active Grants</p>
+          <p className="font-sans font-extrabold text-sovereign-charcoal mt-1" style={{ fontSize: "28px", lineHeight: 1 }}>
+            <AnimatedCounter end={summary.activeContracts} duration={1200} />
+          </p>
+          <p className="text-[10px] text-sovereign-stone">{summary.completedContracts} completed</p>
+        </div>
+        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 text-center">
+          <p className="text-eyebrow text-sovereign-stone">Avg AI Score</p>
+          <p className="font-sans font-extrabold text-sovereign-gold mt-1" style={{ fontSize: "28px", lineHeight: 1 }}>
+            <AnimatedCounter end={applicationStats.avgScore} duration={1200} />
+          </p>
+          <p className="text-[10px] text-sovereign-stone">{applicationStats.total} applications</p>
+        </div>
+      </div>
+
+      {/* ============ SGI Target Card ============ */}
+      <Card variant="neu-raised">
+        <CardContent className="p-5 pt-5 space-y-3">
+          <div className="flex items-center gap-2 text-sovereign-stone">
+            <Target className="w-4 h-4" />
+            <span className="text-eyebrow">SGI TARGET ALIGNMENT</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
+              <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "24px", lineHeight: 1 }}>
+                {summary.totalTreesTarget > 0 ? summary.totalTreesTarget.toLocaleString() : "---"}
+              </p>
+              <p className="text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Target</p>
+            </div>
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
+              <p className="font-sans font-extrabold text-sovereign-gold" style={{ fontSize: "24px", lineHeight: 1 }}>
+                {treePct}%
+              </p>
+              <p className="text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Progress</p>
+            </div>
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
+              <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "24px", lineHeight: 1 }}>
+                {summary.totalContracts}
+              </p>
+              <p className="text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Contracts</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ============ Budget Breakdown Card ============ */}
+      <Card variant="neu-raised">
+        <CardContent className="p-5 pt-5 space-y-4">
+          <div className="flex items-center gap-2 text-sovereign-stone">
+            <Wallet className="w-4 h-4" />
+            <span className="text-eyebrow">BUDGET BREAKDOWN</span>
+          </div>
+
+          {/* Budget summary insets */}
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
+              <p className="font-mono font-bold text-sovereign-charcoal" style={{ fontSize: "14px", lineHeight: 1.2 }}>{formatSAR(summary.totalBudget)}</p>
+              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Total</p>
+            </div>
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
+              <p className="font-mono font-bold text-sovereign-gold" style={{ fontSize: "14px", lineHeight: 1.2 }}>{formatSAR(summary.totalAwardAmount)}</p>
+              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Awarded</p>
+            </div>
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
+              <p className="font-mono font-bold text-verified" style={{ fontSize: "14px", lineHeight: 1.2 }}>{formatSAR(summary.totalDisbursed)}</p>
+              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Disbursed</p>
+            </div>
+          </div>
+
+          {/* Budget progress bars */}
+          <div className="space-y-3">
+            <NeuProgress
+              value={awardedPct}
+              variant="gold"
+              label="Awarded"
+              showValue
+              delay={200}
+            />
+            <NeuProgress
+              value={disbursedPct}
+              variant="green"
+              label="Disbursed"
+              showValue
+              delay={400}
             />
           </div>
-        </div>
-      </div>
 
-      {/* Top-Level KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard label="Trees Target" value={summary.totalTreesTarget > 0 ? summary.totalTreesTarget.toLocaleString() : "Pending"} subtitle="SGI alignment" />
-        <KPICard label="Total Spend" value={formatSAR(summary.totalDisbursed)} subtitle={`of ${formatSAR(summary.totalBudget)} budget`} />
-        <KPICard label="Active Grants" value={String(summary.activeContracts)} subtitle={`${summary.completedContracts} completed`} />
-        <KPICard label="Avg Score" value={String(applicationStats.avgScore)} subtitle={`${applicationStats.total} application${applicationStats.total !== 1 ? "s" : ""}`} />
-      </div>
-
-      {/* Budget vs Spend + Milestone Completion */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Budget Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Budget vs Spend</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-xl font-bold">
-                  {formatSAR(summary.totalBudget)}
-                </p>
-                <p className="text-xs text-muted-foreground">Total Budget</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold text-cyan-600">
-                  {formatSAR(summary.totalAwardAmount)}
-                </p>
-                <p className="text-xs text-muted-foreground">Awarded</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold text-green-600">
-                  {formatSAR(summary.totalDisbursed)}
-                </p>
-                <p className="text-xs text-muted-foreground">Disbursed</p>
-              </div>
-            </div>
-
-            {/* Program Bars */}
-            {programBreakdown.map((p) => (
-              <div key={p.name} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{p.name}</span>
-                  <span className="text-muted-foreground font-mono">
-                    {formatSAR(p.budgetTotal)}
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full flex">
-                    <div
-                      className="bg-green-500 h-full"
-                      style={{ width: `${p.disbursedPct}%` }}
-                    />
-                    <div
-                      className="bg-cyan-400 h-full"
-                      style={{
-                        width: `${Math.max(0, p.allocationPct - p.disbursedPct)}%`,
-                      }}
-                    />
+          {/* Per-program breakdown */}
+          {programBreakdown.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-sovereign-stone">By Program</p>
+              {programBreakdown.map((p, i) => (
+                <div key={p.name} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-sovereign-charcoal">{p.name}</span>
+                    <span className="text-[10px] font-mono text-sovereign-stone">{formatSAR(p.budgetTotal)}</span>
                   </div>
-                </div>
-                <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-400" /> Awarded: {p.allocationPct}%</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Disbursed: {p.disbursedPct}%</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200" /> Remaining</span>
-                </div>
-              </div>
-            ))}
-
-            {programBreakdown.length === 0 && (
-              <p className="text-center text-muted-foreground text-sm py-4">
-                No program data available yet.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Milestone Completion */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Milestone Completion</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Completion Rate Ring */}
-            <div className="flex items-center justify-center">
-              <ScoreRing score={milestoneStats.completionRate} size={140} strokeWidth={12} label="Milestone Completion" />
-            </div>
-
-            {/* Milestone Breakdown */}
-            <div className="space-y-2">
-              <StatRow label="Verified" value={milestoneStats.verified} total={milestoneStats.total} dotColor="bg-green-500" />
-              <StatRow label="Evidence Submitted" value={milestoneStats.evidenceSubmitted} total={milestoneStats.total} dotColor="bg-amber-500" />
-              <StatRow label="Pending" value={milestoneStats.pending} total={milestoneStats.total} dotColor="bg-gray-400" />
-            </div>
-
-            {/* Evidence Stats */}
-            <div className="mt-4 pt-4 border-t">
-              <p className="font-semibold text-sm mb-2">Evidence Review</p>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <p className="text-lg font-bold text-green-600">
-                    {evidenceStats.approved}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Approved</p>
-                </div>
-                <div className="p-2 bg-amber-50 rounded-lg">
-                  <p className="text-lg font-bold text-amber-600">
-                    {evidenceStats.pending}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Pending</p>
-                </div>
-                <div className="p-2 bg-red-50 rounded-lg">
-                  <p className="text-lg font-bold text-red-600">
-                    {evidenceStats.rejected}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Rejected</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Contractor Performance Rankings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Contractor Performance Rankings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {contractorPerformance.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No contractor data available yet. Rankings will appear once
-              contracts are awarded.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {/* Header */}
-              <div className="hidden md:grid md:grid-cols-12 gap-4 px-4 py-2 bg-gray-50 rounded-lg text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                <div className="col-span-1">#</div>
-                <div className="col-span-3">Contractor</div>
-                <div className="col-span-3">RFP</div>
-                <div className="col-span-1 text-center">AI Score</div>
-                <div className="col-span-2 text-center">Milestones</div>
-                <div className="col-span-1 text-right">Award</div>
-                <div className="col-span-1 text-center">Status</div>
-              </div>
-
-              {contractorPerformance.map((cp, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-3 rounded-lg border hover:bg-gray-50 items-center"
-                >
-                  {/* Rank */}
-                  <div className="col-span-1">
-                    <span
-                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold ${
-                        idx === 0
-                          ? "bg-amber-100 text-amber-700"
-                          : idx === 1
-                            ? "bg-gray-200 text-gray-700"
-                            : idx === 2
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {idx + 1}
+                  <NeuProgress
+                    value={p.disbursedPct}
+                    variant="green"
+                    size="sm"
+                    delay={300 + i * 100}
+                  />
+                  <div className="flex gap-3 text-[10px] text-sovereign-stone">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold" />
+                      Awarded: {p.allocationPct}%
                     </span>
-                  </div>
-
-                  {/* Contractor */}
-                  <div className="col-span-3">
-                    <p className="font-medium text-sm">
-                      {cp.contractorName}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {cp.trustTier}
-                    </p>
-                  </div>
-
-                  {/* RFP */}
-                  <div className="col-span-3">
-                    <p className="text-sm truncate">{cp.rfpTitle}</p>
-                  </div>
-
-                  {/* AI Score */}
-                  <div className="col-span-1 text-center">
-                    <span
-                      className={`font-bold text-sm ${
-                        cp.aiScore >= 75
-                          ? "text-green-600"
-                          : cp.aiScore >= 50
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }`}
-                    >
-                      {cp.aiScore || "-"}
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-verified" />
+                      Disbursed: {p.disbursedPct}%
                     </span>
-                  </div>
-
-                  {/* Milestones */}
-                  <div className="col-span-2 flex flex-col items-center gap-1">
-                    <div className="text-sm">
-                      <span className="font-semibold">
-                        {cp.milestonesCompleted}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {" "}
-                        / {cp.milestonesTotal}
-                      </span>
-                    </div>
-                    <div className="w-full max-w-[100px] h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          cp.completionRate >= 80
-                            ? "bg-green-500"
-                            : cp.completionRate >= 40
-                              ? "bg-amber-500"
-                              : "bg-gray-400"
-                        }`}
-                        style={{ width: `${cp.completionRate}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Award */}
-                  <div className="col-span-1 text-right">
-                    <p className="text-sm font-mono">
-                      {formatSAR(cp.awardAmount)}
-                    </p>
-                  </div>
-
-                  {/* Status */}
-                  <div className="col-span-1 text-center">
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${
-                        cp.contractStatus === "ACTIVE"
-                          ? "bg-green-100 text-green-700"
-                          : cp.contractStatus === "COMPLETED"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {cp.contractStatus}
-                    </Badge>
                   </div>
                 </div>
               ))}
@@ -399,49 +288,168 @@ export default function ImpactDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Application Funnel */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Application Funnel</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-center justify-between gap-2 py-4">
-            <FunnelStep
-              label="Received"
-              value={applicationStats.total}
-              color="bg-blue-500"
-              pct={100}
+      {/* ============ Milestone Completion Card ============ */}
+      <Card variant="neu-raised">
+        <CardContent className="p-5 pt-5 space-y-4">
+          <div className="flex items-center gap-2 text-sovereign-stone">
+            <CheckCircle2 className="w-4 h-4" />
+            <span className="text-eyebrow">MILESTONE COMPLETION</span>
+          </div>
+
+          <NeuProgress
+            value={milestoneStats.completionRate}
+            variant="gold"
+            label="Overall Completion"
+            showValue
+          />
+
+          <div className="space-y-2">
+            <MilestoneRow
+              label="Verified"
+              value={milestoneStats.verified}
+              total={milestoneStats.total}
+              variant="green"
             />
-            <FunnelArrow pct={applicationStats.total > 0 ? 100 : 0} />
-            <FunnelStep
-              label="Scored"
-              value={applicationStats.total > 0 ? applicationStats.total : 0}
-              color="bg-yellow-500"
-              pct={applicationStats.total > 0 ? 80 : 0}
+            <MilestoneRow
+              label="Evidence Submitted"
+              value={milestoneStats.evidenceSubmitted}
+              total={milestoneStats.total}
+              variant="amber"
             />
-            <FunnelArrow pct={applicationStats.total > 0 ? Math.round((applicationStats.approved / applicationStats.total) * 100) : 0} />
-            <FunnelStep
-              label="Approved"
-              value={applicationStats.approved}
-              color="bg-green-500"
-              pct={
-                applicationStats.total > 0
-                  ? Math.round(
-                      (applicationStats.approved / applicationStats.total) *
-                        100
-                    )
-                  : 0
-              }
-            />
-            <FunnelArrow />
-            <FunnelStep
-              label="Avg Score"
-              value={applicationStats.avgScore}
-              color="bg-leaf-600"
-              pct={applicationStats.avgScore}
-              isScore
+            <MilestoneRow
+              label="Pending"
+              value={milestoneStats.pending}
+              total={milestoneStats.total}
+              variant="gold"
             />
           </div>
+
+          {/* Evidence stats */}
+          <div className="pt-3 border-t border-neu-dark/60">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-sovereign-stone mb-2">Evidence Review</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
+                <p className="font-sans font-extrabold text-verified" style={{ fontSize: "26px", lineHeight: 1 }}>{evidenceStats.approved}</p>
+                <p className="text-[10px] text-sovereign-stone mt-1">Approved</p>
+              </div>
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
+                <p className="font-sans font-extrabold text-sovereign-gold" style={{ fontSize: "26px", lineHeight: 1 }}>{evidenceStats.pending}</p>
+                <p className="text-[10px] text-sovereign-stone mt-1">Pending</p>
+              </div>
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
+                <p className="font-sans font-extrabold text-critical" style={{ fontSize: "26px", lineHeight: 1 }}>{evidenceStats.rejected}</p>
+                <p className="text-[10px] text-sovereign-stone mt-1">Rejected</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ============ Contractor Performance Card ============ */}
+      <Card variant="neu-raised">
+        <CardContent className="p-5 pt-5 space-y-3">
+          <span className="text-eyebrow text-sovereign-stone">CONTRACTOR RANKINGS</span>
+
+          {contractorPerformance.length === 0 ? (
+            <p className="text-center text-sovereign-stone text-sm py-6">
+              No contractor data available yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {contractorPerformance.map((cp, idx) => (
+                <div
+                  key={idx}
+                  className="bg-neu-dark rounded-[14px] shadow-neu-inset p-4 space-y-2"
+                >
+                  {/* Name + Rank */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                          idx === 0
+                            ? "bg-sovereign-gold/20 text-sovereign-gold"
+                            : idx === 1
+                            ? "bg-sovereign-stone/20 text-sovereign-stone"
+                            : "bg-neu-base text-sovereign-stone"
+                        }`}
+                      >
+                        {idx + 1}
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-sovereign-charcoal">{cp.contractorName}</p>
+                        <p className="text-[10px] text-sovereign-stone">{cp.rfpTitle}</p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant={
+                        cp.contractStatus === "ACTIVE"
+                          ? "neu-verified"
+                          : cp.contractStatus === "COMPLETED"
+                          ? "neu-gold"
+                          : "neu"
+                      }
+                    >
+                      {cp.contractStatus}
+                    </Badge>
+                  </div>
+
+                  {/* Score + milestones */}
+                  <div className="flex items-center gap-3">
+                    <ScoreWell
+                      score={cp.aiScore || 0}
+                      size="sm"
+                      animated={false}
+                    />
+                    <div className="flex-1 space-y-1">
+                      <NeuProgress
+                        value={cp.completionRate}
+                        variant="gold"
+                        label={`Milestones ${cp.milestonesCompleted}/${cp.milestonesTotal}`}
+                        size="sm"
+                      />
+                      <p className="text-[10px] font-mono text-sovereign-stone text-right">
+                        {formatSAR(cp.awardAmount)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ============ Application Funnel Card ============ */}
+      <Card variant="neu-raised">
+        <CardContent className="p-5 pt-5 space-y-4">
+          <span className="text-eyebrow text-sovereign-stone">APPLICATION FUNNEL</span>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
+              <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "26px", lineHeight: 1 }}>
+                {applicationStats.total}
+              </p>
+              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Received</p>
+            </div>
+            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
+              <p className="font-sans font-extrabold text-verified" style={{ fontSize: "26px", lineHeight: 1 }}>
+                {applicationStats.approved}
+              </p>
+              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Approved</p>
+            </div>
+          </div>
+
+          <NeuProgress
+            value={
+              applicationStats.total > 0
+                ? Math.round((applicationStats.approved / applicationStats.total) * 100)
+                : 0
+            }
+            variant="green"
+            label="Approval Rate"
+            showValue
+            delay={200}
+          />
         </CardContent>
       </Card>
     </div>
@@ -449,101 +457,36 @@ export default function ImpactDashboardPage() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Helpers                                                             */
+/* Sub-components                                                      */
 /* ------------------------------------------------------------------ */
 
-function KPICard({
-  label,
-  value,
-  subtitle,
-}: {
-  label: string;
-  value: string;
-  subtitle?: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <p className="text-3xl font-bold mt-1 text-slate-900">{value}</p>
-        {subtitle && (
-          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function StatRow({
+function MilestoneRow({
   label,
   value,
   total,
-  dotColor,
+  variant,
 }: {
   label: string;
   value: number;
   total: number;
-  dotColor: string;
+  variant: "gold" | "green" | "amber" | "critical";
 }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
-      <span className="text-sm flex-1">{label}</span>
-      <span className="text-sm font-semibold">{value}</span>
-      <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-leaf-600 rounded-full"
-          style={{ width: `${pct}%` }}
-        />
+      <span className="text-xs text-sovereign-charcoal flex-1">{label}</span>
+      <span className="text-xs font-semibold font-mono text-sovereign-charcoal w-8 text-right">{value}</span>
+      <div className="w-20">
+        <NeuProgress value={pct} variant={variant} size="sm" />
       </div>
-      <span className="text-xs text-muted-foreground w-8 text-right">
-        {pct}%
-      </span>
+      <span className="text-[10px] text-sovereign-stone w-8 text-right font-mono">{pct}%</span>
     </div>
   );
 }
 
-function FunnelStep({
-  label,
-  value,
-  color,
-  pct,
-  isScore,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  pct: number;
-  isScore?: boolean;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-2 flex-1 min-w-[60px]">
-      <div
-        className={`w-full rounded-lg ${color} flex items-center justify-center transition-all`}
-        style={{
-          height: "60px",
-          opacity: Math.max(0.4, pct / 100),
-        }}
-      >
-        <span className="text-white font-bold text-lg">{value}</span>
-      </div>
-      <p className="text-xs text-muted-foreground text-center">{label}</p>
-      {!isScore && <p className="text-xs font-semibold">{pct}%</p>}
-    </div>
-  );
-}
-
-function FunnelArrow({ pct }: { pct?: number }) {
-  return (
-    <div className="flex flex-col items-center gap-1 hidden sm:flex">
-      <span className="text-muted-foreground text-lg">&rarr;</span>
-      {pct !== undefined && (
-        <span className="text-xs font-semibold text-muted-foreground">{pct}%</span>
-      )}
-    </div>
-  );
-}
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
 
 function formatSAR(amount: number): string {
   if (amount >= 1_000_000_000)

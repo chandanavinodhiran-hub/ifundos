@@ -10,7 +10,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        /* iFundOS Organic Biophilic Palette — Saudi Green Initiative */
+        /* iFundOS Sovereign Palette — "Bloomberg meets Saudi modern architecture" */
+        sovereign: {
+          charcoal: "#1a1714",
+          soft: "#2a2520",
+          ink: "#2d2a26",
+          stone: "#8a8275",
+          stoneLight: "#9a9488",
+          warm: "#b5ad9e",
+          parchment: "#f8f5ef",
+          cream: "#faf8f4",
+          ivory: "#fdfcfa",
+          gold: "#b8943f",
+          goldLight: "#d4c5a0",
+        },
+        /* Neumorphic surface system — tactile warm clay */
+        neu: {
+          base: "#e8e0d0",
+          light: "#f0ead9",
+          lighter: "#f5f0e3",
+          dark: "#d9d0be",
+          darker: "#cec4b0",
+        },
+        /* Semantic status colors */
+        verified: "#4a7c59",
+        amber: "#b87a3f",
+        critical: "#9c4a4a",
+        /* Environmental data viz — Saudi Green Initiative */
         leaf: {
           DEFAULT: "#059669",
           50: "#ECFDF5",
@@ -105,16 +131,31 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         xl: "calc(var(--radius) + 4px)",
-        "2xl": "calc(var(--radius) + 8px)",
+        "2xl": "18px",
+        "3xl": "24px",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        display: ["Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        serif: ["Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       boxShadow: {
         organic: "0 4px 24px -4px rgba(5, 150, 105, 0.10)",
         "organic-lg": "0 8px 40px -8px rgba(5, 150, 105, 0.16)",
         soft: "0 2px 16px 0 rgba(0, 0, 0, 0.04)",
+        sovereign: "0 1px 3px rgba(26,23,20,0.04), 0 4px 16px rgba(26,23,20,0.04)",
+        elevated: "0 2px 8px rgba(26,23,20,0.06), 0 8px 32px rgba(26,23,20,0.08)",
+        glow: "0 0 24px rgba(184,148,63,0.15)",
+        /* Neumorphic raised shadows — light from top-left */
+        "neu-raised": "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
+        "neu-raised-sm": "3px 3px 8px rgba(156,148,130,0.4), -3px -3px 8px rgba(255,250,240,0.75)",
+        "neu-raised-lg": "8px 8px 20px rgba(156,148,130,0.5), -8px -8px 20px rgba(255,250,240,0.85)",
+        /* Neumorphic inset shadows — wells, tracks, toggles */
+        "neu-inset": "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+        "neu-inset-deep": "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+        /* Neumorphic pressed — button tap state */
+        "neu-pressed": "inset 2px 2px 6px rgba(156,148,130,0.45), inset -2px -2px 6px rgba(255,250,240,0.65)",
       },
     },
   },

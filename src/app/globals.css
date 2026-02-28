@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,31 +6,31 @@
 
 @layer base {
   :root {
-    /* iFundOS Visual Identity — Palantir meets Stripe */
-    --background: 210 40% 98%;          /* #f8fafc — slate-50 */
-    --foreground: 222 47% 11%;          /* #0f172a — slate-900 */
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 160 84% 39%;             /* #059669 — leaf emerald */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 192 91% 36%;           /* #0891B2 — ocean cyan */
+    /* iFundOS Sovereign Visual Identity — "Bloomberg meets Saudi architecture" */
+    --background: 36 33% 96%;          /* #f8f5ef — parchment */
+    --foreground: 30 11% 10%;          /* #1a1714 — charcoal */
+    --card: 36 33% 98%;               /* #faf8f4 — cream */
+    --card-foreground: 30 11% 10%;
+    --popover: 36 33% 98%;
+    --popover-foreground: 30 11% 10%;
+    --primary: 42 50% 48%;             /* #b8943f — sovereign gold */
+    --primary-foreground: 36 33% 96%;
+    --secondary: 160 84% 39%;          /* #059669 — leaf (environmental context) */
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 40% 96%;               /* slate-100 */
-    --muted-foreground: 215 16% 47%;    /* slate-500 */
-    --accent: 263 70% 58%;              /* #7c3aed — violet */
-    --accent-foreground: 0 0% 100%;
+    --muted: 36 15% 90%;               /* warm muted */
+    --muted-foreground: 36 6% 50%;     /* #8a8275 — stone */
+    --accent: 42 50% 48%;              /* gold accent */
+    --accent-foreground: 36 33% 96%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;              /* slate-200 */
-    --input: 214 32% 91%;
-    --ring: 263 70% 58%;                /* violet focus ring */
+    --border: 36 15% 85%;              /* warm border */
+    --input: 36 15% 85%;
+    --ring: 42 50% 48%;                /* gold focus ring */
     --radius: 0.75rem;
 
-    /* AI accent */
-    --ai-color: 263 70% 58%;            /* violet-600 */
-    --ai-bg: 263 87% 97%;               /* violet-50 */
+    /* AI accent — sovereign gold */
+    --ai-color: 42 50% 48%;            /* gold */
+    --ai-bg: 42 40% 95%;               /* soft gold bg */
   }
 }
 
@@ -43,9 +43,97 @@
   }
 }
 
-/* Dot grid background pattern */
+/* ─── Sovereign Typography Scale ─────────────────────────────────── */
+
+/* Hero score — Spectral 72px — for AI composite scores */
+.text-hero-score {
+  font-family: 'Spectral', Georgia, serif;
+  font-size: 4.5rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Hero display — Spectral 42px — for featured numbers */
+.text-hero-display {
+  font-family: 'Spectral', Georgia, serif;
+  font-size: 2.625rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* Greeting — DM Sans 34px — for page titles */
+.text-hero-greeting {
+  font-size: 2.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #1a1714;
+}
+
+/* Eyebrow label — JetBrains Mono 11px uppercase */
+.text-eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8275;
+}
+
+/* Gold gradient text */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #b8943f 0%, #d4c5a0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Motion System ──────────────────────────────────────────────── */
+
+/* Staggered reveal for child elements */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-children > * {
+  opacity: 0;
+  animation: revealUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+
+/* Shimmer skeleton — warm tones */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0ede7 25%, #faf8f4 37%, #f0ede7 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* ─── Dot Grid — Warm ────────────────────────────────────────────── */
+
 .dot-grid-bg {
-  background-image: radial-gradient(circle, #94a3b8 0.5px, transparent 0.5px);
+  background-image: radial-gradient(circle, #8a8275 0.5px, transparent 0.5px);
   background-size: 24px 24px;
   opacity: 0.04;
   pointer-events: none;
@@ -54,14 +142,15 @@
   z-index: 0;
 }
 
-/* Breathing animation for Navigator button */
+/* ─── Navigator Breathing — Gold ─────────────────────────────────── */
+
 @keyframes breathing {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
+    box-shadow: 0 0 0 0 rgba(184, 148, 63, 0.4);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(124, 58, 237, 0);
+    box-shadow: 0 0 0 8px rgba(184, 148, 63, 0);
     transform: scale(1.05);
   }
 }
@@ -70,7 +159,8 @@
   animation: breathing 3s ease-in-out infinite;
 }
 
-/* Fade-in-up animation for status transitions */
+/* ─── Status Transition ──────────────────────────────────────────── */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -96,7 +186,8 @@
   animation: countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Sleek scrollbar — dark neutral */
+/* ─── Scrollbar — Warm Neutral ───────────────────────────────────── */
+
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -104,11 +195,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.25);
+  background: rgba(138, 130, 117, 0.25);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(138, 130, 117, 0.4);
 }
 
 /* AI monospace utility */
@@ -116,17 +207,17 @@
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-/* ─── Navigator Avatar Orb Animations ─────────────────────────────── */
+/* ─── Navigator Avatar Orb Animations — Gold ─────────────────────── */
 
 /* Idle: gentle floating/breathing */
 @keyframes orbIdle {
   0%, 100% {
     transform: scale(1) translateY(0);
-    box-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 0 40px rgba(184, 148, 63, 0.3);
   }
   50% {
     transform: scale(1.03) translateY(-4px);
-    box-shadow: 0 0 50px rgba(124, 58, 237, 0.35);
+    box-shadow: 0 0 50px rgba(184, 148, 63, 0.35);
   }
 }
 
@@ -138,11 +229,11 @@
 @keyframes orbListen {
   0%, 100% {
     transform: scale(1.1);
-    box-shadow: 0 0 60px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 0 60px rgba(184, 148, 63, 0.5);
   }
   50% {
     transform: scale(1.14);
-    box-shadow: 0 0 70px rgba(124, 58, 237, 0.6);
+    box-shadow: 0 0 70px rgba(184, 148, 63, 0.6);
   }
 }
 
@@ -154,11 +245,11 @@
 @keyframes orbThink {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 40px rgba(124, 58, 237, 0.35);
+    box-shadow: 0 0 40px rgba(184, 148, 63, 0.35);
   }
   50% {
     transform: scale(1.08);
-    box-shadow: 0 0 55px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 0 55px rgba(184, 148, 63, 0.5);
   }
 }
 
@@ -170,14 +261,14 @@
 @keyframes orbSpeak {
   0%, 100% {
     transform: scale(1) scaleX(1);
-    box-shadow: 0 0 45px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 0 45px rgba(184, 148, 63, 0.4);
   }
   25% {
     transform: scale(1.04) scaleX(1.06);
   }
   50% {
     transform: scale(1.02) scaleX(0.97);
-    box-shadow: 0 0 50px rgba(124, 58, 237, 0.45);
+    box-shadow: 0 0 50px rgba(184, 148, 63, 0.45);
   }
   75% {
     transform: scale(1.05) scaleX(1.03);
@@ -186,4 +277,322 @@
 
 .animate-orb-speak {
   animation: orbSpeak 1.2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NEUMORPHIC DESIGN SYSTEM — Mobile-First Tactile UI
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Neumorphic CSS Custom Properties ────────────────────────────── */
+:root {
+  --neu-base: #e8e0d0;
+  --neu-light: #f0ead9;
+  --neu-lighter: #f5f0e3;
+  --neu-dark: #d9d0be;
+  --neu-darker: #cec4b0;
+  --neu-shadow-dark: rgba(156,148,130,0.45);
+  --neu-shadow-light: rgba(255,250,240,0.8);
+  --gold-glow: rgba(184,148,63,0.35);
+  --gold-pale: rgba(184,148,63,0.12);
+}
+
+/* ─── Neumorphic Press Animation ──────────────────────────────────── */
+/* Apply to any tappable raised element for tactile feedback */
+.neu-press {
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+.neu-press:active {
+  box-shadow: inset 2px 2px 6px rgba(156,148,130,0.45),
+              inset -2px -2px 6px rgba(255,250,240,0.65) !important;
+  transform: scale(0.98) !important;
+}
+
+/* ─── Score Well — Inset circle for score numbers ─────────────────── */
+.score-well {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  box-shadow: inset 4px 4px 12px rgba(140,132,115,0.5),
+              inset -4px -4px 12px rgba(255,250,240,0.6) !important;
+  border: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--neu-base);
+}
+.score-well-sm {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+.score-well-lg {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+}
+
+/* ─── AI Brief Panel — Dark RECESSED embedded screen ─────────────── */
+.ai-brief-panel {
+  background: #1a1714;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow:
+    inset 3px 3px 10px rgba(0,0,0,0.4),
+    inset -2px -2px 8px rgba(50,45,38,0.3),
+    0 1px 0 rgba(245,240,227,0.15);
+  color: #f0ead9;
+  border: none;
+}
+
+/* ─── Accent Bars — Left border for AI verdict colors ─────────────── */
+.accent-bar-gold    { border-left: 4px solid #b8943f; }
+.accent-bar-amber   { border-left: 4px solid #b87a3f; }
+.accent-bar-critical { border-left: 4px solid #9c4a4a; }
+.accent-bar-verified { border-left: 4px solid #4a7c59; }
+
+/* ─── Neumorphic Progress Track ───────────────────────────────────── */
+.neu-track {
+  box-shadow: inset 2px 2px 5px rgba(140,132,115,0.5),
+              inset -2px -2px 5px rgba(255,250,240,0.5);
+  border-radius: 999px;
+  background: var(--neu-darker);
+  overflow: hidden;
+}
+/* Dimension bar track — deeper groove for score dimension bars */
+.dimension-bar-track {
+  box-shadow: inset 3px 3px 6px rgba(140,132,115,0.55),
+              inset -2px -2px 5px rgba(255,250,240,0.4);
+  border-radius: 999px;
+  background: var(--neu-darker);
+  overflow: hidden;
+}
+.dimension-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b8943f, #d4b665);
+  box-shadow: 0 0 6px rgba(184,148,63,0.3);
+  transition: width 0.8s ease-out;
+}
+
+/* ─── Neumorphic Score Display Typography ─────────────────────────── */
+.text-score-display {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #b8943f;
+}
+.text-score-display-lg {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #b8943f;
+}
+
+/* ─── Neumorphic Animations ───────────────────────────────────────── */
+
+/* Bottom sheet slide up */
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up-sheet {
+  animation: slideUpSheet 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Gold pulse on decision */
+@keyframes goldPulse {
+  0% { box-shadow: 0 0 0 0 rgba(184,148,63,0.5); }
+  70% { box-shadow: 0 0 0 16px rgba(184,148,63,0); }
+  100% { box-shadow: 0 0 0 0 rgba(184,148,63,0); }
+}
+.animate-gold-pulse {
+  animation: goldPulse 0.6s ease-out;
+}
+
+/* Critical pulse on reject */
+@keyframes criticalPulse {
+  0% { box-shadow: 0 0 0 0 rgba(156,74,74,0.5); }
+  70% { box-shadow: 0 0 0 16px rgba(156,74,74,0); }
+  100% { box-shadow: 0 0 0 0 rgba(156,74,74,0); }
+}
+.animate-critical-pulse {
+  animation: criticalPulse 0.6s ease-out;
+}
+
+/* Gold ember glow for AI indicators */
+@keyframes emberGlow {
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 4px rgba(184,148,63,0.3); }
+  50% { opacity: 1; box-shadow: 0 0 8px rgba(184,148,63,0.6); }
+}
+.animate-ember {
+  animation: emberGlow 2s ease-in-out infinite;
+}
+
+/* Lifecycle track node pulse — breathing gold fill */
+@keyframes lcNodePulse {
+  0%, 100% { opacity: 0.7; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px rgba(184,148,63,0.5); }
+}
+
+/* Card slide out (left) for queue clearing */
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+.animate-slide-out-left {
+  animation: slideOutLeft 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Card collapse height */
+@keyframes collapseHeight {
+  from { max-height: var(--card-height); margin-bottom: 14px; opacity: 1; }
+  to { max-height: 0; margin-bottom: 0; opacity: 0; padding: 0; overflow: hidden; }
+}
+
+/* Staggered bar reveal for score dimensions */
+.stagger-bars > *:nth-child(1) { transition-delay: 0ms; }
+.stagger-bars > *:nth-child(2) { transition-delay: 120ms; }
+.stagger-bars > *:nth-child(3) { transition-delay: 240ms; }
+.stagger-bars > *:nth-child(4) { transition-delay: 360ms; }
+
+/* ─── Navigator Orb Pulse (tab bar center) ───────────────────────── */
+@keyframes orbPulse {
+  0%, 100% { transform: scale(0.92); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+.animate-orb-pulse {
+  animation: orbPulse 2.5s ease-in-out infinite;
+}
+
+/* ─── Left Accent Bar (via pseudo-element) ───────────────────────── */
+/* Pipeline cards, RFP cards, Pulse cards — 4px vertical left accent */
+.accent-left-gold,
+.accent-left-amber,
+.accent-left-critical,
+.accent-left-green {
+  position: relative;
+  overflow: hidden;
+}
+.accent-left-gold::before,
+.accent-left-amber::before,
+.accent-left-critical::before,
+.accent-left-green::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 0 3px 3px 0;
+}
+.accent-left-gold::before {
+  background: #b8943f;
+  box-shadow: 0 0 8px rgba(184,148,63,0.35);
+}
+.accent-left-amber::before {
+  background: #b87a3f;
+  box-shadow: 0 0 6px rgba(184,122,63,0.3);
+}
+.accent-left-critical::before {
+  background: #9c4a4a;
+  box-shadow: 0 0 6px rgba(156,74,74,0.25);
+}
+.accent-left-green::before {
+  background: #4a7c59;
+  box-shadow: 0 0 6px rgba(74,124,89,0.3);
+}
+
+/* ─── Inset badge shadow for neumorphic badges ─────────────────── */
+.neu-badge-inset {
+  box-shadow: inset 2px 2px 5px rgba(156,148,130,0.35),
+              inset -2px -2px 5px rgba(255,250,240,0.6) !important;
+  border: none !important;
+}
+
+/* ─── Card Exit Animation ────────────────────────────────────────── */
+.card-exiting {
+  opacity: 0;
+  transform: translateX(-120%);
+  max-height: 0;
+  margin-bottom: 0;
+  transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Undo Toast ─────────────────────────────────────────────────── */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.undo-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1714;
+  border-radius: 16px;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 200;
+  max-width: calc(100% - 48px);
+  animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.undo-toast .toast-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.undo-toast .toast-icon.icon-success {
+  background: rgba(74, 124, 89, 0.2);
+}
+.undo-toast .toast-icon.icon-reject {
+  background: rgba(156, 74, 74, 0.2);
+}
+.undo-toast .toast-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f0ead9;
+  flex: 1;
+}
+.undo-toast .undo-btn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b8943f;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.undo-toast .undo-btn:active {
+  background: rgba(184, 148, 63, 0.1);
+}
+
+/* ─── Empty State Icon Well ──────────────────────────────────────── */
+.empty-icon-well {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: var(--neu-base);
+  box-shadow: inset 4px 4px 12px rgba(140,132,115,0.5),
+              inset -4px -4px 12px rgba(255,250,240,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+/* ─── Safe Area for Bottom Tab Bar ────────────────────────────────── */
+.pb-safe {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }

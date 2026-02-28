@@ -1,30 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { NeuProgress } from "@/components/ui/neu-progress";
+import { NeuToggle } from "@/components/ui/neu-toggle";
+import { ScoreWell } from "@/components/ui/score-well";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Loader2,
-  FileText,
+  Search,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  Bell,
+  Clock,
+  Check,
   ClipboardList,
   ExternalLink,
-  CheckCircle2,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useNavigator } from "@/components/navigator/navigator-context";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -37,6 +32,8 @@ interface ApplicationData {
   proposedBudget: number;
   compositeScore: number | null;
   dimensionScores: string | null;
+  confidenceLevels: string | null;
+  aiFindings: string | null;
   questionnaireStatus: string;
   submittedAt: string | null;
   createdAt: string;
@@ -44,10 +41,14 @@ interface ApplicationData {
   rfp: {
     title: string;
     deadline: string | null;
+    status: string;
   };
   decisionPacket: {
     recommendation: string | null;
     executiveSummary: string | null;
+    narrative: string | null;
+    strengths: string | null;
+    risks: string | null;
   } | null;
 }
 
@@ -55,112 +56,103 @@ interface ApplicationData {
 /* Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
-  SUBMITTED: "bg-blue-100 text-blue-800 border-blue-200",
-  SCORING: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  IN_REVIEW: "bg-orange-100 text-orange-800 border-orange-200",
-  SHORTLISTED: "bg-leaf-100 text-leaf-800 border-leaf-200",
-  QUESTIONNAIRE_PENDING: "bg-purple-100 text-purple-800 border-purple-200",
-  QUESTIONNAIRE_SUBMITTED: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  APPROVED: "bg-leaf-100 text-leaf-800 border-leaf-200",
-  REJECTED: "bg-red-100 text-red-800 border-red-200",
-};
+const LIFECYCLE_NODES = ["Submitted", "Scored", "Review", "Decision"] as const;
 
-const PIPELINE_STEPS = [
-  { key: "SUBMITTED", label: "Submitted" },
-  { key: "SCORING", label: "AI Scored" },
-  { key: "IN_REVIEW", label: "In Review" },
-  { key: "SHORTLISTED", label: "Shortlisted" },
-  { key: "QUESTIONNAIRE", label: "Questionnaire" },
-  { key: "DECISION", label: "Decision" },
-];
+type NodeState = "completed" | "current" | "scoring" | "future" | "awarded" | "rejected";
 
-function getStepIndex(status: string): number {
+function getNodeStates(status: string): NodeState[] {
   switch (status) {
-    case "DRAFT": return -1;
-    case "SUBMITTED": return 0;
-    case "SCORING": return 1;
-    case "IN_REVIEW": return 2;
-    case "SHORTLISTED": return 3;
+    case "DRAFT":
+      return ["future", "future", "future", "future"];
+    case "SUBMITTED":
+      return ["completed", "future", "future", "future"];
+    case "SCORING":
+      return ["completed", "scoring", "future", "future"];
+    case "IN_REVIEW":
+    case "SHORTLISTED":
     case "QUESTIONNAIRE_PENDING":
-    case "QUESTIONNAIRE_SUBMITTED": return 4;
+    case "QUESTIONNAIRE_SUBMITTED":
+      return ["completed", "completed", "current", "future"];
     case "APPROVED":
-    case "REJECTED": return 5;
-    default: return 0;
+      return ["completed", "completed", "completed", "awarded"];
+    case "REJECTED":
+      return ["completed", "completed", "completed", "rejected"];
+    default:
+      return ["completed", "future", "future", "future"];
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Helpers                                                             */
-/* ------------------------------------------------------------------ */
-
-function formatSAR(amount: number): string {
-  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B SAR`;
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M SAR`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K SAR`;
-  return `${amount} SAR`;
+function getAccent(status: string): string {
+  if (["APPROVED"].includes(status)) return "accent-left-green";
+  if (["REJECTED"].includes(status)) return "accent-left-critical";
+  if (["QUESTIONNAIRE_PENDING"].includes(status)) return "accent-left-amber";
+  if (["SCORING"].includes(status)) return "accent-left-gold";
+  return "accent-left-gold";
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return "bg-green-500";
-  if (score >= 60) return "bg-leaf-500";
-  if (score >= 40) return "bg-yellow-500";
-  return "bg-red-500";
+function getStatusBadge(status: string): { label: string; variant: "neu-gold" | "neu-verified" | "neu-amber" | "neu-critical" | "neu" } {
+  switch (status) {
+    case "SUBMITTED": return { label: "Submitted", variant: "neu" };
+    case "SCORING": return { label: "AI Scoring", variant: "neu-gold" };
+    case "IN_REVIEW": return { label: "In Review", variant: "neu-gold" };
+    case "SHORTLISTED": return { label: "Shortlisted", variant: "neu-verified" };
+    case "QUESTIONNAIRE_PENDING": return { label: "Questionnaire", variant: "neu-amber" };
+    case "QUESTIONNAIRE_SUBMITTED": return { label: "Questionnaire Done", variant: "neu-verified" };
+    case "APPROVED": return { label: "Approved", variant: "neu-verified" };
+    case "REJECTED": return { label: "Not Selected", variant: "neu-critical" };
+    default: return { label: status.replace(/_/g, " "), variant: "neu" };
+  }
+}
+
+function safeJSON<T>(str: string | null | undefined, fallback: T): T {
+  if (!str) return fallback;
+  try { return JSON.parse(str) as T; } catch { return fallback; }
 }
 
 function getRelativeTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = Date.now();
-  const diffMs = now - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "today";
-  if (diffDays === 1) return "yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 14) return "1 week ago";
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 60) return "1 month ago";
-  return `${Math.floor(diffDays / 30)} months ago`;
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days}d ago`;
+  if (days < 14) return "1 week ago";
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function MyApplicationsPage() {
+export default function ContractorApplicationsPage() {
   const router = useRouter();
+  const { setMode } = useNavigator();
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState("active");
 
   useEffect(() => {
-    async function fetchApplications() {
-      try {
-        const res = await fetch("/api/applications");
-        if (!res.ok) throw new Error("Failed to fetch applications");
-        const data = await res.json();
-        setApplications(data.applications || []);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load applications"
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchApplications();
+    fetch("/api/applications")
+      .then((r) => { if (!r.ok) throw new Error("Failed"); return r.json(); })
+      .then((data) => setApplications(data.applications || []))
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed"))
+      .finally(() => setLoading(false));
   }, []);
 
-  const pendingQuestionnaires = applications.filter(
-    (app) => app.questionnaireStatus === "PENDING"
-  );
+  const filtered = useMemo(() => {
+    if (filter === "active") {
+      return applications.filter((a) => !["DRAFT", "REJECTED", "APPROVED"].includes(a.status));
+    }
+    return applications;
+  }, [applications, filter]);
+
+  const activeCount = applications.filter((a) => !["DRAFT", "REJECTED"].includes(a.status)).length;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
@@ -168,382 +160,459 @@ export default function MyApplicationsPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <AlertCircle className="w-8 h-8 text-red-500" />
-        <p className="text-muted-foreground">{error}</p>
+        <AlertCircle className="w-8 h-8 text-critical" />
+        <p className="text-sovereign-stone text-sm">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">My Applications</h1>
-        <p className="text-muted-foreground mt-1">
-          Track the status of your submitted proposals
-        </p>
+    <div className="space-y-5 max-w-2xl mx-auto pb-[100px] md:pb-0">
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "#b8943f" }}>
+            Applications
+          </p>
+          <h1 className="text-xl font-extrabold text-sovereign-charcoal">
+            My Applications
+          </h1>
+        </div>
+        <Badge variant="neu" className="text-[11px] font-bold mt-1">
+          {activeCount} active
+        </Badge>
       </div>
 
-      {/* Pending Questionnaire Alert */}
-      {pendingQuestionnaires.length > 0 && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Bell className="w-5 h-5 text-purple-600 mt-0.5 animate-pulse shrink-0" />
-            <div className="flex-1">
-              <p className="font-medium text-purple-800">
-                Action Required: {pendingQuestionnaires.length} questionnaire
-                {pendingQuestionnaires.length > 1 ? "s" : ""} pending
-              </p>
-              <div className="mt-2 space-y-1.5">
-                {pendingQuestionnaires.map((app) => (
-                  <div
-                    key={app.id}
-                    className="flex items-center justify-between"
-                  >
-                    <p className="text-sm text-purple-700">
-                      {app.rfp.title}
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-purple-700 border-purple-300 hover:bg-purple-100"
-                      onClick={() =>
-                        router.push(
-                          `/contractor/applications/${app.id}/questionnaire`
-                        )
-                      }
-                    >
-                      <ClipboardList className="w-3.5 h-3.5 mr-1" />
-                      Complete Questionnaire
-                    </Button>
-                  </div>
-                ))}
-              </div>
+      {/* ── Toggle ─────────────────────────────────────────────── */}
+      <NeuToggle
+        options={[
+          { label: "Active", value: "active", count: activeCount },
+          { label: "All", value: "all", count: applications.length },
+        ]}
+        value={filter}
+        onChange={setFilter}
+        className="w-full"
+      />
+
+      {/* ── Card Stack ─────────────────────────────────────────── */}
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title={filter === "active" ? "No active applications" : "No applications yet"}
+          description={
+            filter === "active"
+              ? "All your applications have been decided. Switch to \"All\" to see them."
+              : "Browse open RFPs to submit your first proposal."
+          }
+          action={
+            filter === "all" ? (
+              <Button variant="neu-gold" onClick={() => router.push("/contractor/rfps")}>
+                Browse Opportunities
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((app) => (
+            <ApplicationCard
+              key={app.id}
+              app={app}
+              isExpanded={expandedId === app.id}
+              onToggle={() => setExpandedId(expandedId === app.id ? null : app.id)}
+              onNavigate={(href) => router.push(href)}
+              onChat={() => setMode("chat")}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Application Card                                                    */
+/* ------------------------------------------------------------------ */
+
+function ApplicationCard({
+  app,
+  isExpanded,
+  onToggle,
+  onNavigate,
+  onChat,
+}: {
+  app: ApplicationData;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onNavigate: (href: string) => void;
+  onChat: () => void;
+}) {
+  const nodeStates = getNodeStates(app.status);
+  const statusBadge = getStatusBadge(app.status);
+  const accent = getAccent(app.status);
+  const scores = safeJSON<Record<string, number>>(app.dimensionScores, {});
+  const strengths = safeJSON<string[]>(app.decisionPacket?.strengths, []);
+  const risks = safeJSON<string[]>(app.decisionPacket?.risks, []);
+  const isDecided = ["APPROVED", "REJECTED"].includes(app.status);
+
+  return (
+    <Card
+      variant="neu-raised"
+      className={cn(
+        "overflow-hidden transition-all duration-300",
+        accent,
+        !isExpanded && !isDecided && "neu-press",
+        isDecided && app.status === "REJECTED" && "opacity-[0.45]"
+      )}
+    >
+      {/* ── Collapsed top section ── */}
+      <div className="p-4 cursor-pointer" onClick={onToggle}>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[15px] text-sovereign-charcoal leading-snug" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              {app.rfp.title}
+            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant={statusBadge.variant} className="text-[10px] neu-badge-inset">
+                {statusBadge.label}
+              </Badge>
+              {app.submittedAt && (
+                <span className="text-[11px] font-mono text-sovereign-stone">
+                  {getRelativeTime(app.submittedAt)}
+                </span>
+              )}
             </div>
+          </div>
+          <div className="shrink-0">
+            {app.compositeScore != null ? (
+              <ScoreWell score={app.compositeScore} size="sm" animated />
+            ) : app.status === "SCORING" ? (
+              <div className="score-well-sm">
+                <Loader2 className="w-4 h-4 animate-spin text-sovereign-gold" />
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {/* ── Lifecycle Track ── */}
+        <div className="mt-4 mb-1">
+          <div className="flex items-center justify-between px-1">
+            {LIFECYCLE_NODES.map((label, idx) => {
+              const state = nodeStates[idx];
+              return (
+                <div key={label} className="flex items-center" style={{ flex: idx < LIFECYCLE_NODES.length - 1 ? "1 1 0" : "0 0 auto" }}>
+                  {/* Node */}
+                  <div className="flex flex-col items-center" style={{ width: 32 }}>
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center transition-all relative",
+                      )}
+                      style={nodeStyle(state)}
+                    >
+                      {(state === "completed" || state === "awarded") && (
+                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                      )}
+                      {(state === "current" || state === "scoring") && (
+                        <div
+                          className="rounded-full"
+                          style={{
+                            position: "absolute",
+                            top: 6,
+                            left: 6,
+                            right: 6,
+                            bottom: 6,
+                            background: "#b8943f",
+                            boxShadow: "0 0 10px rgba(184,148,63,0.35)",
+                            animation: state === "scoring" ? "lcNodePulse 1.2s ease-in-out infinite" : "lcNodePulse 2s ease-in-out infinite",
+                          }}
+                        />
+                      )}
+                      {state === "future" && (
+                        <div
+                          className="rounded-full"
+                          style={{
+                            position: "absolute",
+                            top: 9,
+                            left: 9,
+                            right: 9,
+                            bottom: 9,
+                            background: "#d9d0be",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      )}
+                      {state === "rejected" && (
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#9c4a4a" }} />
+                      )}
+                    </div>
+                    <span
+                      className="text-[9px] font-semibold uppercase tracking-wide mt-1.5 text-center leading-none"
+                      style={{
+                        color: state === "completed" || state === "awarded" ? "#4a7c59"
+                          : state === "current" || state === "scoring" ? "#b8943f"
+                          : state === "rejected" ? "#9c4a4a"
+                          : "#9a9488",
+                      }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                  {/* Connecting line */}
+                  {idx < LIFECYCLE_NODES.length - 1 && (
+                    <div
+                      className="h-[3px] flex-1 mx-1 rounded-full"
+                      style={lineStyle(nodeStates[idx], nodeStates[idx + 1])}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Score row ── */}
+      {app.compositeScore != null && !isExpanded && (
+        <div className="mx-4 mb-3">
+          <div className="flex items-center justify-between px-3 py-2 rounded-[18px]" style={{ background: "#e8e0d0", boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)" }}>
+            <div className="flex items-center gap-2">
+              <span className="text-[24px] font-extrabold font-sans" style={{ color: "#b8943f" }}>
+                {Math.round(app.compositeScore)}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-sovereign-stone">
+                AI Score
+              </span>
+            </div>
+            {app.submittedAt && (
+              <span className="text-[11px] font-mono text-sovereign-stone">
+                {new Date(app.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </span>
+            )}
           </div>
         </div>
       )}
 
-      {/* Applications Table */}
-      {applications.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground">
-              No applications yet
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Browse open RFPs to submit your first proposal
-            </p>
-            <Button
-              className="mt-4 bg-leaf-600 hover:bg-leaf-700 text-white"
-              onClick={() => router.push("/contractor/rfps")}
-            >
-              Browse RFPs
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="w-5 h-5 text-leaf-600" />
-              Applications ({applications.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>RFP Title</TableHead>
-                  <TableHead className="hidden sm:table-cell">Submitted</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">AI Score</TableHead>
-                  <TableHead className="hidden sm:table-cell">Questionnaire</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {applications.map((app) => {
-                  const isExpanded = expandedId === app.id;
-                  const rawDate = app.submittedAt || app.createdAt;
-                  const submittedDate = rawDate
-                    ? new Date(rawDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "—";
-                  const relativeTime = rawDate ? getRelativeTime(rawDate) : null;
-                  const stepIndex = getStepIndex(app.status);
+      {/* ── Expanded content ── */}
+      <div
+        className={cn("overflow-hidden transition-all ease-out", isExpanded ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0")}
+        style={{ transitionDuration: "0.35s" }}
+      >
+        <div className="border-t border-neu-dark/30 mx-4" />
+        <div className="px-4 pb-5 pt-4 space-y-4">
 
-                  return (
-                    <TableRow key={app.id} className="group">
-                      <TableCell>
-                        <button
-                          className="text-left w-full"
-                          onClick={() =>
-                            setExpandedId(isExpanded ? null : app.id)
-                          }
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-slate-900">
-                              {app.rfp.title}
-                            </span>
-                          </div>
-
-                          {/* Expanded content */}
-                          {isExpanded && (
-                            <div className="mt-3 space-y-4 text-sm">
-                              <Separator />
-
-                              {/* Pipeline Status Stepper */}
-                              <div className="py-2">
-                                <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Pipeline Status</p>
-                                <div className="flex items-center gap-0">
-                                  {PIPELINE_STEPS.map((step, idx) => {
-                                    const isCompleted = idx < stepIndex;
-                                    const isCurrent = idx === stepIndex;
-                                    const isFuture = idx > stepIndex;
-                                    return (
-                                      <div key={step.key} className="flex items-center">
-                                        <div className="flex flex-col items-center gap-1">
-                                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                                            isCompleted ? "bg-green-500 text-white" :
-                                            isCurrent ? "bg-ocean-500 text-white ring-2 ring-ocean-200" :
-                                            "bg-gray-200 text-gray-400"
-                                          }`}>
-                                            {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
-                                          </div>
-                                          <span className={`text-[10px] text-center leading-tight max-w-[60px] ${
-                                            isCurrent ? "font-semibold text-ocean-700" :
-                                            isCompleted ? "text-green-600" :
-                                            "text-gray-400"
-                                          }`}>
-                                            {step.label}
-                                          </span>
-                                        </div>
-                                        {idx < PIPELINE_STEPS.length - 1 && (
-                                          <div className={`w-6 h-0.5 mx-0.5 mt-[-14px] ${
-                                            idx < stepIndex ? "bg-green-400" :
-                                            isFuture ? "bg-gray-200" : "bg-ocean-300"
-                                          }`} />
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-
-                              {/* Questionnaire CTA */}
-                              {app.questionnaireStatus === "PENDING" && (
-                                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-center gap-3">
-                                  <Bell className="w-4 h-4 text-purple-600 animate-pulse shrink-0" />
-                                  <div className="flex-1">
-                                    <p className="font-medium text-purple-800">
-                                      You&apos;ve been shortlisted! Complete the
-                                      interview questionnaire.
-                                    </p>
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    className="bg-purple-600 hover:bg-purple-700 text-white shrink-0"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      router.push(
-                                        `/contractor/applications/${app.id}/questionnaire`
-                                      );
-                                    }}
-                                  >
-                                    <ClipboardList className="w-3.5 h-3.5 mr-1" />
-                                    Start Questionnaire
-                                  </Button>
-                                </div>
-                              )}
-
-                              {/* Application Details */}
-                              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                                <p>
-                                  <span className="text-muted-foreground">
-                                    Proposed Budget:
-                                  </span>{" "}
-                                  <span className="font-mono">
-                                    {formatSAR(app.proposedBudget)}
-                                  </span>
-                                </p>
-                                {app.rfp.deadline && (
-                                  <p>
-                                    <span className="text-muted-foreground">
-                                      RFP Deadline:
-                                    </span>{" "}
-                                    {new Date(
-                                      app.rfp.deadline
-                                    ).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                    })}
-                                  </p>
-                                )}
-                                {app.compositeScore !== null && (
-                                  <p>
-                                    <span className="text-muted-foreground">
-                                      AI Composite Score:
-                                    </span>{" "}
-                                    <span className="font-bold">
-                                      {app.compositeScore.toFixed(1)}
-                                    </span>
-                                    /100
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Decision Packet */}
-                              {app.decisionPacket && (
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-1">
-                                  <p className="font-medium text-blue-800 text-xs uppercase tracking-wide">
-                                    Committee Recommendation
-                                  </p>
-                                  {app.decisionPacket.recommendation && (
-                                    <Badge
-                                      variant="outline"
-                                      className={
-                                        app.decisionPacket.recommendation ===
-                                        "RECOMMEND"
-                                          ? "bg-leaf-100 text-leaf-800 border-leaf-200"
-                                          : app.decisionPacket
-                                              .recommendation ===
-                                            "DO_NOT_RECOMMEND"
-                                          ? "bg-red-100 text-red-800 border-red-200"
-                                          : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                                      }
-                                    >
-                                      {app.decisionPacket.recommendation.replace(
-                                        /_/g,
-                                        " "
-                                      )}
-                                    </Badge>
-                                  )}
-                                  {app.decisionPacket.executiveSummary && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {app.decisionPacket.executiveSummary
-                                        .length > 200
-                                        ? app.decisionPacket.executiveSummary.slice(
-                                            0,
-                                            200
-                                          ) + "..."
-                                        : app.decisionPacket.executiveSummary}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(
-                                    `/contractor/rfps/${app.rfpId}`
-                                  );
-                                }}
-                              >
-                                <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                                View RFP
-                              </Button>
-                            </div>
-                          )}
-                        </button>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap hidden sm:table-cell">
-                        <div>
-                          <span>{submittedDate}</span>
-                          {relativeTime && (
-                            <span className="text-xs text-muted-foreground block">({relativeTime})</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={`${
-                            STATUS_COLORS[app.status] || ""
-                          } ${
-                            app.status === "SCORING" ? "animate-pulse" : ""
-                          }`}
-                        >
-                          {app.status.replace(/_/g, " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {app.compositeScore !== null ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm font-medium">
-                              {app.compositeScore.toFixed(0)}
-                            </span>
-                            <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${getScoreColor(
-                                  app.compositeScore
-                                )}`}
-                                style={{
-                                  width: `${Math.min(
-                                    app.compositeScore,
-                                    100
-                                  )}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            —
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        {app.questionnaireStatus === "NOT_SENT" ? (
-                          <span className="text-xs text-gray-400">Not sent</span>
-                        ) : app.questionnaireStatus === "PENDING" ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-amber-100 text-amber-800 border-amber-200"
-                          >
-                            PENDING
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-leaf-100 text-leaf-800 border-leaf-200"
-                          >
-                            {app.questionnaireStatus.replace(/_/g, " ")}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() =>
-                            setExpandedId(isExpanded ? null : app.id)
-                          }
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          {isExpanded ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+          {/* AI Feedback Panel — dark recessed screen */}
+          {(app.decisionPacket?.executiveSummary || app.decisionPacket?.narrative) && (
+            <div className="ai-brief-panel">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold animate-ember" />
+                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "#b8943f", textTransform: "uppercase" }}>
+                    AI Feedback
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onChat(); }}
+                  className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer"
+                  style={{ background: "#2a2520", boxShadow: "2px 2px 6px rgba(0,0,0,0.5), -2px -2px 6px rgba(60,55,48,0.3)" }}
+                >
+                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)", boxShadow: "0 0 8px rgba(184,148,63,0.35)" }} />
+                </button>
+              </div>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "#f0ead9", marginBottom: "8px" }}>
+                {contractorFeedbackTitle(app.decisionPacket?.recommendation, app.compositeScore)}
+              </p>
+              <p style={{ fontSize: "13px", fontWeight: 400, color: "#9a9488", lineHeight: 1.8 }}>
+                {contractorFeedbackBody(app.decisionPacket?.executiveSummary, app.decisionPacket?.narrative, app.compositeScore)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          )}
+
+          {/* Fallback AI feedback when no decision packet */}
+          {!app.decisionPacket?.executiveSummary && !app.decisionPacket?.narrative && app.compositeScore != null && (
+            <div className="ai-brief-panel">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold animate-ember" />
+                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "#b8943f", textTransform: "uppercase" as const }}>
+                    AI Feedback
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onChat(); }}
+                  className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer"
+                  style={{ background: "#2a2520", boxShadow: "2px 2px 6px rgba(0,0,0,0.5), -2px -2px 6px rgba(60,55,48,0.3)" }}
+                >
+                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)", boxShadow: "0 0 8px rgba(184,148,63,0.35)" }} />
+                </button>
+              </div>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "#f0ead9", marginBottom: "8px" }}>
+                {contractorFeedbackTitle(null, app.compositeScore)}
+              </p>
+              <p style={{ fontSize: "13px", fontWeight: 400, color: "#9a9488", lineHeight: 1.8 }}>
+                {contractorFeedbackBody(null, null, app.compositeScore)}
+              </p>
+            </div>
+          )}
+
+          {/* Score Dimension Bars */}
+          {Object.keys(scores).length > 0 && (
+            <div className="stagger-bars space-y-2.5">
+              {[
+                { key: "procurement", label: "Procurement", delay: 0 },
+                { key: "vision", label: "Vision", delay: 120 },
+                { key: "viability", label: "Viability", delay: 240 },
+                { key: "impact", label: "Impact", delay: 360 },
+              ].map((dim) => (
+                <NeuProgress
+                  key={dim.key}
+                  value={scores[dim.key] ?? 0}
+                  label={dim.label}
+                  showValue
+                  delay={dim.delay}
+                  variant={scores[dim.key] >= 75 ? "gold" : scores[dim.key] >= 50 ? "amber" : "critical"}
+                  size="sm"
+                  groove
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Strengths & Areas to Strengthen */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {strengths.length > 0 && (
+              <div className="accent-bar-verified pl-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#4a7c59" }}>
+                  Strengths
+                </p>
+                {strengths.slice(0, 3).map((s, i) => (
+                  <p key={i} className="text-xs text-sovereign-stone leading-relaxed">&bull; {s}</p>
+                ))}
+              </div>
+            )}
+            {risks.length > 0 && (
+              <div className="accent-bar-amber pl-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#b87a3f" }}>
+                  Areas to Strengthen
+                </p>
+                {risks.slice(0, 3).map((r, i) => (
+                  <p key={i} className="text-xs text-sovereign-stone leading-relaxed">&bull; {r}</p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            {(app.questionnaireStatus === "PENDING" || app.status === "QUESTIONNAIRE_PENDING") && (
+              <Button
+                variant="neu-gold"
+                className="flex-1"
+                onClick={(e) => { e.stopPropagation(); onNavigate(`/contractor/applications/${app.id}/questionnaire`); }}
+              >
+                <ClipboardList className="w-4 h-4 mr-1.5" />
+                Complete Questionnaire
+              </Button>
+            )}
+            <Button
+              variant="neu-outline"
+              className="flex-1"
+              onClick={(e) => { e.stopPropagation(); onNavigate(`/contractor/rfps/${app.rfpId}`); }}
+            >
+              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+              View RFP
+            </Button>
+          </div>
+
+          {/* Expected timeline hint */}
+          {!isDecided && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl shadow-neu-inset bg-neu-base">
+              <Clock className="w-3.5 h-3.5 text-sovereign-stone" />
+              <span className="text-[11px] text-sovereign-stone">
+                Typically 5–10 business days for review
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Visual helpers                                                      */
+/* ------------------------------------------------------------------ */
+
+function nodeStyle(state: NodeState): React.CSSProperties {
+  switch (state) {
+    case "completed":
+    case "awarded":
+      return { background: "#4a7c59" };
+    case "current":
+    case "scoring":
+      return {
+        position: "relative",
+        background: "#e8e0d0",
+        boxShadow: "3px 3px 8px rgba(156,148,130,0.4), -3px -3px 8px rgba(255,250,240,0.75)",
+      };
+    case "rejected":
+      return {
+        background: "#e8e0d0",
+        boxShadow: "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+      };
+    case "future":
+    default:
+      return {
+        background: "#e8e0d0",
+        boxShadow: "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+        position: "relative",
+      };
+  }
+}
+
+function lineStyle(from: NodeState, to: NodeState): React.CSSProperties {
+  if (from === "completed" && (to === "completed" || to === "awarded")) {
+    return { background: "rgba(74,124,89,0.6)" };
+  }
+  if (from === "completed" && (to === "current" || to === "scoring")) {
+    return { background: "linear-gradient(to right, rgba(74,124,89,0.6), #b8943f)" };
+  }
+  if (from === "completed" && to === "rejected") {
+    return { background: "linear-gradient(to right, rgba(74,124,89,0.6), #9c4a4a)" };
+  }
+  return {
+    background: "#e8e0d0",
+    boxShadow: "inset 1px 1px 3px rgba(156,148,130,0.3), inset -1px -1px 3px rgba(255,250,240,0.5)",
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Contractor-specific AI feedback copy                                */
+/* ------------------------------------------------------------------ */
+
+function contractorFeedbackTitle(rec: string | null | undefined, score: number | null): string {
+  if (!rec && score) {
+    if (score >= 75) return "Competitive application with strong scores";
+    if (score >= 50) return "Solid application — room to grow";
+    return "Application received — opportunities for improvement";
+  }
+  if (rec === "RECOMMEND") return "Strong application — well positioned";
+  if (rec === "RECOMMEND_WITH_CONDITIONS") return "Competitive application with room to grow";
+  if (rec === "DO_NOT_RECOMMEND") return "Application received — here's what to focus on next time";
+  return "Application under review";
+}
+
+function contractorFeedbackBody(
+  summary: string | null | undefined,
+  narrative: string | null | undefined,
+  score: number | null,
+): string {
+  // Use the executive summary if available, but keep it constructive
+  const text = summary || narrative || "";
+  if (text) {
+    // Truncate to ~250 chars for mobile readability
+    return text.length > 250 ? text.slice(0, 247) + "..." : text;
+  }
+  if (score && score >= 75) return "Your application scored well across key dimensions. The review panel will evaluate your proposal alongside other candidates.";
+  if (score && score >= 50) return "Your application shows promise. Focus on strengthening the areas highlighted below for future proposals.";
+  return "Your application is being processed. Check back soon for detailed feedback.";
 }

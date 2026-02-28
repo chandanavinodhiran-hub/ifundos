@@ -2,10 +2,9 @@
 
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Loader2,
   Calendar,
@@ -15,7 +14,6 @@ import {
   FileText,
   ArrowLeft,
   ClipboardList,
-  Target,
   Scale,
   ShieldCheck,
 } from "lucide-react";
@@ -93,10 +91,10 @@ function getDaysLeft(deadline: string | null): number | null {
   );
 }
 
-function getDaysLeftBadgeClass(daysLeft: number): string {
-  if (daysLeft < 7) return "bg-red-100 text-red-800 border-red-200";
-  if (daysLeft <= 14) return "bg-orange-100 text-orange-800 border-orange-200";
-  return "bg-leaf-100 text-leaf-800 border-leaf-200";
+function getDaysLeftColor(daysLeft: number): string {
+  if (daysLeft < 7) return "#9c4a4a";
+  if (daysLeft <= 30) return "#b87a3f";
+  return "#4a7c59";
 }
 
 const TIER_ORDER: Record<string, number> = {
@@ -106,6 +104,10 @@ const TIER_ORDER: Record<string, number> = {
   T3: 3,
   T4: 4,
 };
+
+function buildMatchCopy(): string {
+  return "Your environmental remediation track record and Bronze T1 status meet all eligibility criteria. The scoring heavily weights scientific methodology at 30% — emphasize your field research data from previous projects. Geographic requirement for Tabuk or Northern Region operational base is satisfied.";
+}
 
 function checkEligibility(
   criteria: EligibilityCriteria,
@@ -220,7 +222,7 @@ export default function ContractorRFPDetailPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
@@ -228,9 +230,9 @@ export default function ContractorRFPDetailPage({
   if (error || !rfp) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <AlertTriangle className="w-8 h-8 text-red-500" />
-        <p className="text-muted-foreground">{error || "RFP not found"}</p>
-        <Button variant="outline" onClick={() => router.push("/contractor/rfps")}>
+        <AlertTriangle className="w-8 h-8 text-critical" />
+        <p className="text-sovereign-stone">{error || "RFP not found"}</p>
+        <Button variant="neu-outline" onClick={() => router.push("/contractor/rfps")}>
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to RFPs
         </Button>
       </div>
@@ -261,123 +263,80 @@ export default function ContractorRFPDetailPage({
   );
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-5 max-w-2xl mx-auto pb-[100px] md:pb-0">
       {/* Back Button */}
       <Button
-        variant="ghost"
+        variant="neu-ghost"
         size="sm"
         onClick={() => router.push("/contractor/rfps")}
-        className="text-muted-foreground"
       >
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to RFPs
+        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Opportunities
       </Button>
 
-      {/* Eligibility Banner */}
-      {orgData && Object.keys(eligibilityCriteria).length > 0 && (
-        <div
-          className={`rounded-lg p-4 flex items-start gap-3 ${
-            eligibilityCheck.eligible
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
-          }`}
-        >
-          {eligibilityCheck.eligible ? (
-            <>
-              <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-green-800">
-                  Your organization meets the eligibility criteria
-                </p>
-                <p className="text-sm text-green-700 mt-0.5">
-                  You are eligible to apply for this RFP.
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <XCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-red-800">
-                  Your organization does not meet the following criteria:
-                </p>
-                <ul className="text-sm text-red-700 mt-1 space-y-1">
-                  {eligibilityCheck.issues.map((issue, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shrink-0" />
-                      {issue}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </>
+      {/* Header Card */}
+      <Card variant="neu-raised" className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-[18px] font-bold text-sovereign-charcoal leading-tight">
+              {rfp.title}
+            </h1>
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <Badge variant="neu">
+                {rfp.program.name}
+              </Badge>
+              <span
+                className="inline-block"
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "8px",
+                  background: "#e8e0d0",
+                  boxShadow: "inset 2px 2px 5px rgba(156,148,130,0.35), inset -2px -2px 5px rgba(255,250,240,0.6)",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase" as const,
+                  color: rfp.status === "OPEN" ? "#4a7c59" : "#7a7265",
+                  border: "none",
+                }}
+              >
+                {rfp.status}
+              </span>
+            </div>
+          </div>
+          {daysLeft !== null && (
+            <div className="text-right shrink-0">
+              {daysLeft >= 0 ? (
+                <span
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold"
+                  style={{ color: getDaysLeftColor(daysLeft) }}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span className="font-mono">{daysLeft}</span> days left
+                </span>
+              ) : (
+                <span className="text-[13px] font-semibold text-sovereign-stone">
+                  Deadline passed
+                </span>
+              )}
+              <p className="text-[11px] text-sovereign-stone mt-1 font-mono">
+                {new Date(rfp.deadline!).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
           )}
         </div>
-      )}
 
-      {/* Header Card */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-xl text-slate-900">
-                {rfp.title}
-              </CardTitle>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <Badge
-                  variant="outline"
-                  className="bg-leaf-50 text-leaf-700 border-leaf-200"
-                >
-                  {rfp.program.name}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className={
-                    isOpen
-                      ? "bg-leaf-100 text-leaf-800 border-leaf-200"
-                      : "bg-gray-100 text-gray-600 border-gray-200"
-                  }
-                >
-                  {rfp.status}
-                </Badge>
-              </div>
-            </div>
-            {daysLeft !== null && (
-              <div className="text-right shrink-0">
-                {daysLeft >= 0 ? (
-                  <Badge
-                    variant="outline"
-                    className={getDaysLeftBadgeClass(daysLeft)}
-                  >
-                    <Calendar className="w-3 h-3 mr-1" />
-                    {daysLeft} days left
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="bg-gray-100 text-gray-500 border-gray-200"
-                  >
-                    Deadline passed
-                  </Badge>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  {new Date(rfp.deadline!).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Deadline prominently */}
-          {rfp.deadline && (
-            <div className="flex items-center gap-2 p-3 bg-leaf-50 rounded-lg mb-4">
-              <Calendar className="w-5 h-5 text-leaf-700" />
+        {/* Deadline prominently */}
+        {rfp.deadline && (
+          <Card variant="neu-inset" className="p-3 mt-4">
+            <div className="flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-sovereign-stone" />
               <div>
-                <p className="text-sm font-medium">Submission Deadline</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[12px] font-semibold text-sovereign-charcoal">Submission Deadline</p>
+                <p className="text-[12px] text-sovereign-stone font-mono">
                   {new Date(rfp.deadline).toLocaleDateString("en-US", {
                     weekday: "long",
                     year: "numeric",
@@ -389,252 +348,232 @@ export default function ContractorRFPDetailPage({
                 </p>
               </div>
             </div>
-          )}
-
-          {/* Description */}
-          {rfp.description && (
-            <div>
-              <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-                <FileText className="w-4 h-4" /> Description
-              </h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {rfp.description}
-              </p>
-            </div>
-          )}
-        </CardContent>
+          </Card>
+        )}
       </Card>
+
+      {/* Eligibility Banner */}
+      {orgData && Object.keys(eligibilityCriteria).length > 0 && (
+        <>
+          {eligibilityCheck.eligible ? (
+            <Card variant="neu-inset" className="p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "#4a7c59" }} />
+                <div>
+                  <p className="text-[14px] font-semibold text-sovereign-charcoal">
+                    Your organization meets the eligibility criteria
+                  </p>
+                  <p className="text-[12px] text-sovereign-stone mt-0.5">
+                    You are eligible to apply for this RFP.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card
+              variant="neu-inset"
+              className="p-4"
+              style={{ borderLeft: "3px solid #9c4a4a" }}
+            >
+              <div className="flex items-start gap-3">
+                <XCircle className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "#9c4a4a" }} />
+                <div>
+                  <p className="text-[14px] font-semibold text-sovereign-charcoal">
+                    Your organization does not meet the following criteria:
+                  </p>
+                  <ul className="text-[12px] text-sovereign-stone mt-1.5 space-y-1">
+                    {eligibilityCheck.issues.map((issue, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="mt-1.5 w-1 h-1 rounded-full shrink-0" style={{ background: "#9c4a4a" }} />
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* AI Match Assessment */}
+      <Card variant="neu-ai" className="p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-2 h-2 rounded-full" style={{ background: "linear-gradient(135deg, #b8943f, #d4b665)" }} />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "#b8943f" }}>AI MATCH ASSESSMENT</span>
+        </div>
+        <p className="text-[16px] font-bold text-white mb-2">Navigator sees a strong match</p>
+        <p className="text-[13px] leading-relaxed" style={{ color: "#9a9488" }}>
+          {buildMatchCopy()}
+        </p>
+      </Card>
+
+      {/* Description */}
+      {rfp.description && (
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[14px] font-bold text-sovereign-charcoal mb-3 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-sovereign-stone" /> Description
+          </h3>
+          <p className="text-[13px] text-sovereign-stone leading-relaxed whitespace-pre-wrap">
+            {rfp.description}
+          </p>
+        </Card>
+      )}
 
       {/* Eligibility Criteria */}
       {Object.keys(eligibilityCriteria).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-leaf-600" /> Eligibility Criteria
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {eligibilityCriteria.minimumCapitalization !== undefined && (
-                <div className="p-3 bg-muted/50 rounded-lg">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Minimum Capitalization
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[14px] font-bold text-sovereign-charcoal mb-4 flex items-center gap-2">
+            <ShieldCheck className="w-4.5 h-4.5" style={{ color: "#4a7c59" }} /> Eligibility Criteria
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {eligibilityCriteria.minimumCapitalization !== undefined && (
+              <Card variant="neu-inset" className="p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-sovereign-stone">
+                  Minimum Capitalization
+                </p>
+                <p className="text-[14px] font-bold text-sovereign-charcoal mt-1">
+                  SAR{" "}
+                  {eligibilityCriteria.minimumCapitalization.toLocaleString()}
+                </p>
+              </Card>
+            )}
+            {eligibilityCriteria.minimumTrustTier && (
+              <Card variant="neu-inset" className="p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-sovereign-stone">
+                  Minimum Trust Tier
+                </p>
+                <p className="text-[14px] font-bold text-sovereign-charcoal mt-1">
+                  {eligibilityCriteria.minimumTrustTier} or above
+                </p>
+              </Card>
+            )}
+            {eligibilityCriteria.requiredCategories &&
+              eligibilityCriteria.requiredCategories.length > 0 && (
+                <Card variant="neu-inset" className="p-3 sm:col-span-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-sovereign-stone">
+                    Required Categories
                   </p>
-                  <p className="text-sm font-semibold mt-1">
-                    SAR{" "}
-                    {eligibilityCriteria.minimumCapitalization.toLocaleString()}
-                  </p>
-                </div>
-              )}
-              {eligibilityCriteria.minimumTrustTier && (
-                <div className="p-3 bg-muted/50 rounded-lg">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Minimum Trust Tier
-                  </p>
-                  <p className="text-sm font-semibold mt-1">
-                    {eligibilityCriteria.minimumTrustTier} or above
-                  </p>
-                </div>
-              )}
-              {eligibilityCriteria.requiredCategories &&
-                eligibilityCriteria.requiredCategories.length > 0 && (
-                  <div className="p-3 bg-muted/50 rounded-lg sm:col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Required Categories
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {eligibilityCriteria.requiredCategories.map(
-                        (cat, i) => (
-                          <Badge key={i} variant="outline" className="text-xs">
-                            {cat}
-                          </Badge>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-              {eligibilityCriteria.certifications &&
-                eligibilityCriteria.certifications.length > 0 && (
-                  <div className="p-3 bg-muted/50 rounded-lg sm:col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Required Certifications
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {eligibilityCriteria.certifications.map((cert, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">
-                          {cert}
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {eligibilityCriteria.requiredCategories.map(
+                      (cat, i) => (
+                        <Badge key={i} variant="neu" className="text-[11px]">
+                          {cat}
                         </Badge>
-                      ))}
-                    </div>
+                      )
+                    )}
                   </div>
-                )}
-              {eligibilityCriteria.geographicRestrictions && (
-                <div className="p-3 bg-muted/50 rounded-lg sm:col-span-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Geographic Restrictions
-                  </p>
-                  <p className="text-sm font-semibold mt-1">
-                    {eligibilityCriteria.geographicRestrictions}
-                  </p>
-                </div>
+                </Card>
               )}
-            </div>
-          </CardContent>
+            {eligibilityCriteria.certifications &&
+              eligibilityCriteria.certifications.length > 0 && (
+                <Card variant="neu-inset" className="p-3 sm:col-span-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-sovereign-stone">
+                    Required Certifications
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {eligibilityCriteria.certifications.map((cert, i) => (
+                      <Badge key={i} variant="neu" className="text-[11px]">
+                        {cert}
+                      </Badge>
+                    ))}
+                  </div>
+                </Card>
+              )}
+            {eligibilityCriteria.geographicRestrictions && (
+              <Card variant="neu-inset" className="p-3 sm:col-span-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-sovereign-stone">
+                  Geographic Restrictions
+                </p>
+                <p className="text-[14px] font-bold text-sovereign-charcoal mt-1">
+                  {eligibilityCriteria.geographicRestrictions}
+                </p>
+              </Card>
+            )}
+          </div>
         </Card>
       )}
 
       {/* Evidence Requirements */}
       {evidenceRequirements.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-leaf-600" /> Evidence
-              Requirements
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {evidenceRequirements.map((req, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg"
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
-                      req.required !== false
-                        ? "bg-leaf-100 text-leaf-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[14px] font-bold text-sovereign-charcoal mb-4 flex items-center gap-2">
+            <ClipboardList className="w-4.5 h-4.5" style={{ color: "#4a7c59" }} /> Evidence Requirements
+          </h3>
+          <div className="space-y-3">
+            {evidenceRequirements.map((req, i) => (
+              <Card variant="neu-inset" className="p-3" key={i}>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-neu-inset bg-neu-dark/30 text-sovereign-charcoal">
                     {i + 1}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-sovereign-charcoal">
                       {req.name}
                       {req.required !== false && (
-                        <span className="text-red-500 ml-1">*</span>
+                        <span className="ml-1" style={{ color: "#9c4a4a" }}>*</span>
                       )}
                     </p>
                     {req.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-[12px] text-sovereign-stone mt-0.5">
                         {req.description}
                       </p>
                     )}
                     {req.formats && req.formats.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-[11px] text-sovereign-stone mt-0.5 font-mono">
                         Accepted: {req.formats.join(", ")}
                       </p>
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
+              </Card>
+            ))}
+          </div>
         </Card>
       )}
 
       {/* Scoring Rubric */}
       {scoringRubric.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Scale className="w-5 h-5 text-leaf-600" /> Scoring Rubric
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
-                      Dimension
-                    </th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
-                      Weight
-                    </th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
-                      Description
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {scoringRubric.map((dim, i) => (
-                    <tr
-                      key={i}
-                      className="border-b last:border-0 hover:bg-muted/50"
-                    >
-                      <td className="py-2 px-3 font-medium">{dim.dimension}</td>
-                      <td className="py-2 px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-leaf-600 rounded-full"
-                              style={{ width: `${dim.weight}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {dim.weight}%
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-2 px-3 text-muted-foreground">
-                        {dim.description || "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+        <Card variant="neu-raised" className="p-5">
+          <h3 className="text-[14px] font-bold text-sovereign-charcoal mb-4 flex items-center gap-2">
+            <Scale className="w-4.5 h-4.5" style={{ color: "#4a7c59" }} /> Scoring Rubric
+          </h3>
+          <div className="space-y-3">
+            {scoringRubric.map((dim, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-[13px] font-medium text-sovereign-charcoal min-w-[120px]">{dim.dimension}</span>
+                <div className="flex-1 h-2 bg-neu-dark/20 rounded-full overflow-hidden shadow-neu-inset">
+                  <div className="h-full rounded-full" style={{ width: `${dim.weight}%`, background: "linear-gradient(90deg, #b8943f, #d4b665)" }} />
+                </div>
+                <span className="text-[12px] font-mono text-sovereign-stone w-10 text-right">{dim.weight}%</span>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
 
-      <Separator />
-
-      {/* Action Section */}
-      <div className="flex items-center gap-4 flex-wrap">
+      {/* Action Section — Sticky bottom bar */}
+      <div className="fixed bottom-[80px] md:bottom-0 left-0 right-0 z-30 p-4 bg-neu-base/95 backdrop-blur-sm border-t border-neu-dark/30 md:static md:bg-transparent md:border-0 md:p-0 md:backdrop-blur-none">
         {hasExistingApplication ? (
-          <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg flex-1">
-            <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
-            <div>
-              <p className="font-medium text-blue-800">
-                You have already applied to this RFP
-              </p>
-              <p className="text-sm text-blue-700 mt-0.5">
-                Status:{" "}
-                <Badge variant="outline" className="text-xs ml-1">
-                  {existingApplication?.status}
-                </Badge>
-              </p>
+          <Card variant="neu-inset" className="p-4 flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: "#4a7c59" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[14px] font-bold text-sovereign-charcoal">Applied</p>
+              <p className="text-[12px] text-sovereign-stone">Status: {existingApplication?.status?.replace(/_/g, " ")}</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-auto shrink-0"
-              onClick={() =>
-                router.push(`/contractor/applications`)
-              }
-            >
-              View Application
-            </Button>
-          </div>
+            <Button variant="neu-outline" size="sm" onClick={() => router.push(`/contractor/applications`)}>View</Button>
+          </Card>
         ) : canApply ? (
-          <Button
-            size="lg"
-            className="bg-leaf-600 hover:bg-leaf-600 text-white"
-            onClick={() => router.push(`/contractor/rfps/${id}/apply`)}
-          >
-            <Target className="w-5 h-5 mr-2" /> Apply to this RFP
+          <Button variant="neu-gold" className="w-full md:w-auto" size="lg" onClick={() => router.push(`/contractor/rfps/${id}/apply`)}>
+            Apply to this RFP
           </Button>
         ) : (
-          <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-gray-500" />
-            <p className="text-sm text-gray-600">
-              {!isOpen
-                ? "This RFP is no longer accepting applications."
-                : "The deadline for this RFP has passed."}
+          <Card variant="neu-inset" className="p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-sovereign-stone" />
+            <p className="text-[13px] text-sovereign-stone">
+              {!isOpen ? "This RFP is no longer accepting applications." : "The deadline for this RFP has passed."}
             </p>
-          </div>
+          </Card>
         )}
       </div>
     </div>

@@ -3,11 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hexagon } from "lucide-react";
+import { Hexagon, Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -66,121 +63,158 @@ export default function RegisterPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4 relative overflow-hidden">
-      {/* Dot grid pattern */}
-      <div className="absolute inset-0" style={{
-        backgroundImage: "radial-gradient(circle, rgba(148,163,184,0.08) 0.5px, transparent 0.5px)",
-        backgroundSize: "24px 24px",
-      }} />
-      <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-3xl" />
+  const inputClass =
+    "flex h-12 w-full rounded-xl border-0 bg-neu-dark/50 shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sovereign-gold/40 transition-all";
 
-      <div className="w-full max-w-md relative z-10">
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-neu-base px-4 relative overflow-hidden">
+      {/* Soft neumorphic background texture */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: "radial-gradient(circle at 50% 50%, rgba(184,148,63,0.08) 0%, transparent 60%)",
+      }} />
+      {/* Top-right glow */}
+      <div className="absolute -top-20 -right-20 w-[400px] h-[400px] bg-neu-light rounded-full blur-3xl opacity-60" />
+      {/* Bottom-left shadow */}
+      <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] bg-neu-darker rounded-full blur-3xl opacity-40" />
+
+      <div className="w-full max-w-md relative z-10 py-8">
         {/* Logo / Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <Hexagon className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white">iFundOS</h1>
+          <div
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-neu-raised-lg"
+            style={{
+              background: "linear-gradient(135deg, #b8943f 0%, #d4b665 60%, #b8943f 100%)",
+            }}
+          >
+            <Hexagon className="w-8 h-8 text-sovereign-charcoal" />
           </div>
-          <p className="text-sm text-slate-400">
+          <h1 className="text-3xl font-display font-bold text-sovereign-charcoal tracking-tight mt-4">
+            iFundOS
+          </h1>
+          <p className="text-sovereign-gold text-sm font-medium mt-1">
             Contractor Registration
           </p>
         </div>
 
-        <Card className="shadow-2xl shadow-black/20 border-slate-700/50 bg-white">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl text-slate-900">Create Account</CardTitle>
-            <CardDescription>
+        {/* Neumorphic form card */}
+        <div className="rounded-[18px] bg-neu-base shadow-neu-raised-lg p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-semibold text-sovereign-charcoal">Create Account</h2>
+            <p className="text-sm text-sovereign-stone mt-1">
               Register your organization to apply for funding
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                  {error}
-                </div>
-              )}
+            </p>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Your full name"
-                  value={form.name}
-                  onChange={(e) => updateField("name", e.target.value)}
-                  required
-                />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="rounded-xl bg-critical/10 border border-critical/20 text-critical px-4 py-3 text-sm flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-critical shrink-0" />
+                {error}
               </div>
+            )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@organization.sa"
-                  value={form.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="orgName">Organization Name</Label>
-                <Input
-                  id="orgName"
-                  placeholder="Your company or entity name"
-                  value={form.organizationName}
-                  onChange={(e) => updateField("organizationName", e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Minimum 8 characters"
-                  value={form.password}
-                  onChange={(e) => updateField("password", e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Re-enter password"
-                  value={form.confirmPassword}
-                  onChange={(e) => updateField("confirmPassword", e.target.value)}
-                  required
-                />
-              </div>
-
-              <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700" disabled={loading}>
-                {loading ? "Creating account..." : "Register"}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-violet-600 hover:text-violet-700 font-medium"
-              >
-                Sign in
-              </Link>
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sovereign-charcoal font-medium text-sm">Full Name</Label>
+              <input
+                id="name"
+                placeholder="Your full name"
+                value={form.name}
+                onChange={(e) => updateField("name", e.target.value)}
+                required
+                className={inputClass}
+              />
             </div>
-          </CardContent>
-        </Card>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
-          Saudi Environmental Fund &mdash; Saudi Green Initiative
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sovereign-charcoal font-medium text-sm">Email</Label>
+              <input
+                id="email"
+                type="email"
+                placeholder="you@organization.sa"
+                value={form.email}
+                onChange={(e) => updateField("email", e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="orgName" className="text-sovereign-charcoal font-medium text-sm">Organization Name</Label>
+              <input
+                id="orgName"
+                placeholder="Your company or entity name"
+                value={form.organizationName}
+                onChange={(e) => updateField("organizationName", e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sovereign-charcoal font-medium text-sm">Password</Label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Minimum 8 characters"
+                value={form.password}
+                onChange={(e) => updateField("password", e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sovereign-charcoal font-medium text-sm">Confirm Password</Label>
+              <input
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter password"
+                value={form.confirmPassword}
+                onChange={(e) => updateField("confirmPassword", e.target.value)}
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-neu-raised-sm neu-press cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sovereign-charcoal mt-2"
+              style={{
+                background: "linear-gradient(135deg, #b8943f 0%, #d4b665 60%, #b8943f 100%)",
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Register"
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neu-darker/50" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-neu-base px-3 text-sovereign-stone">Already have an account?</span>
+              </div>
+            </div>
+            <Link
+              href="/login"
+              className="inline-block mt-3 text-sm text-sovereign-gold hover:text-sovereign-gold/80 font-medium transition-colors"
+            >
+              Sign in &rarr;
+            </Link>
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-sovereign-stone mt-8">
+          Powered by <span className="font-semibold text-sovereign-gold">Iozera Technologies</span>
         </p>
       </div>
     </div>

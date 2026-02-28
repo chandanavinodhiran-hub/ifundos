@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -26,6 +28,8 @@ import {
   ChevronUp,
   ChevronDown,
   X,
+  Calendar,
+  Users,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -124,12 +128,25 @@ const DEFAULT_SCORING: ScoringDimension[] = [
   { name: "Impact Potential", weight: 25, criteria: "Estimated environmental impact, scalability, community benefit, and long-term sustainability plan" },
 ];
 
-const STATUS_BADGE: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  OPEN: "bg-green-100 text-green-700",
-  CLOSED: "bg-orange-100 text-orange-700",
-  AWARDED: "bg-blue-100 text-blue-700",
+const STATUS_ORDER: Record<string, number> = {
+  OPEN: 0,
+  DRAFT: 1,
+  CLOSED: 2,
+  AWARDED: 3,
 };
+
+const STATUS_VARIANT: Record<string, "neu-gold" | "neu-amber" | "neu"> = {
+  OPEN: "neu-gold",
+  DRAFT: "neu-amber",
+  CLOSED: "neu",
+  AWARDED: "neu",
+};
+
+function accentLeftForStatus(status: string): string {
+  if (status === "OPEN") return "accent-left-green";
+  if (status === "DRAFT") return "accent-left-amber";
+  return "";
+}
 
 /* ------------------------------------------------------------------ */
 /* Page Component                                                      */
@@ -313,558 +330,561 @@ export default function RFPManagerPage() {
     );
 
   /* ---------------------------------------------------------------- */
+  /* Sort RFPs: OPEN first, DRAFT second, CLOSED/AWARDED last          */
+  /* ---------------------------------------------------------------- */
+  const sortedRfps = [...rfps].sort(
+    (a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9)
+  );
+
+  /* ---------------------------------------------------------------- */
   /* Render                                                            */
   /* ---------------------------------------------------------------- */
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-leaf-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-[180px]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">RFP Manager</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Create and manage Requests for Proposals
-          </p>
-        </div>
+      <div>
+        <p className="text-eyebrow">RFP MANAGER</p>
+        <h1 className="text-xl font-bold text-sovereign-charcoal font-display">Your RFPs</h1>
+      </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <button className="inline-flex items-center justify-center gap-2 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-600 transition-colors w-full sm:w-auto">
-              <Plus className="w-4 h-4" />
-              Create New RFP
-            </button>
-          </DialogTrigger>
-
-          {/* ===== CREATE DIALOG ===== */}
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-xl text-slate-900">
-                Create New RFP
-              </DialogTitle>
-              <p className="text-sm text-muted-foreground">6 sections to complete</p>
-            </DialogHeader>
-
-            {/* Step Indicator */}
-            <div className="flex items-center justify-between px-2 py-3 mb-2">
-              {["Basic Info", "Eligibility", "Scoring", "Evidence", "Questionnaire", "Deadline"].map((step, idx) => (
-                <div key={step} className="flex items-center">
-                  {idx > 0 && <div className="w-4 sm:w-6 h-0.5 bg-gray-200 mx-0.5" />}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-6 h-6 rounded-full bg-leaf-100 text-leaf-700 flex items-center justify-center text-xs font-bold">
-                      {idx + 1}
-                    </div>
-                    <span className="text-[10px] text-muted-foreground hidden sm:block">{step}</span>
-                  </div>
-                </div>
-              ))}
+      {/* RFP Card Grid */}
+      {sortedRfps.length === 0 ? (
+        <Card variant="neu-inset">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center pt-6">
+            <div className="empty-icon-well w-14 h-14 rounded-2xl flex items-center justify-center mb-3">
+              <FileText className="w-7 h-7 text-sovereign-stone" />
             </div>
+            <p className="text-sovereign-stone font-medium">No RFPs created yet</p>
+            <p className="text-sm text-sovereign-stone/70 mt-1">
+              Tap the + button to create your first RFP
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {sortedRfps.map((rfp) => {
+            const daysLeft = rfp.deadline
+              ? Math.ceil(
+                  (new Date(rfp.deadline).getTime() - Date.now()) /
+                    (1000 * 60 * 60 * 24)
+                )
+              : null;
+            const daysLabel =
+              daysLeft === null
+                ? "No deadline"
+                : daysLeft <= 0
+                ? "Closed"
+                : `${daysLeft}d left`;
+            const daysColor =
+              daysLeft !== null && daysLeft > 0 && daysLeft <= 3
+                ? "#9c4a4a"
+                : daysLeft !== null && daysLeft > 3 && daysLeft <= 7
+                ? "#b87a3f"
+                : undefined;
 
-            <div className="space-y-6 mt-2">
-              {/* Program */}
-              <div className="space-y-2">
-                <Label>Program *</Label>
-                <Select value={programId} onValueChange={setProgramId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a program" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {programs.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Title */}
-              <div className="space-y-2">
-                <Label>Title *</Label>
-                <input
-                  type="text"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  placeholder="RFP title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <textarea
-                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  placeholder="Describe the RFP scope and objectives..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-
-              <Separator />
-
-              {/* ==================== ELIGIBILITY ==================== */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    Eligibility Criteria
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Min capitalization */}
-                  <div className="space-y-2">
-                    <Label>Minimum Capitalization (SAR)</Label>
-                    <input
-                      type="number"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                      placeholder="e.g. 1000000"
-                      value={minCapitalization}
-                      onChange={(e) => setMinCapitalization(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Business categories */}
-                  <div className="space-y-2">
-                    <Label>Required Business Categories</Label>
-                    <div className="flex flex-wrap gap-3">
-                      {BUSINESS_CATEGORIES.map((cat) => (
-                        <label
-                          key={cat}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <input
-                            type="checkbox"
-                            className="rounded border-gray-300"
-                            checked={selectedCategories.includes(cat)}
-                            onChange={() => toggleCategory(cat)}
-                          />
-                          {cat}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Min trust tier */}
-                  <div className="space-y-2">
-                    <Label>Minimum Trust Tier</Label>
-                    <Select
-                      value={minTrustTier}
-                      onValueChange={setMinTrustTier}
-                    >
-                      <SelectTrigger className="w-[200px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["T0", "T1", "T2", "T3", "T4"].map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Certifications */}
-                  <div className="space-y-2">
-                    <Label>Required Certifications</Label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        placeholder="Add certification..."
-                        value={certInput}
-                        onChange={(e) => setCertInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && certInput.trim()) {
-                            e.preventDefault();
-                            setCertifications((prev) => [
-                              ...prev,
-                              certInput.trim(),
-                            ]);
-                            setCertInput("");
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        className="inline-flex items-center rounded-md border border-input bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
-                        onClick={() => {
-                          if (certInput.trim()) {
-                            setCertifications((prev) => [
-                              ...prev,
-                              certInput.trim(),
-                            ]);
-                            setCertInput("");
-                          }
+            return (
+              <Card
+                key={rfp.id}
+                variant="neu-raised"
+                className={`relative cursor-pointer transition-transform active:scale-[0.98] ${accentLeftForStatus(rfp.status)}`}
+                onClick={() => router.push(`/dashboard/rfps/${rfp.id}`)}
+              >
+                <CardContent className="p-5 pt-5 space-y-3">
+                  {/* Title + Status */}
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-[15px] font-bold text-sovereign-charcoal leading-snug line-clamp-2">
+                      {rfp.title}
+                    </h3>
+                    {rfp.status === "OPEN" ? (
+                      <span
+                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0"
+                        style={{
+                          color: "#4a7c59",
+                          background: "var(--neu-dark)",
+                          boxShadow: "inset 2px 2px 4px rgba(156,148,130,0.35), inset -2px -2px 4px rgba(255,250,240,0.6)",
                         }}
                       >
-                        Add
-                      </button>
-                    </div>
-                    {certifications.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {certifications.map((cert, i) => (
-                          <span
-                            key={i}
-                            className="inline-flex items-center gap-1 rounded-full bg-leaf-600/10 text-leaf-700 px-2.5 py-0.5 text-xs font-medium"
-                          >
-                            {cert}
-                            <button
-                              type="button"
-                              className="hover:text-red-500"
-                              onClick={() =>
-                                setCertifications((prev) =>
-                                  prev.filter((_, j) => j !== i)
-                                )
-                              }
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
+                        {rfp.status}
+                      </span>
+                    ) : (
+                      <Badge
+                        variant={STATUS_VARIANT[rfp.status] ?? "neu"}
+                        className="shadow-neu-inset shrink-0"
+                      >
+                        {rfp.status}
+                      </Badge>
                     )}
                   </div>
 
-                  {/* Geographic restrictions */}
-                  <div className="space-y-2">
-                    <Label>Geographic Restrictions</Label>
-                    <input
-                      type="text"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                      placeholder="e.g. Saudi Arabia only"
-                      value={geoRestrictions}
-                      onChange={(e) => setGeoRestrictions(e.target.value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                  {/* Program name */}
+                  <p className="text-xs text-sovereign-stone">
+                    {rfp.program?.name ?? "No program"}
+                  </p>
 
-              {/* ==================== SCORING RUBRIC ==================== */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Scoring Rubric</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {scoring.map((dim, i) => (
-                    <div key={dim.name} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{dim.name}</span>
-                        <span className="text-xs text-muted-foreground font-mono">
-                          Weight: {dim.weight}%
-                        </span>
-                      </div>
-                      <textarea
-                        className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        placeholder="Specific evaluation criteria..."
-                        value={dim.criteria}
-                        onChange={(e) => {
-                          const next = [...scoring];
-                          next[i] = { ...next[i], criteria: e.target.value };
-                          setScoring(next);
-                        }}
-                      />
+                  {/* Meta row */}
+                  <div className="flex items-center justify-between pt-1">
+                    {/* Applications count */}
+                    <div className="flex items-center gap-1.5 text-xs text-sovereign-stone">
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="font-semibold text-sovereign-charcoal">
+                        {rfp._count?.applications ?? 0}
+                      </span>
+                      <span>applications</span>
                     </div>
-                  ))}
+
+                    {/* Deadline */}
+                    <div
+                      className="flex items-center gap-1.5 text-xs"
+                      style={{ color: daysColor || "#9a9488", fontWeight: daysColor ? 600 : 400 }}
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{daysLabel}</span>
+                    </div>
+                  </div>
+
+                  {/* Deadline date */}
+                  {rfp.deadline && (
+                    <p className="text-[11px] font-mono text-sovereign-stone/70">
+                      Due: {new Date(rfp.deadline).toLocaleDateString()}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
+            );
+          })}
+        </div>
+      )}
 
-              {/* ==================== EVIDENCE ==================== */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    Evidence Requirements
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {EVIDENCE_OPTIONS.map((ev) => (
+      {/* Floating Action Button — gold gradient */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          <button
+            className="fixed right-6 bottom-[100px] md:bottom-8 z-50 w-14 h-14 rounded-full text-sovereign-charcoal flex items-center justify-center cursor-pointer transition-all"
+            style={{
+              background: "linear-gradient(135deg, #b8943f, #d4b665)",
+              boxShadow: "4px 4px 12px rgba(156,148,130,0.5), -4px -4px 12px rgba(255,250,240,0.6), 0 0 16px rgba(184,148,63,0.2)",
+            }}
+            aria-label="Create RFP"
+          >
+            <Plus className="w-6 h-6" strokeWidth={2.5} />
+          </button>
+        </DialogTrigger>
+
+        {/* ===== CREATE DIALOG ===== */}
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-neu-base">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-sovereign-charcoal font-display">
+              Create New RFP
+            </DialogTitle>
+            <p className="text-sm text-sovereign-stone">6 sections to complete</p>
+          </DialogHeader>
+
+          {/* Step Indicator */}
+          <div className="flex items-center justify-between px-2 py-3 mb-2">
+            {["Basic Info", "Eligibility", "Scoring", "Evidence", "Questionnaire", "Deadline"].map((step, idx) => (
+              <div key={step} className="flex items-center">
+                {idx > 0 && <div className="w-4 sm:w-6 h-0.5 bg-sovereign-stone/20 mx-0.5" />}
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-6 h-6 rounded-full bg-neu-dark shadow-neu-inset text-sovereign-charcoal flex items-center justify-center text-xs font-bold">
+                    {idx + 1}
+                  </div>
+                  <span className="text-[10px] text-sovereign-stone hidden sm:block">{step}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-6 mt-2">
+            {/* Program */}
+            <div className="space-y-2">
+              <Label>Program *</Label>
+              <Select value={programId} onValueChange={setProgramId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a program" />
+                </SelectTrigger>
+                <SelectContent>
+                  {programs.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <Label>Title *</Label>
+              <input
+                type="text"
+                className="flex h-10 w-full rounded-xl border-0 bg-neu-dark shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                placeholder="RFP title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <textarea
+                className="flex min-h-[100px] w-full rounded-xl border-0 bg-neu-dark shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                placeholder="Describe the RFP scope and objectives..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            <Separator className="bg-sovereign-stone/15" />
+
+            {/* ==================== ELIGIBILITY ==================== */}
+            <Card variant="neu-inset">
+              <CardContent className="space-y-4 p-5 pt-5">
+                <h3 className="text-sm font-bold text-sovereign-charcoal">Eligibility Criteria</h3>
+
+                {/* Min capitalization */}
+                <div className="space-y-2">
+                  <Label>Minimum Capitalization (SAR)</Label>
+                  <input
+                    type="number"
+                    className="flex h-10 w-full rounded-xl border-0 bg-neu-base shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                    placeholder="e.g. 1000000"
+                    value={minCapitalization}
+                    onChange={(e) => setMinCapitalization(e.target.value)}
+                  />
+                </div>
+
+                {/* Business categories */}
+                <div className="space-y-2">
+                  <Label>Required Business Categories</Label>
+                  <div className="flex flex-wrap gap-3">
+                    {BUSINESS_CATEGORIES.map((cat) => (
                       <label
-                        key={ev}
+                        key={cat}
                         className="flex items-center gap-2 text-sm"
                       >
                         <input
                           type="checkbox"
-                          className="rounded border-gray-300"
-                          checked={selectedEvidence.includes(ev)}
-                          onChange={() => toggleEvidence(ev)}
+                          className="rounded border-sovereign-stone/30"
+                          checked={selectedCategories.includes(cat)}
+                          onChange={() => toggleCategory(cat)}
                         />
-                        {ev}
+                        {cat}
                       </label>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* ==================== QUESTIONNAIRE ==================== */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    Interview Questionnaire
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground -mt-1 mb-3">These questions will be sent to shortlisted contractors during the interview phase of the pipeline.</p>
-                  {questions.map((q, idx) => (
-                    <div
-                      key={idx}
-                      className="relative rounded-lg border p-4 space-y-3"
-                    >
-                      {/* Remove button */}
-                      <button
-                        type="button"
-                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                        onClick={() => removeQuestion(idx)}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                {/* Min trust tier */}
+                <div className="space-y-2">
+                  <Label>Minimum Trust Tier</Label>
+                  <Select
+                    value={minTrustTier}
+                    onValueChange={setMinTrustTier}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["T0", "T1", "T2", "T3", "T4"].map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                      {/* Question text */}
-                      <textarea
-                        className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        value={q.questionText}
-                        onChange={(e) =>
-                          updateQuestion(idx, "questionText", e.target.value)
+                {/* Certifications */}
+                <div className="space-y-2">
+                  <Label>Required Certifications</Label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="flex h-10 flex-1 rounded-xl border-0 bg-neu-base shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                      placeholder="Add certification..."
+                      value={certInput}
+                      onChange={(e) => setCertInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && certInput.trim()) {
+                          e.preventDefault();
+                          setCertifications((prev) => [
+                            ...prev,
+                            certInput.trim(),
+                          ]);
+                          setCertInput("");
                         }
-                      />
-
-                      <div className="flex items-center gap-4 flex-wrap">
-                        {/* Type */}
-                        <div className="flex items-center gap-2">
-                          <Label className="text-xs text-muted-foreground">
-                            Type
-                          </Label>
-                          <Select
-                            value={q.questionType}
-                            onValueChange={(v) =>
-                              updateQuestion(idx, "questionType", v)
-                            }
-                          >
-                            <SelectTrigger className="w-[180px] h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="SHORT_ANSWER">
-                                Short Answer
-                              </SelectItem>
-                              <SelectItem value="LONG_ANSWER">
-                                Long Answer
-                              </SelectItem>
-                              <SelectItem value="MULTIPLE_CHOICE">
-                                Multiple Choice
-                              </SelectItem>
-                              <SelectItem value="FILE_UPLOAD">
-                                File Upload
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Required */}
-                        <label className="flex items-center gap-2 text-xs">
-                          <input
-                            type="checkbox"
-                            className="rounded border-gray-300"
-                            checked={q.isRequired}
-                            onChange={(e) =>
-                              updateQuestion(
-                                idx,
-                                "isRequired",
-                                e.target.checked
+                      }}
+                    />
+                    <Button
+                      variant="neu-secondary"
+                      size="sm"
+                      onClick={() => {
+                        if (certInput.trim()) {
+                          setCertifications((prev) => [
+                            ...prev,
+                            certInput.trim(),
+                          ]);
+                          setCertInput("");
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {certifications.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {certifications.map((cert, i) => (
+                        <Badge key={i} variant="neu-gold" className="gap-1">
+                          {cert}
+                          <button
+                            type="button"
+                            className="hover:text-critical"
+                            onClick={() =>
+                              setCertifications((prev) =>
+                                prev.filter((_, j) => j !== i)
                               )
                             }
-                          />
-                          Required
-                        </label>
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                        {/* Reorder */}
-                        <div className="flex items-center gap-1 ml-auto">
-                          <button
-                            type="button"
-                            className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
-                            disabled={idx === 0}
-                            onClick={() => moveQuestion(idx, -1)}
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
-                            disabled={idx === questions.length - 1}
-                            onClick={() => moveQuestion(idx, 1)}
-                          >
-                            <ChevronDown className="w-4 h-4" />
-                          </button>
-                        </div>
+                {/* Geographic restrictions */}
+                <div className="space-y-2">
+                  <Label>Geographic Restrictions</Label>
+                  <input
+                    type="text"
+                    className="flex h-10 w-full rounded-xl border-0 bg-neu-base shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                    placeholder="e.g. Saudi Arabia only"
+                    value={geoRestrictions}
+                    onChange={(e) => setGeoRestrictions(e.target.value)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ==================== SCORING RUBRIC ==================== */}
+            <Card variant="neu-inset">
+              <CardContent className="space-y-4 p-5 pt-5">
+                <h3 className="text-sm font-bold text-sovereign-charcoal">Scoring Rubric</h3>
+                {scoring.map((dim, i) => (
+                  <div key={dim.name} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{dim.name}</span>
+                      <span className="text-xs text-sovereign-stone font-mono">
+                        Weight: {dim.weight}%
+                      </span>
+                    </div>
+                    <textarea
+                      className="flex min-h-[60px] w-full rounded-xl border-0 bg-neu-base shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                      placeholder="Specific evaluation criteria..."
+                      value={dim.criteria}
+                      onChange={(e) => {
+                        const next = [...scoring];
+                        next[i] = { ...next[i], criteria: e.target.value };
+                        setScoring(next);
+                      }}
+                    />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* ==================== EVIDENCE ==================== */}
+            <Card variant="neu-inset">
+              <CardContent className="p-5 pt-5">
+                <h3 className="text-sm font-bold text-sovereign-charcoal mb-3">Evidence Requirements</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {EVIDENCE_OPTIONS.map((ev) => (
+                    <label
+                      key={ev}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        className="rounded border-sovereign-stone/30"
+                        checked={selectedEvidence.includes(ev)}
+                        onChange={() => toggleEvidence(ev)}
+                      />
+                      {ev}
+                    </label>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ==================== QUESTIONNAIRE ==================== */}
+            <Card variant="neu-inset">
+              <CardContent className="space-y-4 p-5 pt-5">
+                <h3 className="text-sm font-bold text-sovereign-charcoal">Interview Questionnaire</h3>
+                <p className="text-sm text-sovereign-stone -mt-1 mb-3">These questions will be sent to shortlisted contractors during the interview phase of the pipeline.</p>
+                {questions.map((q, idx) => (
+                  <div
+                    key={idx}
+                    className="relative rounded-[14px] bg-neu-base shadow-neu-raised-sm p-4 space-y-3"
+                  >
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      className="absolute top-2 right-2 text-sovereign-stone hover:text-critical"
+                      onClick={() => removeQuestion(idx)}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+
+                    {/* Question text */}
+                    <textarea
+                      className="flex min-h-[60px] w-full rounded-xl border-0 bg-neu-dark shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/60 focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                      value={q.questionText}
+                      onChange={(e) =>
+                        updateQuestion(idx, "questionText", e.target.value)
+                      }
+                    />
+
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {/* Type */}
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs text-sovereign-stone">
+                          Type
+                        </Label>
+                        <Select
+                          value={q.questionType}
+                          onValueChange={(v) =>
+                            updateQuestion(idx, "questionType", v)
+                          }
+                        >
+                          <SelectTrigger className="w-[180px] h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="SHORT_ANSWER">
+                              Short Answer
+                            </SelectItem>
+                            <SelectItem value="LONG_ANSWER">
+                              Long Answer
+                            </SelectItem>
+                            <SelectItem value="MULTIPLE_CHOICE">
+                              Multiple Choice
+                            </SelectItem>
+                            <SelectItem value="FILE_UPLOAD">
+                              File Upload
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Required */}
+                      <label className="flex items-center gap-2 text-xs">
+                        <input
+                          type="checkbox"
+                          className="rounded border-sovereign-stone/30"
+                          checked={q.isRequired}
+                          onChange={(e) =>
+                            updateQuestion(
+                              idx,
+                              "isRequired",
+                              e.target.checked
+                            )
+                          }
+                        />
+                        Required
+                      </label>
+
+                      {/* Reorder */}
+                      <div className="flex items-center gap-1 ml-auto">
+                        <button
+                          type="button"
+                          className="p-1 rounded-lg hover:bg-neu-dark disabled:opacity-30"
+                          disabled={idx === 0}
+                          onClick={() => moveQuestion(idx, -1)}
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded-lg hover:bg-neu-dark disabled:opacity-30"
+                          disabled={idx === questions.length - 1}
+                          onClick={() => moveQuestion(idx, 1)}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
 
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-md border border-dashed border-gray-300 px-4 py-2 text-sm text-muted-foreground hover:border-leaf-500 hover:text-leaf-600 transition-colors"
-                    onClick={() =>
-                      setQuestions((prev) => [
-                        ...prev,
-                        {
-                          questionText: "",
-                          questionType: "LONG_ANSWER",
-                          isRequired: true,
-                        },
-                      ])
-                    }
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Question
-                  </button>
-                </CardContent>
-              </Card>
-
-              {/* Deadline */}
-              <div className="space-y-2">
-                <Label>Deadline</Label>
-                <input
-                  type="date"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                />
-              </div>
-
-              <Separator />
-
-              {/* Action buttons */}
-              <div className="flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  disabled={saving || !programId || !title}
-                  className="inline-flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors disabled:opacity-50"
-                  onClick={() => handleSubmit("DRAFT")}
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-sovereign-stone/25 px-4 py-2 text-sm text-sovereign-stone hover:border-sovereign-gold hover:text-sovereign-gold transition-colors"
+                  onClick={() =>
+                    setQuestions((prev) => [
+                      ...prev,
+                      {
+                        questionText: "",
+                        questionType: "LONG_ANSWER",
+                        isRequired: true,
+                      },
+                    ])
+                  }
                 >
-                  {saving && (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  )}
-                  Save as Draft
+                  <Plus className="w-4 h-4" />
+                  Add Question
                 </button>
-                <button
-                  type="button"
-                  disabled={saving || !programId || !title}
-                  className="inline-flex items-center gap-2 rounded-md bg-leaf-600 px-4 py-2 text-sm font-medium text-white hover:bg-leaf-600 transition-colors disabled:opacity-50"
-                  onClick={() => handleSubmit("OPEN")}
-                >
-                  {saving && (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  )}
-                  Publish
-                </button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+              </CardContent>
+            </Card>
 
-      {/* RFP Table */}
-      <Card>
-        <CardContent className="p-0">
-          {rfps.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FileText className="w-12 h-12 text-gray-300 mb-3" />
-              <p className="text-muted-foreground">No RFPs created yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Click &quot;Create New RFP&quot; to get started
-              </p>
+            {/* Deadline */}
+            <div className="space-y-2">
+              <Label>Deadline</Label>
+              <input
+                type="date"
+                className="flex h-10 w-full rounded-xl border-0 bg-neu-dark shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal focus:outline-none focus:ring-2 focus:ring-sovereign-gold/40"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="text-left font-medium p-4 text-muted-foreground">
-                      Title
-                    </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground hidden md:table-cell">
-                      Program
-                    </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground">
-                      Status
-                    </th>
-                    <th className="text-center font-medium p-4 text-muted-foreground">
-                      Apps
-                    </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground hidden sm:table-cell">
-                      Deadline
-                    </th>
-                    <th className="text-center font-medium p-4 text-muted-foreground hidden sm:table-cell">
-                      Days Left
-                    </th>
-                    <th className="text-left font-medium p-4 text-muted-foreground hidden lg:table-cell">
-                      Created
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rfps.map((rfp) => {
-                    const daysLeft = rfp.deadline ? Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
-                    const daysColor = daysLeft === null ? "text-gray-400" : daysLeft <= 0 ? "text-gray-400" : daysLeft <= 3 ? "text-red-600 font-semibold" : daysLeft <= 7 ? "text-amber-600 font-medium" : "text-green-600";
-                    const daysLabel = daysLeft === null ? "—" : daysLeft <= 0 ? "Closed" : `${daysLeft}d left`;
-                    return (
-                    <tr
-                      key={rfp.id}
-                      className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
-                      onClick={() =>
-                        router.push(`/dashboard/rfps/${rfp.id}`)
-                      }
-                    >
-                      <td className="p-4 font-medium">{rfp.title}</td>
-                      <td className="p-4 text-muted-foreground hidden md:table-cell">
-                        {rfp.program?.name ?? "—"}
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            STATUS_BADGE[rfp.status] ?? "bg-gray-100 text-gray-700"
-                          }`}
-                        >
-                          {rfp.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-center">
-                        <button
-                          className="text-ocean-600 hover:underline font-semibold cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/dashboard/rfps/${rfp.id}?tab=applications`);
-                          }}
-                        >
-                          {rfp._count?.applications ?? 0}
-                        </button>
-                      </td>
-                      <td className="p-4 text-muted-foreground hidden sm:table-cell">
-                        {rfp.deadline
-                          ? new Date(rfp.deadline).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td className={`p-4 text-center text-xs hidden sm:table-cell ${daysColor}`}>
-                        {daysLabel}
-                      </td>
-                      <td className="p-4 text-muted-foreground hidden lg:table-cell">
-                        {new Date(rfp.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+
+            <Separator className="bg-sovereign-stone/15" />
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="neu-secondary"
+                disabled={saving || !programId || !title}
+                onClick={() => handleSubmit("DRAFT")}
+              >
+                {saving && (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                )}
+                Save as Draft
+              </Button>
+              <Button
+                variant="neu-gold"
+                disabled={saving || !programId || !title}
+                onClick={() => handleSubmit("OPEN")}
+              >
+                {saving && (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                )}
+                Publish
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

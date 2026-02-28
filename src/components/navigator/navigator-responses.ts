@@ -156,45 +156,71 @@ const contractorResponses: PageResponses[] = [
 // ─── Auditor Responses ────────────────────────────────────────────────
 const auditorResponses: PageResponses[] = [
   {
+    pagePattern: "/audit/decisions",
+    pageName: "Decision Review",
+    responses: [
+      {
+        patterns: ["decision", "concordance", "divergent", "aligned", "review"],
+        response:
+          "The Decision Review screen shows every fund manager decision alongside the AI recommendation. I track concordance — whether the human decision aligns with or diverges from the AI's analysis. Divergent decisions aren't necessarily wrong; they're where the fund manager exercised judgment that differed from the AI. Your role is to assess whether that judgment was reasonable given the available information.",
+      },
+      {
+        patterns: ["flag", "flagged", "concern", "issue"],
+        response:
+          "You can flag any decision for further review. Flagging doesn't reverse a decision — it creates a record that you've identified something worth investigating. Common flag reasons include: decision divergence (FM disagreed with AI), timing concerns (unusually fast decisions), and pattern detection (multiple similar divergences). Each flag includes a reason and optional notes.",
+      },
+      {
+        patterns: ["score", "scoring", "ai", "recommend"],
+        response:
+          "The AI scores each application across four dimensions and produces a composite score with a recommendation: Recommend (≥70), Conditional (50–69), or Not Recommended (<50). When expanding a decision card, you'll see the full AI Decision Brief — the same information the fund manager had when making their decision. This helps you assess whether the divergence was informed or overlooked.",
+      },
+    ],
+  },
+  {
+    pagePattern: "/audit/programs",
+    pageName: "Programs",
+    responses: [
+      {
+        patterns: ["program", "budget", "overview", "health"],
+        response:
+          "The Programs page shows each funding program's budget allocation, disbursement progress, and health status. Health is determined by decision concordance — programs where all decisions align with AI are 'On track', while those with divergent decisions show 'Review recommended'. Tap a program to see per-RFP breakdowns and concordance rates.",
+      },
+    ],
+  },
+  {
+    pagePattern: "/audit/disbursements",
+    pageName: "Disbursements",
+    responses: [
+      {
+        patterns: ["disbursement", "payment", "budget", "money", "milestone"],
+        response:
+          "The Disbursements page tracks how funds flow from allocation to actual payments. Each payment is linked to a verified milestone — the contractor submits evidence, the AI verifies it, and the fund manager approves the release. I can help you identify anomalies: unusually fast processing, evidence approved without AI verification, or amounts that don't match contracted milestone values.",
+      },
+    ],
+  },
+  {
     pagePattern: "/audit",
-    pageName: "Auditor Dashboard",
+    pageName: "Home",
     responses: [
       {
         patterns: ["overview", "dashboard", "status", "hello", "hi", "summary"],
         response:
-          "Welcome to the Auditor Dashboard. This is your oversight command center for the iFundOS platform. Key areas to monitor: total audit events, flagged items requiring attention, and the AI scoring overview. The system maintains a tamper-evident hash chain of all platform actions. I recommend starting with any flagged items, then reviewing the AI scoring overview for unusual patterns.",
+          "I can help you investigate patterns across decisions, disbursements, and program activity. Your home screen shows the anomaly status — if all fund manager decisions align with AI recommendations, you'll see a green 'all clear'. If any divergent decisions exist, they'll be highlighted for your attention. The activity stream below shows every platform action in real time.",
       },
       {
-        patterns: ["flag", "flagged", "concern", "issue", "alert"],
+        patterns: ["anomaly", "divergent", "investigate", "pattern"],
         response:
-          "Flagged items represent platform events that triggered automated anomaly detection. These can include: unusual login patterns, bulk score modifications, large disbursements, or permission changes. Each flagged event should be reviewed and either resolved or escalated. The flag count on your dashboard updates in real-time as new events are processed.",
-      },
-    ],
-  },
-  {
-    pagePattern: "/audit/trail",
-    pageName: "Audit Trail",
-    responses: [
-      {
-        patterns: ["trail", "audit", "log", "events", "history", "chain"],
-        response:
-          "The Audit Trail is a tamper-evident log of every platform action. Each event is hashed and chained to the previous event, creating an immutable record. You can filter by resource type, action category, and date range. The 'Verify Chain' button runs a full integrity check to confirm no events have been modified or deleted. For compliance reporting, use the 'Export CSV' button.",
+          "I've analyzed the decision patterns. When a fund manager rejects an AI-recommended applicant or advances one the AI flagged as risky, that's a divergence worth investigating. Check the Decisions tab for the full concordance breakdown — each card shows the AI score, recommendation, and the fund manager's actual decision side by side.",
       },
       {
-        patterns: ["verify", "integrity", "tamper", "hash"],
+        patterns: ["concordance", "time", "average", "month"],
         response:
-          "The hash chain verification process checks every event in sequence, confirming that each event's hash correctly chains to the previous one. If any event has been modified, deleted, or inserted out of order, the verification will detect the break and report its location. This provides cryptographic assurance of audit trail integrity — a core requirement for sovereign fund oversight.",
+          "Decision concordance tracks how often the fund manager follows AI recommendations. A high concordance rate (90%+) suggests the AI is well-calibrated to the fund manager's judgment. Lower rates may indicate either the AI needs tuning or the fund manager has additional context the AI doesn't capture. Both are worth understanding.",
       },
-    ],
-  },
-  {
-    pagePattern: "/audit/reports",
-    pageName: "Reports",
-    responses: [
       {
-        patterns: ["report", "export", "compliance", "generate"],
+        patterns: ["contractor", "multiple", "award"],
         response:
-          "The Reports section lets you generate compliance and oversight reports. Available reports include: Platform Activity Summary (event counts and categories), AI Scoring Audit (scoring patterns and manual overrides), and Financial Oversight (disbursement tracking). Each report can be scoped to a specific date range. For raw data, use the CSV export option from the Audit Trail page.",
+          "I can check for contractors receiving multiple awards across different RFPs. This isn't inherently concerning — strong contractors may legitimately win multiple bids — but concentration of funding in a few organizations is worth monitoring from an oversight perspective.",
       },
     ],
   },
@@ -203,24 +229,56 @@ const auditorResponses: PageResponses[] = [
 // ─── Admin Responses ─────────────────────────────────────────────────
 const adminResponses: PageResponses[] = [
   {
-    pagePattern: "/admin",
-    pageName: "Admin Dashboard",
+    pagePattern: "/admin/users",
+    pageName: "Users",
     responses: [
       {
-        patterns: ["overview", "dashboard", "status", "hello", "hi", "summary", "health"],
+        patterns: ["user", "manage", "role", "permission", "invite", "add", "suspend"],
         response:
-          "Welcome to the Admin Dashboard. System status shows all services are operational. Key metrics include total users, recent registrations, and system health indicators. The AI scoring engine status and database connection are monitored in real-time. Check the Audit Trail section for recent platform activity and security events.",
+          "The Users page lets you manage all platform accounts. Users are organized by role: Admin, Fund Manager, Contractor, and Auditor. You can invite new users with the + button, edit existing users by tapping their card, and suspend or remove accounts from the expanded detail view. All changes are logged in the audit trail.",
+      },
+      {
+        patterns: ["filter", "search", "find"],
+        response:
+          "Use the search bar to find users by name or email. The role pills filter by role type, and the status pills filter by Active, Pending, or Suspended status. You can combine filters to narrow down the list.",
       },
     ],
   },
   {
-    pagePattern: "/admin/users",
-    pageName: "User Management",
+    pagePattern: "/admin/programs",
+    pageName: "Programs",
     responses: [
       {
-        patterns: ["user", "manage", "role", "permission", "add"],
+        patterns: ["program", "budget", "create", "fund", "allocation"],
         response:
-          "User Management allows you to view all platform users, their roles, and account status. Roles include Contractor, Fund Manager, Admin, and Auditor — each with different access levels. All role changes and user modifications are logged in the audit trail for compliance tracking.",
+          "The Programs page shows all funding programs under the Saudi Green Initiative. Each card displays the budget allocation, number of RFPs, and active contracts. Tap a card to see the per-RFP breakdown. Use the + button to create a new program.",
+      },
+    ],
+  },
+  {
+    pagePattern: "/admin/system",
+    pageName: "System",
+    responses: [
+      {
+        patterns: ["system", "health", "status", "ai", "engine", "service", "config"],
+        response:
+          "The System page monitors platform health. The AI Scoring Engine status shows whether scoring is operational, along with total applications scored and last scoring time. Below that, platform metrics show total users, active programs, audit events, and service health indicators.",
+      },
+    ],
+  },
+  {
+    pagePattern: "/admin",
+    pageName: "Home",
+    responses: [
+      {
+        patterns: ["overview", "dashboard", "status", "hello", "hi", "summary", "health"],
+        response:
+          "Welcome to the Admin Home. You can see platform activity at a glance: pending user invitations, users active today, and any system issues. The AI Engine status card shows the scoring system's health, and the activity stream below tracks all user logins, account changes, and system events in real time.",
+      },
+      {
+        patterns: ["help", "what can you do", "capabilities"],
+        response:
+          "I can help you manage users, check system status, and navigate platform settings. Ask me about user roles and access levels, program creation and budget allocation, system health and AI scoring status, or audit trail events.",
       },
     ],
   },
