@@ -23,11 +23,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <NavigatorProvider>
       <div className={cn(
-        "flex h-screen overflow-hidden",
+        "app-shell flex h-screen overflow-hidden",
         useTabBarNav ? "bg-neu-base" : "bg-sovereign-parchment"
       )}>
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} disableMobileDrawer={useTabBarNav} />
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="flex flex-col flex-1 overflow-hidden min-w-0">
           <Topbar onMenuToggle={() => setSidebarOpen(true)} />
           <main className={cn(
             "flex-1 overflow-y-auto p-4 md:p-6 relative",

@@ -35,11 +35,20 @@
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     @apply border-border;
+    box-sizing: border-box;
   }
-  body {
+  html, body {
     @apply bg-background text-foreground font-sans antialiased;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 }
 
@@ -595,4 +604,81 @@
 /* ─── Safe Area for Bottom Tab Bar ────────────────────────────────── */
 .pb-safe {
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE VIEWPORT OVERFLOW PREVENTION
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Prevent any element from exceeding viewport width */
+main, section {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Images and media must not overflow */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Monospace text that might overflow containers */
+.font-mono, [class*="font-mono"] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tables must not overflow */
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Safe area insets for iPhone notch/home indicator */
+body {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE DESKTOP LAYOUT — Sidebar + Full-width Content
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Desktop (≥ 768px): Wider content, no tab bar padding ──────── */
+@media (min-width: 768px) {
+  /* Desktop main content area */
+  .app-shell main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 40px !important;
+  }
+
+  /* Desktop: remove mobile-specific bottom padding override */
+  .pb-safe {
+    padding-bottom: 40px !important;
+  }
+}
+
+/* ─── Wide desktop (≥ 1200px) ─────────────────────────────────── */
+@media (min-width: 1200px) {
+  .app-shell main {
+    max-width: 1000px;
+    padding-left: 60px;
+    padding-right: 60px;
+  }
+}
+
+/* ─── Desktop Navigator Panel (slide from right) ────────────────── */
+@media (min-width: 768px) {
+  .navigator-panel-desktop {
+    position: fixed;
+    top: 64px;
+    right: 0;
+    width: 380px;
+    height: calc(100vh - 64px);
+    background: #1a1714;
+    box-shadow: -8px 0 30px rgba(0,0,0,0.3);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+  }
 }

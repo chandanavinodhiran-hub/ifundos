@@ -72,7 +72,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-neu-base px-4 relative overflow-hidden">
+    <div className="login-shell min-h-screen flex flex-col items-center justify-center bg-neu-base px-4 relative overflow-hidden">
       {/* Soft neumorphic background texture */}
       <div className="absolute inset-0 opacity-30" style={{
         backgroundImage: "radial-gradient(circle at 50% 50%, rgba(184,148,63,0.08) 0%, transparent 60%)",

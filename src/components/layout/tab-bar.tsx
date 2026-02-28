@@ -93,7 +93,7 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden tab-bar-nav">
       <div
         className="flex items-end justify-around bg-neu-base px-2"
         style={{

@@ -67,7 +67,7 @@ export default function RegisterPage() {
     "flex h-12 w-full rounded-xl border-0 bg-neu-dark/50 shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sovereign-gold/40 transition-all";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neu-base px-4 relative overflow-hidden">
+    <div className="login-shell min-h-screen flex items-center justify-center bg-neu-base px-4 relative overflow-hidden">
       {/* Soft neumorphic background texture */}
       <div className="absolute inset-0 opacity-30" style={{
         backgroundImage: "radial-gradient(circle at 50% 50%, rgba(184,148,63,0.08) 0%, transparent 60%)",
