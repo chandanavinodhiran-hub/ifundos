@@ -17,6 +17,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   const role = user?.role ?? "";
   const roleLabel = roleLabels[role] ?? role;
@@ -30,13 +31,16 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
   // Hydration guard for portal
   useEffect(() => { setMounted(true); }, []);
 
-  // Close dropdown when clicking outside (desktop)
+  // Close dropdown when clicking outside (desktop + mobile portal)
   useEffect(() => {
     if (!menuOpen) return;
     function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
+      const target = e.target as Node;
+      // Don't close if clicking inside the desktop dropdown area
+      if (dropdownRef.current && dropdownRef.current.contains(target)) return;
+      // Don't close if clicking inside the mobile portal sheet
+      if (sheetRef.current && sheetRef.current.contains(target)) return;
+      setMenuOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -130,7 +134,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
 
       {/* Mobile Bottom Sheet — rendered via portal at document body to escape overflow:hidden containers */}
       {menuOpen && mounted && createPortal(
-        <div className="md:hidden" style={{ position: "relative", zIndex: 99999 }}>
+        <div ref={sheetRef} className="md:hidden" style={{ position: "relative", zIndex: 99999 }}>
           {/* Overlay */}
           <div
             className="fixed inset-0"
