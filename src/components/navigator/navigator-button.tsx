@@ -62,10 +62,11 @@ export function NavigatorButton() {
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2",
+        "fixed bottom-6 right-6 flex flex-col items-end gap-2",
         /* On mobile, hide for Fund Manager role (tab bar has Navigator) */
         isFundManager && "hidden md:flex"
       )}
+      style={{ zIndex: 400 }}
     >
       {/* Mode selector popover */}
       {popoverOpen && !isActive && (

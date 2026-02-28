@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
 import { roleLabels, roleBadgeVariant } from "@/lib/navigation";
 import { LogOut, Building2, Menu, Hexagon, Settings, Bell, ChevronRight } from "lucide-react";
@@ -14,6 +15,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
   const { data: session } = useSession();
   const user = session?.user;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const role = user?.role ?? "";
@@ -24,6 +26,9 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
   const isAuditor = role === "AUDITOR";
   const isAdmin = role === "ADMIN";
   const useTabBar = isFundManager || isContractor || isAuditor || isAdmin;
+
+  // Hydration guard for portal
+  useEffect(() => { setMounted(true); }, []);
 
   // Close dropdown when clicking outside (desktop)
   useEffect(() => {
@@ -47,15 +52,16 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
   return (
     <>
       <header className={cn(
-        "h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 relative z-[100]",
+        "h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 relative",
         useTabBar
           ? "bg-neu-light border-neu-dark/50"
           : "bg-sovereign-cream border-sovereign-warm/20"
-      )}>
+      )} style={{ zIndex: 100 }}>
         {/* Left: Hamburger (only for roles without tab bar) + context */}
         <div className="flex items-center gap-2 text-sm text-sovereign-stone min-w-0">
           {!useTabBar && (
             <button
+              type="button"
               onClick={onMenuToggle}
               className="p-2 -ml-1 md:hidden rounded-lg cursor-pointer shrink-0 hover:bg-sovereign-parchment"
             >
@@ -93,6 +99,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
 
           {/* Avatar circle — tappable */}
           <button
+            type="button"
             onClick={() => setMenuOpen(!menuOpen)}
             className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shrink-0 transition-shadow"
             style={{
@@ -108,8 +115,9 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
           {/* Desktop Dropdown */}
           {menuOpen && (
             <div
-              className="hidden md:block absolute top-[52px] right-0 w-[280px] rounded-2xl p-4 z-[301]"
+              className="hidden md:block absolute top-[52px] right-0 w-[280px] rounded-2xl p-4"
               style={{
+                zIndex: 9999,
                 background: "#e8e0d0",
                 boxShadow: "8px 8px 24px rgba(156,148,130,0.5), -8px -8px 24px rgba(255,250,240,0.7), 0 10px 40px rgba(0,0,0,0.15)",
               }}
@@ -120,19 +128,20 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
         </div>
       </header>
 
-      {/* Mobile Bottom Sheet */}
-      {menuOpen && (
-        <div className="md:hidden">
+      {/* Mobile Bottom Sheet — rendered via portal at document body to escape overflow:hidden containers */}
+      {menuOpen && mounted && createPortal(
+        <div className="md:hidden" style={{ position: "relative", zIndex: 99999 }}>
           {/* Overlay */}
           <div
-            className="fixed inset-0 z-[300]"
-            style={{ background: "rgba(26, 23, 20, 0.4)", backdropFilter: "blur(4px)" }}
+            className="fixed inset-0"
+            style={{ zIndex: 99999, background: "rgba(26, 23, 20, 0.4)", backdropFilter: "blur(4px)" }}
             onClick={() => setMenuOpen(false)}
           />
           {/* Sheet */}
           <div
-            className="fixed bottom-0 left-0 right-0 z-[301] animate-slide-up-sheet avatar-sheet"
+            className="fixed bottom-0 left-0 right-0 animate-slide-up-sheet avatar-sheet"
             style={{
+              zIndex: 100000,
               background: "#e8e0d0",
               borderRadius: "24px 24px 0 0",
               padding: "16px 24px 40px",
@@ -143,7 +152,8 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "rgba(122,114,101,0.3)" }} />
             <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} onClose={() => setMenuOpen(false)} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
@@ -163,6 +173,11 @@ function AvatarMenuContent({
   initials: string;
   onClose: () => void;
 }) {
+  function handleSignOut(e: React.MouseEvent) {
+    e.stopPropagation();
+    signOut({ callbackUrl: "/login" });
+  }
+
   return (
     <div className="space-y-4">
       {/* User info */}
@@ -195,24 +210,28 @@ function AvatarMenuContent({
       {/* Menu items */}
       <div className="space-y-1">
         <button
-          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-neu-dark/30"
-          onClick={onClose}
+          type="button"
+          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-neu-dark/30 active:bg-neu-dark/50"
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          style={{ WebkitTapHighlightColor: "transparent" }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pointer-events-none">
             <Settings className="w-4 h-4" style={{ color: "#7a7265" }} />
             <span className="text-[14px] font-medium" style={{ color: "#1a1714" }}>Account Settings</span>
           </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "#9a9488" }} />
+          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "#9a9488" }} />
         </button>
         <button
-          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-neu-dark/30"
-          onClick={onClose}
+          type="button"
+          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-neu-dark/30 active:bg-neu-dark/50"
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          style={{ WebkitTapHighlightColor: "transparent" }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pointer-events-none">
             <Bell className="w-4 h-4" style={{ color: "#7a7265" }} />
             <span className="text-[14px] font-medium" style={{ color: "#1a1714" }}>Notification Preferences</span>
           </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "#9a9488" }} />
+          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "#9a9488" }} />
         </button>
       </div>
 
@@ -221,11 +240,13 @@ function AvatarMenuContent({
 
       {/* Sign Out */}
       <button
-        className="w-full flex items-center gap-3 py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-[rgba(156,74,74,0.08)]"
-        onClick={() => signOut({ callbackUrl: "/login" })}
+        type="button"
+        className="w-full flex items-center gap-3 py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-[rgba(156,74,74,0.08)] active:bg-[rgba(156,74,74,0.15)]"
+        onClick={handleSignOut}
+        style={{ WebkitTapHighlightColor: "transparent" }}
       >
-        <LogOut className="w-4 h-4" style={{ color: "#9c4a4a" }} />
-        <span className="text-[14px] font-semibold" style={{ color: "#9c4a4a" }}>Sign Out</span>
+        <LogOut className="w-4 h-4 pointer-events-none" style={{ color: "#9c4a4a" }} />
+        <span className="text-[14px] font-semibold pointer-events-none" style={{ color: "#9c4a4a" }}>Sign Out</span>
       </button>
 
       {/* Divider */}

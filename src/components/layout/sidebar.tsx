@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { roleNavigation } from "@/lib/navigation";
 import { Hexagon } from "lucide-react";
-import { useNavigator } from "@/components/navigator/navigator-context";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -17,7 +16,6 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { setMode } = useNavigator();
 
   const role = session?.user?.role ?? "CONTRACTOR";
   const navItems = roleNavigation[role] ?? [];
@@ -85,29 +83,6 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
             );
           })}
 
-          {/* Navigator separator + item */}
-          <div className="pt-4 mt-4" style={{ borderTop: "1px solid rgba(156,148,130,0.2)" }}>
-            <button
-              onClick={() => setMode("chat")}
-              className="flex items-center gap-3.5 px-4 py-3 rounded-[14px] text-[14px] font-medium cursor-pointer transition-all duration-200 w-full hover:bg-[rgba(184,148,63,0.06)]"
-              style={{ color: "#7a7265" }}
-            >
-              {/* Gold orb inside dark sphere */}
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: "#1a1714" }}
-              >
-                <div
-                  className="w-[10px] h-[10px] rounded-full animate-orb-pulse"
-                  style={{
-                    background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)",
-                    boxShadow: "0 0 8px rgba(184,148,63,0.35)",
-                  }}
-                />
-              </div>
-              <span>Navigator</span>
-            </button>
-          </div>
         </nav>
 
         {/* Footer */}

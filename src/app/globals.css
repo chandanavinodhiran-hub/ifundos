@@ -643,42 +643,15 @@ body {
    RESPONSIVE DESKTOP LAYOUT — Sidebar + Full-width Content
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── Desktop (≥ 768px): Wider content, no tab bar padding ──────── */
+/* ─── Desktop (≥ 768px): Full-width content, no tab bar padding ── */
 @media (min-width: 768px) {
-  /* Desktop main content area */
+  /* Desktop: content fills available space, sidebar handles nav */
   .app-shell main {
-    max-width: 900px;
-    margin: 0 auto;
     padding-bottom: 40px !important;
   }
 
   /* Desktop: remove mobile-specific bottom padding override */
   .pb-safe {
     padding-bottom: 40px !important;
-  }
-}
-
-/* ─── Wide desktop (≥ 1200px) ─────────────────────────────────── */
-@media (min-width: 1200px) {
-  .app-shell main {
-    max-width: 1000px;
-    padding-left: 60px;
-    padding-right: 60px;
-  }
-}
-
-/* ─── Desktop Navigator Panel (slide from right) ────────────────── */
-@media (min-width: 768px) {
-  .navigator-panel-desktop {
-    position: fixed;
-    top: 64px;
-    right: 0;
-    width: 380px;
-    height: calc(100vh - 64px);
-    background: #1a1714;
-    box-shadow: -8px 0 30px rgba(0,0,0,0.3);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
   }
 }

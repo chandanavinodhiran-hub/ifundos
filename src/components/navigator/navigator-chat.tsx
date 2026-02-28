@@ -86,14 +86,15 @@ export function NavigatorChat() {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm md:hidden"
+          style={{ zIndex: 499 }}
           onClick={() => setMode("closed")}
         />
       )}
 
       <div
         className={cn(
-          "fixed z-50 flex flex-col transition-transform duration-300 ease-out",
+          "fixed flex flex-col transition-transform duration-300 ease-out",
           /* Desktop: side panel */
           "md:top-0 md:right-0 md:w-[420px] md:h-full md:border-l md:border-sovereign-ink md:bg-sovereign-charcoal md:shadow-2xl md:shadow-black/40",
           /* Mobile: full-screen dark charcoal */
@@ -102,7 +103,7 @@ export function NavigatorChat() {
             ? "translate-x-0 md:translate-x-0 translate-y-0"
             : "translate-x-full md:translate-x-full translate-y-full md:translate-y-0"
         )}
-        style={{ background: "#1a1714" }}
+        style={{ background: "#1a1714", zIndex: 500 }}
       >
         {/* Header */}
         <div
