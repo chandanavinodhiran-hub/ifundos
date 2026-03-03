@@ -693,20 +693,11 @@ export default function LandingPage() {
         <video className="section-video" autoPlay muted loop playsInline>
           <source src="https://github.com/chandanavinodhiran-hub/ifundos/releases/download/v1.0-assets/Video.Project.18.mp4" type="video/mp4" />
         </video>
-        <div className="s2-overlay" />
-        <div className="s-text vision-layout">
-          <img src="/emblem_white_transparent.png" alt="" className="vision-emblem s-el" style={{ transitionDelay: "0s" }} />
-          <div className="vision-bottom">
-            <h2 className="s-el cin-headline" style={{ transitionDelay: "0.15s", textAlign: "center" }}>
-              Built for the Saudi Green Initiative.
-            </h2>
-            <p className="section-label s-el" style={{ transitionDelay: "0.3s", textAlign: "center" }}>
-              SAR 188 Billion in Environmental Stewardship
-            </p>
-            <p className="s-el powered-by" style={{ transitionDelay: "0.5s" }}>
-              Powered by Iozera Technologies
-            </p>
-          </div>
+        <div className="vision-gradient" />
+        <div className="s-text text-bl">
+          <h2 className="s-el cin-headline" style={{ transitionDelay: "0.15s" }}>
+            Built for the Saudi Green Initiative.
+          </h2>
         </div>
       </section>
 
@@ -1102,30 +1093,10 @@ export default function LandingPage() {
         /* ════════════════════════════════════════════════════════════
          * SECTION 5 — VISION
          * ════════════════════════════════════════════════════════════ */
-        .vision-layout {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          height: 100%;
-          justify-content: center;
-          padding: 0 24px;
-        }
-        .vision-emblem {
-          width: 200px;
-          height: 200px;
-          object-fit: contain;
-          animation: breathe 6s ease-in-out infinite;
-          filter: drop-shadow(0 0 40px rgba(92, 111, 181, 0.06));
-          margin-bottom: 60px;
-        }
-        .vision-bottom { display: flex; flex-direction: column; align-items: center; }
-        .powered-by {
-          margin-top: 40px;
-          font-size: 9px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: rgba(230, 232, 240, 0.12);
-          text-align: center;
+        .vision-gradient {
+          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+          pointer-events: none; z-index: 2;
+          background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 60%);
         }
 
         /* ════════════════════════════════════════════════════════════
@@ -1195,7 +1166,6 @@ export default function LandingPage() {
           .scroll-indicator { display:none; }
           .cin-headline { font-size:clamp(24px, 6vw, 28px); }
           .text-bl { left:32px; right:32px; bottom:64px; }
-          .vision-emblem { width:120px; height:120px; }
           .navigator-glow { width:240px; height:240px; }
           .navigator-sapling svg { width:80px; height:160px; }
           .navigator-message { max-width:90vw; padding:24px 28px; }
