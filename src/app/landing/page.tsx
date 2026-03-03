@@ -630,7 +630,7 @@ export default function LandingPage() {
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="technology" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
-          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/section2-bg-FbqnZOjGcfzRhRtBrHnd2ZqLwrP2C6.mp4" type="video/mp4" />
+          <source src="https://github.com/chandanavinodhiran-hub/ifundos/releases/download/v1.0-assets/section2.mp4" type="video/mp4" />
         </video>
         <div className="s2-overlay" />
         <div className="s-text text-bl">
@@ -646,7 +646,7 @@ export default function LandingPage() {
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section s3-section" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
-          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/Video%20Project%2016-6Najykwvpj2i1JMqFC2XQeSKZb0OcX.mp4" type="video/mp4" />
+          <source src="https://github.com/chandanavinodhiran-hub/ifundos/releases/download/v1.0-assets/Video.Project.16.mp4" type="video/mp4" />
         </video>
         <div className="s2-overlay" />
         <div className="s-text text-bl">
@@ -693,7 +693,7 @@ export default function LandingPage() {
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="about" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
-          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/Video%20Project%2018-A72Wz1OGhadVv0kLR9FXpGiS7WJ0zq.mp4" type="video/mp4" />
+          <source src="https://github.com/chandanavinodhiran-hub/ifundos/releases/download/v1.0-assets/Video.Project.18.mp4" type="video/mp4" />
         </video>
         <div className="s2-overlay" />
         <div className="s-text vision-layout">
