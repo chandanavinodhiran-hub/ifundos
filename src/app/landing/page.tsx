@@ -727,29 +727,27 @@ export default function LandingPage() {
         <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
         <div className="access-overlay" />
         <div className="s-text access-center">
-          <div className="access-card s-el" style={{ transitionDelay: "0s" }}>
-            <h2 className="access-title">Request Access</h2>
-            <form className="access-form" onSubmit={(e) => e.preventDefault()}>
-              <div className="access-field">
-                <label className="access-label">Full Name</label>
-                <input type="text" placeholder="Your full name" className="access-input" />
-              </div>
-              <div className="access-field">
-                <label className="access-label">Email Address</label>
-                <input type="email" placeholder="you@organization.sa" className="access-input" />
-              </div>
-              <div className="access-field">
-                <label className="access-label">Organization</label>
-                <input type="text" placeholder="Your organization" className="access-input" />
-              </div>
-              <div className="access-field">
-                <label className="access-label">Role</label>
-                <input type="text" placeholder="Fund Manager, Contractor, or Auditor" className="access-input" />
-              </div>
-              <button type="submit" className="access-submit">Request Access →</button>
-            </form>
-            <p className="access-footer">Sovereign institutions and qualified contractors only.</p>
-          </div>
+          <h2 className="access-title s-el" style={{ transitionDelay: "0s" }}>Request Access</h2>
+          <form className="access-form" onSubmit={(e) => e.preventDefault()}>
+            <div className="access-field s-el" style={{ transitionDelay: "0.15s" }}>
+              <label className="access-label">Full Name</label>
+              <input type="text" placeholder="Your full name" className="access-input" />
+            </div>
+            <div className="access-field s-el" style={{ transitionDelay: "0.25s" }}>
+              <label className="access-label">Email Address</label>
+              <input type="email" placeholder="you@organization.sa" className="access-input" />
+            </div>
+            <div className="access-field s-el" style={{ transitionDelay: "0.35s" }}>
+              <label className="access-label">Organization</label>
+              <input type="text" placeholder="Your organization" className="access-input" />
+            </div>
+            <div className="access-field s-el" style={{ transitionDelay: "0.45s" }}>
+              <label className="access-label">Role</label>
+              <input type="text" placeholder="Fund Manager, Contractor, or Auditor" className="access-input" />
+            </div>
+            <button type="submit" className="access-submit s-el" style={{ transitionDelay: "0.55s" }}>Request Access</button>
+          </form>
+          <p className="access-footer s-el" style={{ transitionDelay: "0.65s" }}>Sovereign institutions and qualified contractors only.</p>
         </div>
       </section>
 
@@ -1169,108 +1167,99 @@ export default function LandingPage() {
         }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 6 — REQUEST ACCESS (glassmorphic card)
+         * SECTION 6 — REQUEST ACCESS (Rolls Royce enquiry style)
          * ════════════════════════════════════════════════════════════ */
         .access-overlay {
           position: absolute; inset: 0;
-          background: rgba(0,0,0,0.45);
+          background: linear-gradient(to bottom,
+            rgba(10,14,26,0.5) 0%,
+            rgba(10,14,26,0.7) 40%,
+            rgba(10,14,26,0.85) 100%);
           pointer-events: none; z-index: 2;
         }
         .access-center {
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           height: 100%;
-        }
-        .access-card {
           position: relative; z-index: 3;
-          background: rgba(10, 15, 26, 0.75);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 22px;
-          padding: 48px 52px;
-          max-width: 480px;
-          width: 100%;
-          box-shadow: 0 24px 48px rgba(0,0,0,0.3);
         }
         .access-title {
           font-family: 'DM Sans', sans-serif;
-          font-size: 34px;
+          font-size: 44px;
           font-weight: 300;
-          color: rgba(255,255,255,0.92);
+          color: rgba(230,232,240,0.85);
+          letter-spacing: 1.5px;
+          margin: 0 0 52px;
           text-align: center;
-          margin: 0 0 32px;
-          letter-spacing: 0.5px;
         }
         .access-form {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 32px;
+          width: 100%;
+          max-width: 520px;
+          padding: 0 24px;
+          box-sizing: border-box;
         }
-        .access-field { display: flex; flex-direction: column; gap: 6px; }
+        .access-field { display: flex; flex-direction: column; gap: 4px; }
         .access-label {
           font-family: 'DM Sans', sans-serif;
           font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 2.5px;
+          font-weight: 400;
+          letter-spacing: 3px;
           text-transform: uppercase;
-          color: rgba(255,255,255,0.45);
+          color: rgba(230,232,240,0.35);
         }
         .access-input {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 11px;
-          padding: 15px 16px;
-          color: rgba(255,255,255,0.85);
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid rgba(230,232,240,0.12);
+          border-radius: 0;
+          padding: 16px 0;
+          color: rgba(230,232,240,0.7);
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
           font-weight: 300;
           outline: none;
           width: 100%;
-          box-sizing: border-box;
-          transition: border-color 0.3s ${C.easeHover}, background 0.3s ${C.easeHover};
+          transition: border-color 0.4s ${C.easeContent};
         }
-        .access-input::placeholder { color: rgba(255,255,255,0.25); }
+        .access-input::placeholder {
+          color: rgba(230,232,240,0.2);
+          font-weight: 300;
+          letter-spacing: 0.5px;
+        }
         .access-input:focus {
-          border-color: rgba(130, 90, 220, 0.35);
-          background: rgba(255,255,255,0.06);
+          border-bottom-color: rgba(230,232,240,0.5);
         }
         .access-submit {
-          margin-top: 8px;
-          width: 100%;
-          padding: 16px;
-          border-radius: 11px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 500;
-          letter-spacing: 1px;
-          cursor: pointer;
-          background: linear-gradient(135deg,
-            rgba(130, 90, 220, 0.35),
-            rgba(90, 140, 210, 0.30),
-            rgba(75, 185, 195, 0.35));
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          color: rgba(225, 218, 255, 0.95);
-          border: 1px solid rgba(160, 130, 240, 0.20);
-          box-shadow: 0 0 30px rgba(120, 90, 220, 0.10);
-          transition: all 0.3s ${C.easeHover};
-        }
-        .access-submit:hover {
-          transform: translateY(-1px);
-          background: linear-gradient(135deg,
-            rgba(130, 90, 220, 0.45),
-            rgba(90, 140, 210, 0.40),
-            rgba(75, 185, 195, 0.45));
-          border-color: rgba(180, 150, 255, 0.30);
-          box-shadow: 0 0 40px rgba(120, 90, 220, 0.15);
-        }
-        .access-footer {
-          margin: 20px 0 0;
+          background: transparent;
+          border: 1px solid rgba(230,232,240,0.2);
+          border-radius: 0;
+          padding: 16px 56px;
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
-          color: rgba(255,255,255,0.25);
+          font-weight: 400;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: rgba(230,232,240,0.5);
+          cursor: pointer;
+          transition: all 0.4s ${C.easeContent};
+          margin-top: 8px;
+          align-self: center;
+        }
+        .access-submit:hover {
+          background: rgba(230,232,240,0.05);
+          border-color: rgba(230,232,240,0.4);
+          color: rgba(230,232,240,0.8);
+        }
+        .access-footer {
+          margin: 24px 0 0;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px;
+          color: rgba(230,232,240,0.2);
           text-align: center;
         }
 
@@ -1290,8 +1279,8 @@ export default function LandingPage() {
           .navigator-sapling svg { width:80px; height:160px; }
           .navigator-message { max-width:90vw; padding:24px 28px; }
           .navigator-message-text { font-size:14px; }
-          .access-card { margin:0 20px; padding:36px 28px; }
-          .access-title { font-size:28px; margin-bottom:24px; }
+          .access-title { font-size:32px; margin-bottom:36px; }
+          .access-form { padding:0 20px; }
         }
       `}</style>
     </div>
