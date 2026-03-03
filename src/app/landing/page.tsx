@@ -633,7 +633,10 @@ export default function LandingPage() {
        * SECTION 3 — SPATIAL PIPELINE
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section s3-section">
-        <PipelineCanvas />
+        <video className="section-video" autoPlay muted loop playsInline>
+          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/Video%20Project%2016-6Najykwvpj2i1JMqFC2XQeSKZb0OcX.mp4" type="video/mp4" />
+        </video>
+        <div className="s2-overlay" />
         <div className="s-text text-bl">
           <p className="section-label s-el" style={{ transitionDelay: "0.8s" }}>Spatial Pipeline</p>
           <h2 className="s-el cin-headline" style={{ transitionDelay: "1.0s" }}>
