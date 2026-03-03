@@ -600,7 +600,7 @@ export default function LandingPage() {
           <span className="nav-menu-label">Menu</span>
         </div>
         <div className="nav-center">
-          <img src="/emblem_white_transparent.png" alt="iFundOS" className="nav-logo" />
+          <img src="/emblem_white_transparent.png" alt="iFundOS" className="nav-logo" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ cursor: "pointer" }} />
         </div>
         <div className="nav-right">
           <a href="#access" className="nav-cta">Request Access</a>
