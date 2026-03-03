@@ -559,14 +559,24 @@ function useParallax() {
  * MAIN PAGE
  * ═══════════════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false);
+  const [navOnLight, setNavOnLight] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useScrollReveal();
   useParallax();
 
   const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 50);
+    if (window.scrollY <= 50) { setNavOnLight(false); return; }
+    const sections = document.querySelectorAll("[data-theme]");
+    let overLight = false;
+    for (const section of sections) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 80 && rect.bottom > 80) {
+        overLight = section.getAttribute("data-theme") === "light";
+        break;
+      }
+    }
+    setNavOnLight(overLight);
   }, []);
 
   useEffect(() => {
@@ -577,7 +587,7 @@ export default function LandingPage() {
   return (
     <div className="landing-root">
       {/* ═══ NAVBAR (RR three-column: MENU | emblem | REQUEST ACCESS) ═══ */}
-      <nav className={`landing-nav ${scrolled ? "nav-scrolled" : ""}`}>
+      <nav className={`landing-nav ${navOnLight ? "nav-scrolled" : ""}`}>
         <div className="nav-left" onClick={() => setMenuOpen((o) => !o)}>
           <div className="nav-hamburger">
             <span className={`ham-line ${menuOpen ? "ham-top-open" : ""}`} />
@@ -603,7 +613,7 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════
        * SECTION 1 — HERO (RR Spectre: image + title + CTA only)
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section s-visible hero-section" id="overview">
+      <section className="cin-section s-visible hero-section" id="overview" data-theme="dark">
         <img src="/forest-hero.png" alt="" className="hero-image" />
         <div className="hero-overlay" />
         <div className="hero-content">
@@ -618,7 +628,7 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════
        * SECTION 2 — THE PLATFORM
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section" id="technology">
+      <section className="cin-section" id="technology" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
           <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/section2-bg-FbqnZOjGcfzRhRtBrHnd2ZqLwrP2C6.mp4" type="video/mp4" />
         </video>
@@ -634,7 +644,7 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════
        * SECTION 3 — SPATIAL PIPELINE
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section s3-section">
+      <section className="cin-section s3-section" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
           <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/Video%20Project%2016-6Najykwvpj2i1JMqFC2XQeSKZb0OcX.mp4" type="video/mp4" />
         </video>
@@ -650,7 +660,7 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════
        * SECTION 4 — NAVIGATOR AI
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section nav4-section">
+      <section className="cin-section nav4-section" data-theme="dark">
         <div className="section-overlay" style={{ background: "#0A0E1A" }} />
         {/* Sapling */}
         <div className="s-text nav4-center">
@@ -681,7 +691,7 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════
        * SECTION 5 — THE VISION
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section" id="about">
+      <section className="cin-section" id="about" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
           <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/Video%20Project%2018-A72Wz1OGhadVv0kLR9FXpGiS7WJ0zq.mp4" type="video/mp4" />
         </video>
@@ -705,7 +715,7 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════
        * SECTION 6 — REQUEST ACCESS
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section" id="access">
+      <section className="cin-section" id="access" data-theme="dark">
         <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
         <div className="s2-overlay" />
         <div className="s-text access-center">
@@ -879,7 +889,7 @@ export default function LandingPage() {
           font-size: clamp(32px, 4vw, 48px);
           font-weight: 200;
           letter-spacing: 2px;
-          color: rgba(230, 232, 240, 0.9);
+          color: rgba(230, 232, 240, 0.85);
           line-height: 1.25;
           margin: 0;
         }
@@ -993,7 +1003,7 @@ export default function LandingPage() {
          * ════════════════════════════════════════════════════════════ */
         .text-bl {
           position: absolute;
-          bottom: 90px;
+          bottom: 96px;
           left: 72px;
           z-index: 10;
           max-width: 600px;
