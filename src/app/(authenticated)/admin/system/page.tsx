@@ -21,6 +21,24 @@ interface SystemStats {
 }
 
 /* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* ------------------------------------------------------------------ */
+const NEU_RAISED: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(12px)",
+  borderTop: "1.5px solid rgba(255, 255, 255, 0.8)",
+  borderLeft: "1.5px solid rgba(255, 255, 255, 0.7)",
+  borderBottom: "1.5px solid rgba(255, 255, 255, 0.15)",
+  borderRight: "1.5px solid rgba(255, 255, 255, 0.15)",
+  boxShadow: "10px 10px 25px rgba(155, 161, 180, 0.4), -10px -10px 25px rgba(255, 255, 255, 0.8)",
+};
+
+const NEU_INSET: React.CSSProperties = {
+  background: "rgba(228, 231, 238, 0.5)",
+  boxShadow: "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+};
+
+/* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 function relativeTime(ts: string): string {
@@ -52,36 +70,36 @@ export default function AdminSystemPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--accent)" }} />
       </div>
     );
   }
   if (!stats) return null;
 
   const aiStatus = stats.aiEngineStatus;
-  const statusColor = aiStatus === "operational" ? "#4a7c59" : aiStatus === "processing" ? "#b8943f" : aiStatus === "degraded" ? "#b87a3f" : "#9c4a4a";
+  const statusColor = aiStatus === "operational" ? "rgba(74, 140, 106, 0.85)" : aiStatus === "processing" ? "#5C6FB5" : aiStatus === "degraded" ? "rgba(175, 148, 63, 0.85)" : "#9c4a4a";
   const statusLabel = aiStatus === "operational" ? "Operational" : aiStatus === "processing" ? "Processing" : aiStatus === "degraded" ? "Degraded" : "Offline";
   const lastScoringAgo = stats.lastScoringEvent
     ? relativeTime(stats.lastScoringEvent.timestamp)
     : "Never";
 
   const services = [
-    { label: "Platform", status: "Operational", detail: "99.9% uptime", color: "#4a7c59" },
-    { label: "Database", status: "Operational", detail: "Operational", color: "#4a7c59" },
-    { label: "Authentication", status: "Active", detail: "NextAuth v4", color: "#4a7c59" },
+    { label: "Platform", status: "Operational", detail: "99.9% uptime", color: "rgba(74, 140, 106, 0.85)" },
+    { label: "Database", status: "Operational", detail: "Operational", color: "rgba(74, 140, 106, 0.85)" },
+    { label: "Authentication", status: "Active", detail: "NextAuth v4", color: "rgba(74, 140, 106, 0.85)" },
     {
       label: "Audit Chain",
       status: "Verified",
       detail: `${stats.auditCount.toLocaleString()} events`,
-      color: "#4a7c59",
+      color: "rgba(74, 140, 106, 0.85)",
     },
   ];
 
   const metricCards = [
-    { label: "Total Users", value: stats.userCount, icon: Users, color: "#b8943f" },
-    { label: "Active Programs", value: stats.programCount, icon: Building2, color: "#4a7c59" },
-    { label: "Audit Events", value: stats.auditCount, icon: Database, color: "#7a7265" },
-    { label: "Organizations", value: stats.orgCount, icon: Landmark, color: "#b87a3f" },
+    { label: "Total Users", value: stats.userCount, icon: Users, color: "rgba(30, 34, 53, 0.4)" },
+    { label: "Active Programs", value: stats.programCount, icon: Building2, color: "rgba(30, 34, 53, 0.4)" },
+    { label: "Audit Events", value: stats.auditCount, icon: Database, color: "rgba(30, 34, 53, 0.4)" },
+    { label: "Organizations", value: stats.orgCount, icon: Landmark, color: "rgba(30, 34, 53, 0.4)" },
   ];
 
   return (
@@ -89,44 +107,38 @@ export default function AdminSystemPage() {
       {/* ── Header ── */}
       <div>
         <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: "#b8943f" }}
+          className="text-[10px] font-semibold uppercase tracking-widest"
+          style={{ color: "#64748B", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
         >
           ADMINISTRATION
         </p>
         <h1
           className="text-[22px] leading-tight mt-1"
-          style={{ fontFamily: "var(--font-sans)", fontWeight: 800, color: "#1a1714" }}
+          style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, color: "rgba(30, 34, 53, 0.85)" }}
         >
           System
         </h1>
-        <p className="text-[13px] mt-0.5" style={{ color: "#7a7265" }}>
+        <p className="text-[13px] mt-0.5" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
           Platform health and performance
         </p>
       </div>
 
-      {/* ── AI Engine Hero Card ── */}
+      {/* ── AI Engine Hero Card — raised neumorphic ── */}
       <div
-        className="rounded-[18px] p-5"
-        style={{
-          background: "#e8e0d0",
-          boxShadow:
-            "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
-        }}
+        className="rounded-[20px] p-5"
+        style={{ ...NEU_RAISED, borderRadius: "20px" }}
       >
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
             style={{
-              background: "#e8e0d0",
-              boxShadow:
-                "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+              background: "rgba(228, 231, 238, 0.5)",
             }}
           >
-            <Cpu className="w-6 h-6" style={{ color: "#b8943f" }} />
+            <Cpu className="w-6 h-6" style={{ color: "rgba(30, 34, 53, 0.5)" }} />
           </div>
           <div className="flex-1">
-            <h3 className="text-[16px] font-bold" style={{ color: "#1a1714" }}>
+            <h3 className="text-[18px]" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>
               AI Scoring Engine
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
@@ -134,10 +146,10 @@ export default function AdminSystemPage() {
                 className="w-2.5 h-2.5 rounded-full"
                 style={{
                   background: statusColor,
-                  boxShadow: aiStatus === "operational" ? `0 0 8px ${statusColor}60` : "none",
+                  boxShadow: aiStatus === "operational" ? `0 0 8px rgba(74, 140, 106, 0.4)` : "none",
                 }}
               />
-              <span className="text-[13px] font-semibold" style={{ color: statusColor }}>
+              <span className="text-[13px]" style={{ fontWeight: 500, color: statusColor, fontFamily: "'DM Sans', sans-serif" }}>
                 {statusLabel}
               </span>
             </div>
@@ -147,66 +159,74 @@ export default function AdminSystemPage() {
         {/* 2-col inset wells */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div
-            className="p-3 text-center rounded-[14px]"
-            style={{
-              background: "#e8e0d0",
-              boxShadow:
-                "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-            }}
+            className="p-4 text-center rounded-[14px]"
+            style={NEU_INSET}
           >
             <AnimatedCounter
               end={stats.scoredAppCount}
               duration={1000}
-              className="font-sans font-extrabold text-[22px] leading-none tabular-nums"
-              style={{ color: "#b8943f" }}
+              className="font-light text-[36px] leading-none tabular-nums"
+              style={{ color: "rgba(30, 34, 53, 0.75)", fontFamily: "'DM Sans', sans-serif" }}
             />
-            <p className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: "#7a7265" }}>
+            <p
+              className="mt-1"
+              style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "2.5px",
+                color: "rgba(30, 34, 53, 0.5)",
+                fontFamily: "'DM Sans', sans-serif",
+                textTransform: "uppercase" as const,
+              }}
+            >
               Apps Scored
             </p>
           </div>
           <div
-            className="p-3 text-center rounded-[14px]"
-            style={{
-              background: "#e8e0d0",
-              boxShadow:
-                "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-            }}
+            className="p-4 text-center rounded-[14px]"
+            style={NEU_INSET}
           >
             <p
-              className="font-sans font-extrabold text-[22px] leading-none"
-              style={{ color: "#b8943f" }}
+              className="font-light text-[36px] leading-none"
+              style={{ color: "rgba(30, 34, 53, 0.75)", fontFamily: "'DM Sans', sans-serif" }}
             >
               {lastScoringAgo}
             </p>
-            <p className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: "#7a7265" }}>
+            <p
+              className="mt-1"
+              style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "2.5px",
+                color: "rgba(30, 34, 53, 0.5)",
+                fontFamily: "'DM Sans', sans-serif",
+                textTransform: "uppercase" as const,
+              }}
+            >
               Last Scoring
             </p>
           </div>
         </div>
       </div>
 
-      {/* ── Platform Metrics ── */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* ── Platform Metrics — 2x2 inset ── */}
+      <div className="grid grid-cols-2 gap-4">
         {metricCards.map((card) => {
           const Icon = card.icon;
           return (
             <div
               key={card.label}
-              className="rounded-[18px] p-4"
-              style={{
-                background: "#e8e0d0",
-                boxShadow:
-                  "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-              }}
+              className="rounded-[18px] p-5"
+              style={NEU_INSET}
             >
               <Icon className="w-5 h-5 mb-2" style={{ color: card.color }} />
               <AnimatedCounter
                 end={card.value}
                 duration={1200}
-                className="font-sans font-extrabold text-[26px] leading-none tabular-nums"
-                style={{ color: "#1a1714" }}
+                className="font-light text-[36px] leading-none tabular-nums"
+                style={{ color: "rgba(30, 34, 53, 0.75)", fontFamily: "'DM Sans', sans-serif" }}
               />
-              <p className="text-[11px] font-semibold mt-1" style={{ color: "#7a7265" }}>
+              <p className="text-[13px] mt-1" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
                 {card.label}
               </p>
             </div>
@@ -214,28 +234,31 @@ export default function AdminSystemPage() {
         })}
       </div>
 
-      {/* ── Service Health List ── */}
+      {/* ── Service Health List — raised neumorphic ── */}
       <div>
         <h2
-          className="text-[11px] font-semibold uppercase tracking-widest mb-3"
-          style={{ color: "#7a7265" }}
+          className="mb-3"
+          style={{
+            fontSize: "10px",
+            fontWeight: 600,
+            letterSpacing: "2.5px",
+            color: "rgba(30, 34, 53, 0.5)",
+            fontFamily: "'DM Sans', sans-serif",
+            textTransform: "uppercase" as const,
+          }}
         >
           Service Health
         </h2>
         <div
-          className="rounded-[18px] overflow-hidden"
-          style={{
-            background: "#e8e0d0",
-            boxShadow:
-              "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
-          }}
+          className="rounded-[20px] overflow-hidden"
+          style={{ ...NEU_RAISED, borderRadius: "20px" }}
         >
           {services.map((service, i) => (
             <div
               key={service.label}
-              className="flex items-center justify-between px-4 py-3.5"
+              className="flex items-center justify-between px-5 py-3.5"
               style={{
-                borderBottom: i < services.length - 1 ? "1px solid rgba(156,148,130,0.15)" : "none",
+                borderBottom: i < services.length - 1 ? "1px solid rgba(30, 34, 53, 0.06)" : "none",
               }}
             >
               <div className="flex items-center gap-2.5">
@@ -243,39 +266,42 @@ export default function AdminSystemPage() {
                   className="w-2 h-2 rounded-full shrink-0"
                   style={{ background: service.color }}
                 />
-                <span className="text-[14px] font-semibold" style={{ color: "#1a1714" }}>
+                <span className="text-[14px]" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>
                   {service.label}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-right">
-                <span className="text-[12px] font-mono" style={{ color: "#9a9488" }}>
+                <span className="text-[13px]" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
                   {service.detail}
                 </span>
-                <CheckCircle className="w-4 h-4" style={{ color: service.color }} />
+                <CheckCircle className="w-4 h-4" style={{ color: "rgba(74, 140, 106, 0.6)" }} />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Error Log ── */}
+      {/* ── Recent Errors ── */}
       <div>
         <h2
-          className="text-[11px] font-semibold uppercase tracking-widest mb-3"
-          style={{ color: "#7a7265" }}
+          className="mb-3"
+          style={{
+            fontSize: "10px",
+            fontWeight: 600,
+            letterSpacing: "2.5px",
+            color: "rgba(30, 34, 53, 0.5)",
+            fontFamily: "'DM Sans', sans-serif",
+            textTransform: "uppercase" as const,
+          }}
         >
           Recent Errors
         </h2>
         <div
-          className="rounded-[18px] p-4 flex items-center gap-3"
-          style={{
-            background: "#e8e0d0",
-            boxShadow:
-              "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-          }}
+          className="rounded-[18px] p-4 flex items-center gap-3 accent-left-green overflow-hidden"
+          style={NEU_INSET}
         >
-          <CheckCircle className="w-5 h-5 shrink-0" style={{ color: "#4a7c59" }} />
-          <p className="text-[13px]" style={{ color: "#7a7265" }}>
+          <CheckCircle className="w-5 h-5 shrink-0" style={{ color: "rgba(74, 140, 106, 0.85)" }} />
+          <p className="text-[13px]" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
             No system errors in the last 7 days
           </p>
         </div>

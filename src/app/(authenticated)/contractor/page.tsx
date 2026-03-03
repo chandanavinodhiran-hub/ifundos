@@ -276,6 +276,7 @@ export default function ContractorHome() {
         {/* Full-width greeting row */}
         <div className="animate-in-1 mb-6">
           <p
+            className="hidden sm:block"
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: 10,
@@ -288,6 +289,7 @@ export default function ContractorHome() {
             {dateStr}
           </p>
           <div
+            className="greeting-title"
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: 32,
@@ -481,7 +483,7 @@ export default function ContractorHome() {
                 <div
                   key={well.label}
                   style={{
-                    padding: "20px 16px",
+                    padding: "16px 12px",
                     borderRadius: 18,
                     background: "rgba(228, 231, 238, 0.5)",
                     boxShadow:
@@ -505,7 +507,7 @@ export default function ContractorHome() {
                     <>
                       <p
                         style={{
-                          fontSize: 32,
+                          fontSize: "clamp(22px, 5.5vw, 32px)",
                           fontWeight: 300,
                           color: "rgba(30, 34, 53, 0.75)",
                           lineHeight: 1,
@@ -518,7 +520,7 @@ export default function ContractorHome() {
                   ) : (
                     <p
                       style={{
-                        fontSize: 32,
+                        fontSize: "clamp(22px, 5.5vw, 32px)",
                         fontWeight: 300,
                         color: "rgba(30, 34, 53, 0.75)",
                         lineHeight: 1,
@@ -691,7 +693,7 @@ function ApplicationTracker({
       </p>
 
       {/* Progress tracker — horizontal steps */}
-      <div className="flex items-start gap-0" style={{ marginBottom: 20 }}>
+      <div className="flex items-start gap-0 stepper-mobile" style={{ marginBottom: 20 }}>
         {TRACKER_STEPS.map((step, i) => {
           const isCompleted = i < currentStep;
           const isCurrent = i === currentStep;

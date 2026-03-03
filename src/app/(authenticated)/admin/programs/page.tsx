@@ -31,6 +31,25 @@ interface ProgramData {
 }
 
 /* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* ------------------------------------------------------------------ */
+const NEU_RAISED: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(12px)",
+  borderTop: "1.5px solid rgba(255, 255, 255, 0.8)",
+  borderLeft: "1.5px solid rgba(255, 255, 255, 0.7)",
+  borderBottom: "1.5px solid rgba(255, 255, 255, 0.15)",
+  borderRight: "1.5px solid rgba(255, 255, 255, 0.15)",
+  boxShadow: "10px 10px 25px rgba(155, 161, 180, 0.4), -10px -10px 25px rgba(255, 255, 255, 0.8)",
+};
+
+const NEU_INSET_INPUT: React.CSSProperties = {
+  background: "rgba(228, 231, 238, 0.5)",
+  boxShadow: "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+  color: "rgba(30, 34, 53, 0.85)",
+};
+
+/* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 function formatSAR(amount: number): string {
@@ -40,9 +59,10 @@ function formatSAR(amount: number): string {
 }
 
 const STATUS_BADGE: Record<string, { color: string; bg: string }> = {
-  ACTIVE: { color: "#4a7c59", bg: "rgba(74,124,89,0.1)" },
-  DRAFT: { color: "#b87a3f", bg: "rgba(184,122,63,0.1)" },
-  CLOSED: { color: "#7a7265", bg: "rgba(122,114,101,0.1)" },
+  ACTIVE: { color: "rgba(74, 140, 106, 0.85)", bg: "rgba(74, 140, 106, 0.1)" },
+  DRAFT: { color: "rgba(175, 148, 63, 0.85)", bg: "rgba(175, 148, 63, 0.1)" },
+  CLOSED: { color: "rgba(30, 34, 53, 0.5)", bg: "rgba(30, 34, 53, 0.06)" },
+  OPEN: { color: "rgba(75, 130, 180, 0.85)", bg: "rgba(75, 130, 180, 0.1)" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -85,7 +105,6 @@ export default function AdminProgramsPage() {
       if (res.ok) {
         setSheetOpen(false);
         setFormName(""); setFormDesc(""); setFormBudget(""); setFormStatus("ACTIVE");
-        // Refresh
         const stats = await fetch("/api/stats").then((r) => r.json());
         setPrograms(stats.programs ?? []);
       }
@@ -97,7 +116,7 @@ export default function AdminProgramsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--accent)" }} />
       </div>
     );
   }
@@ -107,18 +126,18 @@ export default function AdminProgramsPage() {
       {/* ── Header ── */}
       <div>
         <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: "#b8943f" }}
+          className="text-[10px] font-semibold uppercase tracking-widest"
+          style={{ color: "#64748B", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
         >
           ADMINISTRATION
         </p>
         <h1
           className="text-[22px] leading-tight mt-1"
-          style={{ fontFamily: "var(--font-sans)", fontWeight: 800, color: "#1a1714" }}
+          style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, color: "rgba(30, 34, 53, 0.85)" }}
         >
           Programs
         </h1>
-        <p className="text-[13px] mt-0.5" style={{ color: "#7a7265" }}>
+        <p className="text-[13px] mt-0.5" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
           Funding programs and allocation
         </p>
       </div>
@@ -138,39 +157,36 @@ export default function AdminProgramsPage() {
         return (
           <div key={program.id}>
             <button
-              className="w-full text-left rounded-[18px] p-4 cursor-pointer"
-              style={{
-                background: "#e8e0d0",
-                boxShadow:
-                  "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
-              }}
+              className="w-full text-left rounded-[20px] p-5 cursor-pointer"
+              style={{ ...NEU_RAISED, borderRadius: "20px" }}
               onClick={() => setExpandedId(isExpanded ? null : program.id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[16px] font-bold" style={{ color: "#1a1714" }}>
+                  <h3 className="text-[16px]" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>
                     {program.name}
                   </h3>
                   {program.description && (
-                    <p className="text-[12px] mt-0.5 line-clamp-1" style={{ color: "#7a7265" }}>
+                    <p className="text-[12px] mt-0.5 line-clamp-1" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                       {program.description}
                     </p>
                   )}
                   <p
-                    className="font-mono text-[15px] font-bold mt-1.5"
-                    style={{ color: "#b8943f" }}
+                    className="font-mono text-[16px] mt-1.5"
+                    style={{ color: "rgba(30, 34, 53, 0.75)", fontWeight: 500 }}
                   >
                     {formatSAR(program.budgetTotal)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
                   <span
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                    className="px-3 py-1 rounded-full text-[11px] uppercase shrink-0"
                     style={{
                       color: badge.color,
                       background: badge.bg,
-                      boxShadow:
-                        "inset 2px 2px 5px rgba(156,148,130,0.35), inset -2px -2px 5px rgba(255,250,240,0.6)",
+                      fontWeight: 600,
+                      letterSpacing: "1px",
+                      fontFamily: "'DM Sans', sans-serif",
                     }}
                   >
                     {program.status}
@@ -178,7 +194,7 @@ export default function AdminProgramsPage() {
                   <ChevronRight
                     className="w-4 h-4 transition-transform"
                     style={{
-                      color: "#9a9488",
+                      color: "rgba(30, 34, 53, 0.2)",
                       transform: isExpanded ? "rotate(90deg)" : "none",
                     }}
                   />
@@ -188,12 +204,8 @@ export default function AdminProgramsPage() {
               {/* Budget Progress Bar */}
               <div className="mt-3">
                 <div
-                  className="h-3 rounded-full overflow-hidden"
-                  style={{
-                    background: "#e8e0d0",
-                    boxShadow:
-                      "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  className="h-2 rounded-full overflow-hidden"
+                  style={{ background: "rgba(30, 34, 53, 0.08)" }}
                 >
                   <div className="h-full flex">
                     {budgetPct > 0 && (
@@ -201,7 +213,7 @@ export default function AdminProgramsPage() {
                         className="h-full rounded-l-full"
                         style={{
                           width: `${budgetPct}%`,
-                          background: "linear-gradient(90deg, #4a7c59, #5a9c6a)",
+                          background: "rgba(74, 140, 106, 0.75)",
                         }}
                       />
                     )}
@@ -210,24 +222,24 @@ export default function AdminProgramsPage() {
                         className="h-full"
                         style={{
                           width: `${allocPct - budgetPct}%`,
-                          background: "linear-gradient(90deg, #b8943f, #d4b665)",
+                          background: "rgba(175, 148, 63, 0.75)",
                         }}
                       />
                     )}
                   </div>
                 </div>
                 <div className="flex gap-4 mt-1.5">
-                  <span className="text-[10px] font-mono" style={{ color: "#4a7c59" }}>
+                  <span className="text-[12px]" style={{ color: "rgba(74, 140, 106, 0.85)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
                     Disbursed {formatSAR(program.budgetDisbursed)}
                   </span>
-                  <span className="text-[10px] font-mono" style={{ color: "#b8943f" }}>
+                  <span className="text-[12px]" style={{ color: "rgba(175, 148, 63, 0.85)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
                     Committed {formatSAR(program.budgetAllocated)}
                   </span>
                 </div>
               </div>
 
               {/* Stats row */}
-              <p className="text-[12px] mt-3" style={{ color: "#7a7265" }}>
+              <p className="text-[12px] mt-3" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
                 {program.rfps.length} RFP{program.rfps.length !== 1 ? "s" : ""}
                 {" · "}
                 {totalApps} Application{totalApps !== 1 ? "s" : ""}
@@ -241,7 +253,7 @@ export default function AdminProgramsPage() {
               <div className="mt-3 space-y-2 mx-2">
                 <h4
                   className="text-[11px] font-semibold uppercase tracking-widest"
-                  style={{ color: "#7a7265" }}
+                  style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
                 >
                   RFPs
                 </h4>
@@ -250,24 +262,26 @@ export default function AdminProgramsPage() {
                   return (
                     <div
                       key={rfp.id}
-                      className="rounded-[14px] p-3 flex items-center justify-between"
-                      style={{
-                        background: "#e8e0d0",
-                        boxShadow:
-                          "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                      }}
+                      className="rounded-[14px] p-4 flex items-center justify-between"
+                      style={{ ...NEU_RAISED, borderRadius: "14px" }}
                     >
                       <div className="min-w-0">
-                        <p className="text-[13px] font-semibold truncate" style={{ color: "#1a1714" }}>
+                        <p className="text-[13px] truncate" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>
                           {rfp.title}
                         </p>
-                        <p className="text-[11px]" style={{ color: "#9a9488" }}>
+                        <p className="text-[13px]" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
                           {rfp.applications.length} application{rfp.applications.length !== 1 ? "s" : ""}
                         </p>
                       </div>
                       <span
-                        className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase shrink-0 ml-2"
-                        style={{ color: rfpBadge.color, background: rfpBadge.bg }}
+                        className="px-3 py-1 rounded-full text-[11px] uppercase shrink-0 ml-2"
+                        style={{
+                          color: rfpBadge.color,
+                          background: rfpBadge.bg,
+                          fontWeight: 600,
+                          letterSpacing: "1px",
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
                       >
                         {rfp.status}
                       </span>
@@ -286,7 +300,7 @@ export default function AdminProgramsPage() {
           title="No programs yet"
           description="Create your first funding program to get started"
           action={
-            <Button variant="neu-gold" onClick={() => setSheetOpen(true)}>
+            <Button variant="neu-primary" onClick={() => setSheetOpen(true)}>
               <Plus className="w-4 h-4 mr-2" /> Create Program
             </Button>
           }
@@ -298,9 +312,9 @@ export default function AdminProgramsPage() {
         <button
           className="fixed bottom-24 right-5 md:bottom-8 md:right-8 w-14 h-14 rounded-full flex items-center justify-center z-40 cursor-pointer"
           style={{
-            background: "linear-gradient(135deg, #b8943f, #d4b665)",
+            background: "linear-gradient(135deg, #5C6FB5, #7B8DC8)",
             boxShadow:
-              "4px 4px 12px rgba(156,148,130,0.5), -4px -4px 12px rgba(255,250,240,0.6), 0 0 16px rgba(184,148,63,0.2)",
+              "6px 6px 16px rgba(155, 161, 180, 0.45), -6px -6px 16px rgba(255, 255, 255, 0.8), 0 0 16px rgba(92, 111, 181, 0.2)",
           }}
           onClick={() => setSheetOpen(true)}
         >
@@ -311,26 +325,30 @@ export default function AdminProgramsPage() {
       {/* ── Bottom Sheet — Create Program ── */}
       {sheetOpen && (
         <>
-          <div className="fixed inset-0 bg-black/30 z-50" onClick={() => setSheetOpen(false)} />
+          <div
+            className="fixed inset-0 z-50"
+            style={{ background: "rgba(30, 34, 53, 0.4)", backdropFilter: "blur(4px)" }}
+            onClick={() => setSheetOpen(false)}
+          />
           <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto">
             <div
               className="rounded-t-[24px] p-5 space-y-4"
               style={{
-                background: "#e8e0d0",
-                boxShadow: "0 -8px 30px rgba(156,148,130,0.3)",
+                background: "var(--surface-light)",
+                boxShadow: "0 -8px 30px rgba(155, 161, 180, 0.3)",
               }}
             >
-              <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(122,114,101,0.3)" }} />
+              <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(30, 34, 53, 0.15)" }} />
               <div className="flex items-center justify-between">
-                <h3 className="text-[18px] font-bold" style={{ color: "#1a1714" }}>Create Program</h3>
+                <h3 className="text-[18px]" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>Create Program</h3>
                 <button onClick={() => setSheetOpen(false)} className="cursor-pointer p-1">
-                  <X className="w-5 h-5" style={{ color: "#7a7265" }} />
+                  <X className="w-5 h-5" style={{ color: "rgba(30, 34, 53, 0.4)" }} />
                 </button>
               </div>
 
               {/* Name */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Program Name
                 </label>
                 <input
@@ -339,16 +357,13 @@ export default function AdminProgramsPage() {
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="e.g. Desert Greening Initiative"
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Description
                 </label>
                 <textarea
@@ -357,16 +372,13 @@ export default function AdminProgramsPage() {
                   placeholder="Brief program description..."
                   rows={2}
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none resize-none"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 />
               </div>
 
               {/* Budget */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Budget (SAR)
                 </label>
                 <input
@@ -375,16 +387,13 @@ export default function AdminProgramsPage() {
                   onChange={(e) => setFormBudget(e.target.value)}
                   placeholder="e.g. 500000000"
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none font-mono"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 />
               </div>
 
               {/* Status */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Status
                 </label>
                 <div className="flex gap-2 mt-1.5">
@@ -395,13 +404,12 @@ export default function AdminProgramsPage() {
                       <button
                         key={s}
                         onClick={() => setFormStatus(s)}
-                        className="px-4 py-2 rounded-xl text-[12px] font-bold cursor-pointer transition-all"
+                        className="px-4 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-all"
                         style={{
-                          color: active ? badge.color : "#9a9488",
-                          background: active ? badge.bg : "#e8e0d0",
-                          boxShadow: active
-                            ? "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)"
-                            : "inset 2px 2px 6px rgba(140,132,115,0.4), inset -2px -2px 6px rgba(255,250,240,0.5)",
+                          color: active ? badge.color : "rgba(30, 34, 53, 0.4)",
+                          background: active ? badge.bg : "transparent",
+                          border: active ? "none" : "1px solid rgba(30, 34, 53, 0.1)",
+                          fontFamily: "'DM Sans', sans-serif",
                         }}
                       >
                         {s}

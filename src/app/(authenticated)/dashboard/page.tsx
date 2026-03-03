@@ -517,9 +517,10 @@ export default function FundManagerDashboard() {
     <>
     <div className="max-w-[1200px] mx-auto stagger-children page-enter">
       {/* ── Greeting — renders instantly, no data needed ────────── */}
-      <div className="relative animate-in-1" style={{ paddingTop: 8, marginBottom: 20 }}>
+      <div className="relative animate-in-1" style={{ paddingTop: 8, marginBottom: 24 }}>
         <div className="flex items-start justify-between">
           <div
+            className="greeting-title"
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: 32,
@@ -663,8 +664,8 @@ export default function FundManagerDashboard() {
         )}
       </div>
 
-      {/* ── Pipeline — shows skeleton until data arrives, canvas deferred ── */}
-      <div className="animate-in-3">
+      {/* ── Pipeline — hidden on mobile, shows skeleton until data on desktop ── */}
+      <div className="animate-in-3 hidden md:block">
         {stats === null ? (
           <PipelineSkeleton />
         ) : (
@@ -702,7 +703,7 @@ export default function FundManagerDashboard() {
         ) : (
           <>
             {/* Disbursed — show dash when 0 */}
-            <StatCard label="Disbursed" helper={stats.totalDisbursed === 0 ? "No disbursements yet" : "Released"} hoverKey="disbursed" onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} riverVariant={stats.totalDisbursed === 0 ? "dry" : "water"} riverFill={stats.totalDisbursed > 0 ? Math.min(1, sarParts!.num / 100) : 0}>
+            <StatCard label="Disbursed" helper={stats.totalDisbursed === 0 ? <><span className="sm:hidden">None yet</span><span className="hidden sm:inline">No disbursements yet</span></> : "Released"} hoverKey="disbursed" onHoverEnter={handleHoverEnter} onHoverLeave={handleHoverLeave} riverVariant={stats.totalDisbursed === 0 ? "dry" : "water"} riverFill={stats.totalDisbursed > 0 ? Math.min(1, sarParts!.num / 100) : 0}>
               {stats.totalDisbursed === 0 ? (
                 <span className="stat-number" style={{ color: "rgba(30, 34, 53, 0.75)", fontSize: 36, fontWeight: 300 }}>—</span>
               ) : (
@@ -1216,7 +1217,7 @@ function StatCard({
 }) {
   return (
     <div
-      className="flex flex-col"
+      className="flex flex-col fm-stat-card"
       style={{
         position: "relative",
         padding: "20px 24px 26px",
@@ -1224,6 +1225,7 @@ function StatCard({
         background: "rgba(228, 231, 238, 0.5)",
         boxShadow:
           "inset 8px 8px 20px rgba(155, 161, 180, 0.35), inset -8px -8px 20px rgba(255, 255, 255, 0.7)",
+        overflow: "hidden",
       }}
     >
       <div

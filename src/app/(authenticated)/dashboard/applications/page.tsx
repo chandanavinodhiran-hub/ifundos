@@ -573,7 +573,7 @@ export default function PipelinePage() {
                         <RecommendLabel rec={rec} />
                       </div>
                     </div>
-                    <div className="shrink-0 flex flex-col items-center gap-0.5">
+                    <div className="shrink-0 flex flex-col items-center gap-0.5 score-arc-wrap">
                       {app.compositeScore != null ? (
                         <>
                           <ScoreArc score={Math.round(app.compositeScore)} size={72} />
@@ -731,9 +731,9 @@ export default function PipelinePage() {
                         <span className="truncate">{app.rfp.title}</span>
                       </div>
 
-                      {/* A4: Action Buttons — sticky, neumorphic styled */}
+                      {/* A4: Action Buttons — sticky, stack vertically on mobile */}
                       <div
-                        className="flex flex-wrap sm:flex-nowrap gap-2 pt-1"
+                        className="flex flex-col sm:flex-row sm:flex-nowrap gap-2 pt-1"
                         style={{
                           position: "sticky",
                           bottom: 0,

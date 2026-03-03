@@ -99,7 +99,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               className="inline-block text-[9px] font-semibold px-2.5 py-0.5 rounded-full"
               style={{
                 background: "var(--bg-dark)",
-                color: "var(--accent)",
+                color: isAdmin ? "#64748B" : isAuditor ? "#B8953F" : "var(--accent)",
                 border: "1px solid rgba(255,255,255,0.2)",
                 boxShadow: "var(--press-sm)",
                 fontFamily: "'DM Sans', sans-serif",

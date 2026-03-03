@@ -30,6 +30,36 @@ interface Org {
 }
 
 /* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* ------------------------------------------------------------------ */
+const ROLE_COLORS: Record<string, string> = {
+  ADMIN: "#64748B",
+  FUND_MANAGER: "#5C6FB5",
+  CONTRACTOR: "rgba(75, 165, 195, 1)",
+  AUDITOR: "#B8953F",
+};
+
+const ROLE_BADGE_BG: Record<string, string> = {
+  ADMIN: "rgba(100, 116, 139, 0.1)",
+  FUND_MANAGER: "rgba(92, 111, 181, 0.1)",
+  CONTRACTOR: "rgba(75, 165, 195, 0.1)",
+  AUDITOR: "rgba(184, 149, 63, 0.1)",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: "Admin",
+  FUND_MANAGER: "Fund Manager",
+  CONTRACTOR: "Contractor",
+  AUDITOR: "Auditor",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  ACTIVE: "rgba(74, 140, 106, 0.85)",
+  PENDING: "rgba(175, 148, 63, 0.85)",
+  SUSPENDED: "#9c4a4a",
+};
+
+/* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 function relativeTime(ts: string): string {
@@ -44,24 +74,26 @@ function relativeTime(ts: string): string {
   return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  ADMIN: "#1a1714",
-  FUND_MANAGER: "#4a7c59",
-  CONTRACTOR: "#7a7265",
-  AUDITOR: "#b87a3f",
+/* Shared neumorphic style constants */
+const NEU_RAISED = {
+  background: "rgba(255, 255, 255, 0.55)",
+  backdropFilter: "blur(12px)",
+  borderTop: "1.5px solid rgba(255, 255, 255, 0.8)",
+  borderLeft: "1.5px solid rgba(255, 255, 255, 0.7)",
+  borderBottom: "1.5px solid rgba(255, 255, 255, 0.15)",
+  borderRight: "1.5px solid rgba(255, 255, 255, 0.15)",
+  boxShadow: "10px 10px 25px rgba(155, 161, 180, 0.4), -10px -10px 25px rgba(255, 255, 255, 0.8)",
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  FUND_MANAGER: "Fund Manager",
-  CONTRACTOR: "Contractor",
-  AUDITOR: "Auditor",
+const NEU_INSET = {
+  background: "rgba(228, 231, 238, 0.5)",
+  boxShadow: "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "#4a7c59",
-  PENDING: "#b87a3f",
-  SUSPENDED: "#9c4a4a",
+const NEU_INSET_INPUT = {
+  background: "rgba(228, 231, 238, 0.5)",
+  boxShadow: "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+  color: "rgba(30, 34, 53, 0.85)",
 };
 
 /* ------------------------------------------------------------------ */
@@ -166,7 +198,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--accent)" }} />
       </div>
     );
   }
@@ -177,7 +209,6 @@ export default function AdminUsersPage() {
     return true;
   });
 
-  // Group by status: pending first, then active, then suspended
   const pendingUsers = filteredUsers.filter((u) => u.status === "PENDING");
   const activeUsers = filteredUsers.filter((u) => u.status === "ACTIVE");
   const suspendedUsers = filteredUsers.filter((u) => u.status === "SUSPENDED");
@@ -187,64 +218,66 @@ export default function AdminUsersPage() {
       {/* ── Header ── */}
       <div>
         <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: "#b8943f" }}
+          className="text-[10px] font-semibold uppercase tracking-widest"
+          style={{ color: "#64748B", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
         >
           ADMINISTRATION
         </p>
         <h1
           className="text-[22px] leading-tight mt-1"
-          style={{ fontFamily: "var(--font-sans)", fontWeight: 800, color: "#1a1714" }}
+          style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, color: "rgba(30, 34, 53, 0.85)" }}
         >
           Users
         </h1>
-        <p className="text-[13px] mt-0.5" style={{ color: "#7a7265" }}>
+        <p className="text-[13px] mt-0.5" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
           Manage platform access and roles
         </p>
       </div>
 
-      {/* ── 4 Role Count Wells ── */}
-      <div className="grid grid-cols-4 gap-2">
+      {/* ── 4 Role Count Wells — inset neumorphic ── */}
+      <div className="grid grid-cols-4 gap-3">
         {(["ADMIN", "FUND_MANAGER", "CONTRACTOR", "AUDITOR"] as const).map((role) => (
           <div
             key={role}
-            className="p-2.5 text-center rounded-[14px]"
-            style={{
-              background: "#e8e0d0",
-              boxShadow:
-                "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-            }}
+            className="p-3 text-center rounded-[18px]"
+            style={NEU_INSET}
           >
             <AnimatedCounter
               end={roleCounts[role] ?? 0}
               duration={800}
-              className="font-sans font-extrabold text-[22px] leading-none tabular-nums"
-              style={{ color: ROLE_COLORS[role] }}
+              className="font-light text-[36px] leading-none tabular-nums"
+              style={{ color: ROLE_COLORS[role], fontFamily: "'DM Sans', sans-serif" }}
             />
-            <p className="text-[9px] font-semibold uppercase tracking-wider mt-1" style={{ color: "#7a7265" }}>
+            <p
+              className="mt-1"
+              style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "2.5px",
+                color: "rgba(30, 34, 53, 0.5)",
+                fontFamily: "'DM Sans', sans-serif",
+                textTransform: "uppercase" as const,
+              }}
+            >
               {role === "FUND_MANAGER" ? "Fund Mgrs" : ROLE_LABELS[role] + "s"}
             </p>
           </div>
         ))}
       </div>
 
-      {/* ── Search ── */}
+      {/* ── Search — inset neumorphic ── */}
       <div
-        className="rounded-[18px] px-4 py-3 flex items-center gap-2"
-        style={{
-          background: "#e8e0d0",
-          boxShadow:
-            "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-        }}
+        className="rounded-[14px] px-5 py-3.5 flex items-center gap-2"
+        style={NEU_INSET_INPUT}
       >
-        <Search className="w-4 h-4 shrink-0" style={{ color: "#9a9488" }} />
+        <Search className="w-4 h-4 shrink-0" style={{ color: "rgba(30, 34, 53, 0.3)" }} />
         <input
           type="text"
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 bg-transparent outline-none text-[14px]"
-          style={{ color: "#1a1714" }}
+          style={{ color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}
         />
       </div>
 
@@ -262,13 +295,12 @@ export default function AdminUsersPage() {
             <button
               key={pill.value}
               onClick={() => setRoleFilter(pill.value)}
-              className="px-3 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer transition-all"
+              className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer transition-all"
               style={{
-                color: active ? "#b8943f" : "#7a7265",
-                background: "#e8e0d0",
-                boxShadow: active
-                  ? "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)"
-                  : "inset 2px 2px 6px rgba(140,132,115,0.4), inset -2px -2px 6px rgba(255,250,240,0.5)",
+                color: active ? "#5C6FB5" : "rgba(30, 34, 53, 0.5)",
+                background: active ? "rgba(92, 111, 181, 0.12)" : "transparent",
+                border: active ? "none" : "1px solid rgba(30, 34, 53, 0.12)",
+                fontFamily: "'DM Sans', sans-serif",
               }}
             >
               {pill.label}
@@ -280,9 +312,9 @@ export default function AdminUsersPage() {
       {/* ── Status Filter Pills ── */}
       <div className="flex gap-2 flex-wrap -mt-2">
         {[
-          { label: "All", value: "ALL", color: "#7a7265" },
-          { label: "Active", value: "ACTIVE", color: "#4a7c59" },
-          { label: "Pending", value: "PENDING", color: "#b87a3f" },
+          { label: "All", value: "ALL", color: "rgba(30, 34, 53, 0.5)" },
+          { label: "Active", value: "ACTIVE", color: "rgba(74, 140, 106, 0.85)" },
+          { label: "Pending", value: "PENDING", color: "rgba(175, 148, 63, 0.85)" },
           { label: "Suspended", value: "SUSPENDED", color: "#9c4a4a" },
         ].map((pill) => {
           const active = statusFilter === pill.value;
@@ -290,13 +322,12 @@ export default function AdminUsersPage() {
             <button
               key={pill.value}
               onClick={() => setStatusFilter(pill.value)}
-              className="px-3 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer transition-all"
+              className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer transition-all"
               style={{
-                color: active ? pill.color : "#9a9488",
-                background: "#e8e0d0",
-                boxShadow: active
-                  ? "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)"
-                  : "inset 2px 2px 6px rgba(140,132,115,0.4), inset -2px -2px 6px rgba(255,250,240,0.5)",
+                color: active ? pill.color : "rgba(30, 34, 53, 0.4)",
+                background: active ? `${pill.color}15` : "transparent",
+                border: active ? "none" : "1px solid rgba(30, 34, 53, 0.1)",
+                fontFamily: "'DM Sans', sans-serif",
               }}
             >
               {pill.label}
@@ -308,7 +339,10 @@ export default function AdminUsersPage() {
       {/* ── User Cards — grouped by status ── */}
       {pendingUsers.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "#b87a3f" }}>
+          <h3
+            className="text-[11px] font-semibold uppercase tracking-widest"
+            style={{ color: "rgba(175, 148, 63, 0.85)", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
+          >
             Pending Activation ({pendingUsers.length})
           </h3>
           {pendingUsers.map((user) => renderUserCard(user, "accent-left-amber"))}
@@ -317,7 +351,10 @@ export default function AdminUsersPage() {
 
       {activeUsers.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "#7a7265" }}>
+          <h3
+            className="text-[11px] font-semibold uppercase tracking-widest"
+            style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
+          >
             Active Users ({activeUsers.length})
           </h3>
           {activeUsers.map((user) => renderUserCard(user))}
@@ -326,7 +363,10 @@ export default function AdminUsersPage() {
 
       {suspendedUsers.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "#9c4a4a" }}>
+          <h3
+            className="text-[11px] font-semibold uppercase tracking-widest"
+            style={{ color: "#9c4a4a", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}
+          >
             Suspended ({suspendedUsers.length})
           </h3>
           {suspendedUsers.map((user) => renderUserCard(user, "accent-left-critical"))}
@@ -341,9 +381,9 @@ export default function AdminUsersPage() {
       <button
         className="fixed bottom-24 right-5 md:bottom-8 md:right-8 w-14 h-14 rounded-full flex items-center justify-center z-40 cursor-pointer"
         style={{
-          background: "linear-gradient(135deg, #b8943f, #d4b665)",
+          background: "linear-gradient(135deg, #5C6FB5, #7B8DC8)",
           boxShadow:
-            "4px 4px 12px rgba(156,148,130,0.5), -4px -4px 12px rgba(255,250,240,0.6), 0 0 16px rgba(184,148,63,0.2)",
+            "6px 6px 16px rgba(155, 161, 180, 0.45), -6px -6px 16px rgba(255, 255, 255, 0.8), 0 0 16px rgba(92, 111, 181, 0.2)",
         }}
         onClick={() => setSheetOpen(true)}
       >
@@ -354,28 +394,29 @@ export default function AdminUsersPage() {
       {sheetOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/30 z-50"
+            className="fixed inset-0 z-50"
+            style={{ background: "rgba(30, 34, 53, 0.4)", backdropFilter: "blur(4px)" }}
             onClick={() => setSheetOpen(false)}
           />
           <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto">
             <div
               className="rounded-t-[24px] p-5 space-y-4"
               style={{
-                background: "#e8e0d0",
-                boxShadow: "0 -8px 30px rgba(156,148,130,0.3)",
+                background: "var(--surface-light)",
+                boxShadow: "0 -8px 30px rgba(155, 161, 180, 0.3)",
               }}
             >
-              <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(122,114,101,0.3)" }} />
+              <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(30, 34, 53, 0.15)" }} />
               <div className="flex items-center justify-between">
-                <h3 className="text-[18px] font-bold" style={{ color: "#1a1714" }}>Invite User</h3>
+                <h3 className="text-[18px]" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>Invite User</h3>
                 <button onClick={() => setSheetOpen(false)} className="cursor-pointer p-1">
-                  <X className="w-5 h-5" style={{ color: "#7a7265" }} />
+                  <X className="w-5 h-5" style={{ color: "rgba(30, 34, 53, 0.4)" }} />
                 </button>
               </div>
 
               {/* Name */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Full Name
                 </label>
                 <input
@@ -384,16 +425,13 @@ export default function AdminUsersPage() {
                   onChange={(e) => setInvName(e.target.value)}
                   placeholder="e.g. Omar Al-Harithi"
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Email
                 </label>
                 <input
@@ -402,16 +440,13 @@ export default function AdminUsersPage() {
                   onChange={(e) => setInvEmail(e.target.value)}
                   placeholder="email@example.com"
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none font-mono"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 />
               </div>
 
               {/* Password */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Password
                 </label>
                 <input
@@ -420,16 +455,13 @@ export default function AdminUsersPage() {
                   onChange={(e) => setInvPassword(e.target.value)}
                   placeholder="Default: Welcome123!"
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 />
               </div>
 
               {/* Role Selector */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Role
                 </label>
                 <div className="flex gap-2 mt-1.5 flex-wrap">
@@ -439,13 +471,12 @@ export default function AdminUsersPage() {
                       <button
                         key={r}
                         onClick={() => setInvRole(r)}
-                        className="px-3 py-2 rounded-xl text-[12px] font-bold cursor-pointer transition-all"
+                        className="px-3 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-all"
                         style={{
-                          color: active ? ROLE_COLORS[r] : "#9a9488",
-                          background: active ? `${ROLE_COLORS[r]}15` : "#e8e0d0",
-                          boxShadow: active
-                            ? "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)"
-                            : "inset 2px 2px 6px rgba(140,132,115,0.4), inset -2px -2px 6px rgba(255,250,240,0.5)",
+                          color: active ? ROLE_COLORS[r] : "rgba(30, 34, 53, 0.4)",
+                          background: active ? ROLE_BADGE_BG[r] : "transparent",
+                          border: active ? "none" : "1px solid rgba(30, 34, 53, 0.1)",
+                          fontFamily: "'DM Sans', sans-serif",
                         }}
                       >
                         {ROLE_LABELS[r]}
@@ -457,17 +488,14 @@ export default function AdminUsersPage() {
 
               {/* Organization */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                   Organization (Optional)
                 </label>
                 <select
                   value={invOrg}
                   onChange={(e) => setInvOrg(e.target.value)}
                   className="w-full mt-1.5 px-4 py-3 rounded-xl text-[14px] outline-none appearance-none cursor-pointer"
-                  style={{
-                    background: "#e8e0d0", color: "#1a1714",
-                    boxShadow: "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-                  }}
+                  style={NEU_INSET_INPUT}
                 >
                   <option value="">None</option>
                   {orgs.map((org) => (
@@ -494,21 +522,25 @@ export default function AdminUsersPage() {
       {/* ── Confirmation Dialog ── */}
       {confirmDialog && (
         <>
-          <div className="fixed inset-0 bg-black/30 z-50" onClick={() => setConfirmDialog(null)} />
+          <div
+            className="fixed inset-0 z-50"
+            style={{ background: "rgba(30, 34, 53, 0.4)", backdropFilter: "blur(4px)" }}
+            onClick={() => setConfirmDialog(null)}
+          />
           <div className="fixed inset-0 flex items-center justify-center z-50 px-6">
             <div
-              className="rounded-[18px] p-5 max-w-sm w-full space-y-4"
+              className="rounded-[20px] p-5 max-w-sm w-full space-y-4"
               style={{
-                background: "#e8e0d0",
-                boxShadow: "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
+                ...NEU_RAISED,
+                borderRadius: "20px",
               }}
             >
-              <h3 className="text-[16px] font-bold" style={{ color: "#1a1714" }}>
+              <h3 className="text-[16px]" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>
                 {confirmDialog.type === "suspend"
                   ? `Suspend ${confirmDialog.user.name}?`
                   : `Remove ${confirmDialog.user.name}?`}
               </h3>
-              <p className="text-[13px] leading-relaxed" style={{ color: "#7a7265" }}>
+              <p className="text-[13px] leading-relaxed" style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                 {confirmDialog.type === "suspend"
                   ? "They will lose access to all programs immediately."
                   : "This action cannot be undone. The user will be permanently removed."}
@@ -516,10 +548,12 @@ export default function AdminUsersPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmDialog(null)}
-                  className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer"
                   style={{
-                    color: "#7a7265", background: "#e8e0d0",
-                    boxShadow: "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)",
+                    color: "rgba(30, 34, 53, 0.6)",
+                    background: "rgba(228, 231, 238, 0.5)",
+                    boxShadow: "6px 6px 16px rgba(155, 161, 180, 0.4), -6px -6px 16px rgba(255, 255, 255, 0.8)",
+                    fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
                   Cancel
@@ -530,10 +564,11 @@ export default function AdminUsersPage() {
                       ? handleToggleStatus(confirmDialog.user)
                       : handleDelete(confirmDialog.user)
                   }
-                  className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer text-white"
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer text-white"
                   style={{
                     background: "#9c4a4a",
-                    boxShadow: "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)",
+                    boxShadow: "6px 6px 16px rgba(155, 161, 180, 0.4), -6px -6px 16px rgba(255, 255, 255, 0.8)",
+                    fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
                   {confirmDialog.type === "suspend" ? "Confirm Suspension" : "Remove User"}
@@ -555,11 +590,11 @@ export default function AdminUsersPage() {
     return (
       <div key={user.id} style={{ opacity: isSuspended ? 0.5 : 1 }}>
         <button
-          className={`w-full text-left rounded-[18px] p-4 cursor-pointer ${accentClass ?? ""}`}
+          className={`w-full text-left rounded-[20px] p-4 cursor-pointer ${accentClass ?? ""}`}
           style={{
-            background: "#e8e0d0",
-            boxShadow:
-              "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
+            ...NEU_RAISED,
+            borderRadius: "20px",
+            overflow: "hidden",
           }}
           onClick={() => setExpandedId(isExpanded ? null : user.id)}
         >
@@ -568,33 +603,34 @@ export default function AdminUsersPage() {
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
               style={{
-                background: "#e8e0d0",
-                boxShadow:
-                  "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
+                background: "rgba(228, 231, 238, 0.7)",
               }}
             >
-              <span className="text-sm font-bold" style={{ color: ROLE_COLORS[user.role] ?? "#1a1714" }}>
+              <span className="text-sm" style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>
                 {initial}
               </span>
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-[16px] font-bold leading-[1.3]" style={{ color: "#1a1714", wordBreak: "break-word", maxWidth: "calc(100% - 10px)" }}>
+              <h3
+                className="text-[16px] leading-[1.3]"
+                style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.85)", wordBreak: "break-word", maxWidth: "calc(100% - 10px)", fontFamily: "'DM Sans', sans-serif" }}
+              >
                 {user.name ?? "Unnamed User"}
               </h3>
-              <p className="text-[12px] font-mono truncate" style={{ color: "#9a9488" }}>
+              <p className="text-[13px] font-mono truncate" style={{ color: "rgba(30, 34, 53, 0.4)" }}>
                 {user.email}
               </p>
             </div>
 
             {/* Role Badge */}
             <span
-              className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0"
+              className="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider shrink-0"
               style={{
-                color: ROLE_COLORS[user.role] ?? "#1a1714",
-                background: `${ROLE_COLORS[user.role] ?? "#1a1714"}12`,
-                boxShadow:
-                  "inset 2px 2px 5px rgba(156,148,130,0.35), inset -2px -2px 5px rgba(255,250,240,0.6)",
+                color: ROLE_COLORS[user.role] ?? "rgba(30, 34, 53, 0.6)",
+                background: ROLE_BADGE_BG[user.role] ?? "rgba(30, 34, 53, 0.06)",
+                fontFamily: "'DM Sans', sans-serif",
+                letterSpacing: "1px",
               }}
             >
               {ROLE_LABELS[user.role] ?? user.role}
@@ -603,7 +639,7 @@ export default function AdminUsersPage() {
             <ChevronRight
               className="w-4 h-4 shrink-0 transition-transform"
               style={{
-                color: "#9a9488",
+                color: "rgba(30, 34, 53, 0.2)",
                 transform: isExpanded ? "rotate(90deg)" : "none",
               }}
             />
@@ -613,9 +649,9 @@ export default function AdminUsersPage() {
           <div className="flex items-center gap-2 mt-2 ml-[52px]">
             <span
               className="w-2 h-2 rounded-full shrink-0"
-              style={{ background: STATUS_COLORS[user.status] ?? "#9a9488" }}
+              style={{ background: STATUS_COLORS[user.status] ?? "rgba(30, 34, 53, 0.3)" }}
             />
-            <span className="text-[11px]" style={{ color: STATUS_COLORS[user.status] ?? "#9a9488" }}>
+            <span className="text-[12px]" style={{ color: STATUS_COLORS[user.status] ?? "rgba(30, 34, 53, 0.4)", fontFamily: "'DM Sans', sans-serif", fontWeight: 400 }}>
               {user.status === "ACTIVE"
                 ? `Active · Joined ${relativeTime(user.createdAt)}`
                 : user.status === "PENDING"
@@ -631,27 +667,23 @@ export default function AdminUsersPage() {
             {/* Info */}
             <div
               className="rounded-[14px] p-4 space-y-2"
-              style={{
-                background: "#e8e0d0",
-                boxShadow:
-                  "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
-              }}
+              style={NEU_INSET}
             >
               <div className="flex justify-between text-[12px]">
-                <span style={{ color: "#7a7265" }}>Email</span>
-                <span className="font-mono" style={{ color: "#1a1714" }}>{user.email}</span>
+                <span style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>Email</span>
+                <span className="font-mono" style={{ color: "rgba(30, 34, 53, 0.85)" }}>{user.email}</span>
               </div>
               <div className="flex justify-between text-[12px]">
-                <span style={{ color: "#7a7265" }}>Organization</span>
-                <span style={{ color: "#1a1714" }}>{user.organization?.name ?? "None"}</span>
+                <span style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>Organization</span>
+                <span style={{ color: "rgba(30, 34, 53, 0.85)", fontFamily: "'DM Sans', sans-serif" }}>{user.organization?.name ?? "None"}</span>
               </div>
               <div className="flex justify-between text-[12px]">
-                <span style={{ color: "#7a7265" }}>Clearance</span>
-                <span className="font-mono" style={{ color: "#1a1714" }}>Level {user.clearanceLevel}</span>
+                <span style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>Clearance</span>
+                <span className="font-mono" style={{ color: "rgba(30, 34, 53, 0.85)" }}>Level {user.clearanceLevel}</span>
               </div>
               <div className="flex justify-between text-[12px]">
-                <span style={{ color: "#7a7265" }}>Registered</span>
-                <span className="font-mono" style={{ color: "#1a1714" }}>
+                <span style={{ color: "rgba(30, 34, 53, 0.5)", fontFamily: "'DM Sans', sans-serif" }}>Registered</span>
+                <span className="font-mono" style={{ color: "rgba(30, 34, 53, 0.85)" }}>
                   {new Date(user.createdAt).toLocaleDateString("en-US", {
                     month: "short", day: "numeric", year: "numeric",
                   })}
@@ -691,7 +723,6 @@ export default function AdminUsersPage() {
                   className="text-[12px] gap-1.5"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Resend is just a visual feedback for now
                   }}
                 >
                   <Mail className="w-3.5 h-3.5" /> Resend Invite

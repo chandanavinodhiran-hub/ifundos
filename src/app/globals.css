@@ -2982,3 +2982,102 @@ body { padding-top: env(safe-area-inset-top); }
     box-shadow: 0 0 14px rgba(75, 165, 195, 0.5);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — iPhone 14/15 (390px) & Pro Max (430px)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* ── Login bottom-sheet layout ── */
+  .login-card-wrapper {
+    align-items: flex-end !important;
+    justify-content: stretch !important;
+    padding: 0 16px !important;
+  }
+  .login-card-wrapper .forest-card-in {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  /* Tighten emblem-to-title gap */
+  .login-card-wrapper .forest-card-in .forest-fade-in:first-child {
+    margin-bottom: 24px !important;
+  }
+  .login-card-wrapper .forest-card-in .forest-fade-in:first-child img {
+    margin-bottom: 6px !important;
+  }
+
+  /* ── Hide custom cursor on touch ── */
+  .login-cursor-dot { display: none !important; }
+  .login-page-root,
+  .login-page-root input,
+  .login-page-root a,
+  .login-page-root button { cursor: auto !important; }
+
+  /* ── Greeting text 24px on mobile ── */
+  .greeting-title { font-size: 24px !important; }
+
+  /* ── Briefing leaf icon — smaller on mobile ── */
+  .briefing-leaf-caller {
+    transform: scale(0.7) !important;
+    transform-origin: top right !important;
+  }
+  /* Hide "Daily Briefing" tooltip on mobile */
+  .briefing-leaf-caller + span,
+  .relative.group > span:first-child {
+    display: none !important;
+  }
+
+  /* ── Briefing panel — anchored above tab bar ── */
+  .briefing-panel-in,
+  .briefing-panel-out {
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    max-width: none !important;
+    top: auto !important;
+    bottom: 80px !important;
+    border-radius: 20px !important;
+  }
+
+  /* ── FM Home stat cards — tighter on mobile ── */
+  .fm-stat-card {
+    padding: 14px 16px 18px !important;
+  }
+  .fm-stat-card .stat-number {
+    font-size: 28px !important;
+  }
+
+  /* ── Score arc 56px on mobile — container + SVG + number ── */
+  .score-arc-wrap > div.relative,
+  .score-arc-wrap > div > div.relative {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .score-arc-wrap svg {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .score-arc-wrap span.absolute {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+
+  /* ── Action buttons stack vertically ── */
+  .mobile-stack-buttons {
+    flex-direction: column !important;
+  }
+  .mobile-stack-buttons > button,
+  .mobile-stack-buttons > a {
+    width: 100% !important;
+  }
+
+  /* ── Contractor stepper compact ── */
+  .stepper-mobile > div > div:first-child > div:first-child {
+    transform: scale(0.75);
+  }
+  .stepper-mobile > div > div:first-child > p {
+    font-size: 9px !important;
+    margin-top: 4px !important;
+  }
+}

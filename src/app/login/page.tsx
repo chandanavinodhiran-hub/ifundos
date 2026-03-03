@@ -129,6 +129,7 @@ function LoginForm() {
 
   return (
     <div
+      className="login-page-root"
       style={{
         minHeight: "100vh",
         overflow: "hidden",
@@ -142,8 +143,9 @@ function LoginForm() {
         <ForestCanopy />
       </div>
 
-      {/* Centered card wrapper */}
+      {/* Card wrapper — centered on desktop, bottom-sheet on mobile */}
       <div
+        className="login-card-wrapper"
         style={{
           position: "fixed",
           inset: 0,
@@ -158,7 +160,8 @@ function LoginForm() {
           ref={cardRef}
           className="forest-card-in"
           style={{
-            width: 390,
+            width: "100%",
+            maxWidth: 430,
             padding: "42px 36px 36px",
             borderRadius: "32px 32px 24px 24px",
             background: "rgba(6, 16, 8, 0.6)",
@@ -174,6 +177,7 @@ function LoginForm() {
               alt="iFundOS"
               width={76}
               height={76}
+              className="w-[56px] h-[56px] sm:w-[76px] sm:h-[76px]"
               className="emblem-breathe"
               style={{
                 display: "block",
@@ -184,7 +188,7 @@ function LoginForm() {
             <div
               style={{
                 fontFamily: "'DM Sans', sans-serif",
-                fontSize: 38,
+                fontSize: "clamp(28px, 7vw, 38px)",
                 fontWeight: 200,
                 color: "rgba(230, 228, 240, 0.90)",
                 letterSpacing: 3,
@@ -374,9 +378,9 @@ function LoginForm() {
         }}
       />
 
-      {/* Powered by — bottom center */}
+      {/* Powered by — bottom center (hidden on mobile — overlaps bottom-sheet) */}
       <div
-        className="forest-fade-in"
+        className="forest-fade-in hidden sm:block"
         style={{
           position: "fixed",
           bottom: 18,
@@ -393,9 +397,10 @@ function LoginForm() {
         Powered by Iozera Technologies
       </div>
 
-      {/* Custom cursor dot — top-level, above all stacking contexts */}
+      {/* Custom cursor dot — top-level, above all stacking contexts (hidden on mobile via CSS) */}
       <div
         ref={cursorRef}
+        className="login-cursor-dot"
         style={{
           width: 5,
           height: 5,

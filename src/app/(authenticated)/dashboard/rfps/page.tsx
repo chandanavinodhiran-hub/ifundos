@@ -439,7 +439,7 @@ export default function RFPManagerPage() {
   }
 
   return (
-    <div className="space-y-6 pb-[180px]">
+    <div className="space-y-6 pb-[120px] md:pb-[180px]">
       {/* Header */}
       <div className="flex items-center justify-between stagger-1 animate-in-1">
         <div>
@@ -463,25 +463,41 @@ export default function RFPManagerPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-3 stagger-2 animate-in-2">
-        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-4 flex flex-col items-center justify-center">
-          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 28, fontWeight: 300, color: "var(--accent)" }}>
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-4 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(22px, 5.5vw, 28px)", fontWeight: 300, color: "var(--accent)" }}>
             <AnimatedCounter end={sortedRfps.length} duration={1000} />
           </span>
-          <span className="label-style mt-1">Total RFPs</span>
+          <span className="label-style mt-1"><span className="sm:hidden">Total</span><span className="hidden sm:inline">Total RFPs</span></span>
         </DynamicShadowCard>
-        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-4 flex flex-col items-center justify-center">
-          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 28, fontWeight: 300, color: "#5CA03E" }}>
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-4 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(22px, 5.5vw, 28px)", fontWeight: 300, color: "#5CA03E" }}>
             <AnimatedCounter end={sortedRfps.filter(r => r.status === "OPEN").length} duration={1000} delay={100} />
           </span>
           <span className="label-style mt-1">Open</span>
         </DynamicShadowCard>
-        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-4 flex flex-col items-center justify-center">
-          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 28, fontWeight: 300, color: "var(--text-primary)" }}>
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-4 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(22px, 5.5vw, 28px)", fontWeight: 300, color: "var(--text-primary)" }}>
             <AnimatedCounter end={sortedRfps.reduce((s, r) => s + (r._count?.applications ?? 0), 0)} duration={1000} delay={200} />
           </span>
-          <span className="label-style mt-1">Applications</span>
+          <span className="label-style mt-1"><span className="sm:hidden">Apps</span><span className="hidden sm:inline">Applications</span></span>
         </DynamicShadowCard>
       </div>
+
+      {/* Mobile Create RFP button — below stats */}
+      <button
+        onClick={() => setDialogOpen(true)}
+        className="desktop:hidden flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold cursor-pointer neu-btn-press"
+        style={{
+          background: "linear-gradient(135deg, #5C6FB5, #7B8DC8)",
+          color: "white",
+          boxShadow: "5px 5px 15px rgba(92,111,181,0.35), -3px -3px 10px rgba(255,255,255,0.5)",
+          border: "none",
+          height: 48,
+        }}
+      >
+        <Plus className="w-4 h-4" />
+        Create RFP
+      </button>
 
       {/* RFP Card Grid */}
       {sortedRfps.length === 0 ? (
