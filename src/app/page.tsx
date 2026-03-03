@@ -473,6 +473,7 @@ function VisionCanvas() {
 /* ═══════════════════════════════════════════════════════════════════════════
  * Typewriter — types text character by character, triggers once on scroll
  * ═══════════════════════════════════════════════════════════════════════════ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Typewriter({ text, speed = 30 }: { text: string; speed?: number }) {
   const [displayed, setDisplayed] = useState("");
   const [started, setStarted] = useState(false);
@@ -556,11 +557,63 @@ function useParallax() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+ * SECTION 4 — Three-Act Cycle (auto-advance + dot navigation)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+function useActCycle(sectionRef: React.RefObject<HTMLElement | null>, actCount = 3, intervalMs = 9000) {
+  const [activeAct, setActiveAct] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inViewRef = useRef(false);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+  }, []);
+
+  const startTimer = useCallback(() => {
+    clearTimer();
+    if (inViewRef.current) {
+      timerRef.current = setInterval(() => {
+        setActiveAct((prev) => (prev + 1) % actCount);
+      }, intervalMs);
+    }
+  }, [actCount, intervalMs, clearTimer]);
+
+  const goToAct = useCallback((index: number) => {
+    setActiveAct(index);
+    clearTimer();
+    if (inViewRef.current) startTimer();
+  }, [clearTimer, startTimer]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        inViewRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          section.classList.add("s4-visible");
+          startTimer();
+        } else {
+          clearTimer();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(section);
+    return () => { obs.disconnect(); clearTimer(); };
+  }, [sectionRef, startTimer, clearTimer]);
+
+  return { activeAct, goToAct };
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
  * MAIN PAGE
  * ═══════════════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
   const [navOnLight, setNavOnLight] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const s4Ref = useRef<HTMLElement>(null);
+  const { activeAct, goToAct } = useActCycle(s4Ref);
 
   useScrollReveal();
   useParallax();
@@ -658,33 +711,33 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 4 — NAVIGATOR AI
+       * SECTION 4 — THREE-ACT SHOWCASE
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section nav4-section" data-theme="dark">
-        <div className="section-overlay" style={{ background: "#0A0E1A" }} />
-        {/* Sapling */}
-        <div className="s-text nav4-center">
-          <div className="sapling-wrap s-el" style={{ transitionDelay: "0s" }}>
-            <div className="sapling-glow" />
-            <svg width="60" height="120" viewBox="0 0 60 120" className="sapling-svg">
-              {/* Trunk */}
-              <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
-              {/* Branch left */}
-              <path d="M30 75 Q20 65 15 50" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              {/* Branch right */}
-              <path d="M30 65 Q40 55 45 42" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              {/* Leaves */}
-              <ellipse cx="15" cy="45" rx="10" ry="14" fill="rgba(74,140,106,0.35)" className="leaf leaf-1" />
-              <ellipse cx="30" cy="35" rx="12" ry="16" fill="rgba(60,130,90,0.4)" className="leaf leaf-2" />
-              <ellipse cx="45" cy="38" rx="10" ry="13" fill="rgba(74,140,106,0.3)" className="leaf leaf-3" />
-              <ellipse cx="22" cy="28" rx="9" ry="12" fill="rgba(50,120,75,0.3)" className="leaf leaf-4" />
-              <ellipse cx="38" cy="25" rx="9" ry="12" fill="rgba(60,130,90,0.35)" className="leaf leaf-5" />
-              <ellipse cx="30" cy="18" rx="8" ry="11" fill="rgba(74,140,106,0.3)" className="leaf leaf-6" />
-            </svg>
+      <section className="s4-section" ref={s4Ref} data-theme="dark">
+        {/* Act 1 */}
+        <div className={`act ${activeAct === 0 ? "act-active" : ""}`}>
+          <div className="act-content">
+            <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 1 — Navigator AI placeholder</p>
           </div>
-          <div className="s-el" style={{ transitionDelay: "0.15s" }}>
-            <Typewriter text="Your application scored 91. This matches the profile of your last 4 approved grants." />
+        </div>
+        {/* Act 2 */}
+        <div className={`act ${activeAct === 1 ? "act-active" : ""}`}>
+          <div className="act-content">
+            <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 2 — Spatial Pipeline placeholder</p>
           </div>
+        </div>
+        {/* Act 3 */}
+        <div className={`act ${activeAct === 2 ? "act-active" : ""}`}>
+          <div className="act-content">
+            <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 3 — Three Roles placeholder</p>
+          </div>
+        </div>
+        {/* Dot navigation */}
+        <div className="act-dots">
+          {[0, 1, 2].map((i) => (
+            <button key={i} className={`act-dot ${activeAct === i ? "act-dot-active" : ""}`}
+              onClick={() => goToAct(i)} aria-label={`Go to act ${i + 1}`} />
+          ))}
         </div>
       </section>
 
@@ -1031,69 +1084,75 @@ export default function LandingPage() {
         .s3-section { background: #0A0E1A; }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 4 — NAVIGATOR
+         * SECTION 4 — THREE-ACT SHOWCASE
          * ════════════════════════════════════════════════════════════ */
-        .nav4-section { background: #0A0E1A; }
-        .nav4-center {
+        .s4-section {
+          position: relative;
+          width: 100%;
+          height: 100vh;
+          background: #0A0E1A;
+          overflow: hidden;
+          margin: 0;
+          padding: 0;
+          opacity: 0;
+          transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .s4-section.s4-visible { opacity: 1; }
+
+        .act {
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          visibility: hidden;
+          transition:
+            opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+            visibility 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          z-index: 1;
+        }
+        .act-active {
+          opacity: 1;
+          visibility: visible;
+          z-index: 2;
+        }
+        .act-content {
           display: flex;
           flex-direction: column;
           align-items: center;
-          text-align: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+          padding: 48px;
         }
 
-        .sapling-wrap { position: relative; margin-bottom: 40px; }
-        .sapling-glow {
+        .act-dots {
           position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: 200px; height: 200px;
+          bottom: 48px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 14px;
+          z-index: 10;
+        }
+        .act-dot {
+          width: 8px; height: 8px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(74, 140, 106, 0.04) 0%, transparent 70%);
-          animation: saplingGlow 4s ease-in-out infinite;
+          border: 1px solid rgba(230,232,240,0.3);
+          background: transparent;
+          cursor: pointer;
+          padding: 0;
+          transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        @keyframes saplingGlow {
-          0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+        .act-dot:hover {
+          border-color: rgba(230,232,240,0.5);
         }
-
-        .sapling-svg { position: relative; z-index: 1; }
-        .leaf { transform-origin: center bottom; }
-        .leaf-1 { animation: leafSway 4s ease-in-out infinite; }
-        .leaf-2 { animation: leafSway 4.5s ease-in-out 0.3s infinite; }
-        .leaf-3 { animation: leafSway 3.8s ease-in-out 0.6s infinite; }
-        .leaf-4 { animation: leafSway 4.2s ease-in-out 0.9s infinite; }
-        .leaf-5 { animation: leafSway 3.6s ease-in-out 1.2s infinite; }
-        .leaf-6 { animation: leafSway 5s ease-in-out 0.5s infinite; }
-        @keyframes leafSway {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(3deg); }
-          75% { transform: rotate(-3deg); }
+        .act-dot-active {
+          background: rgba(230,232,240,0.7);
+          border-color: rgba(230,232,240,0.7);
         }
-
-        .nav4-typewriter {
-          font-size: 18px;
-          font-weight: 300;
-          color: rgba(230, 232, 240, 0.6);
-          max-width: 500px;
-          line-height: 1.6;
-          min-height: 60px;
-          text-shadow: 0 2px 20px rgba(0,0,0,0.3);
-          margin: 0;
-        }
-        .tw-cursor {
-          animation: cursorBlink 0.8s step-end infinite;
-          color: rgba(230, 232, 240, 0.4);
-        }
-        @keyframes cursorBlink {
-          50% { opacity: 0; }
-        }
-
-        .nav4-label {
-          opacity: 0;
-          transition: opacity 0.8s ${C.easeContent} 0.3s;
-          text-align: center;
-        }
-        .nav4-label-show { opacity: 1; }
 
         /* ════════════════════════════════════════════════════════════
          * SECTION 5 — VISION
