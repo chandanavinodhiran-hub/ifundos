@@ -19,7 +19,7 @@ const C = {
 
 const NAV_ITEMS = ["Overview", "Technology", "About", "Contact"];
 
-const NAV_MESSAGE = "Your application scored 91. This matches the profile of your last 4 approved grants.";
+const NAV_MESSAGE_WORDS = "Your application scored 91. This matches the profile of your last 4 approved grants.".split(" ");
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * UTILITY: Canvas base hook — handles sizing, DPR, resize, animation loop
@@ -664,8 +664,31 @@ export default function LandingPage() {
        * SECTION 4 — NAVIGATOR AI
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section section-navigator" data-theme="dark">
+        {/* Floating ambient motes */}
+        <div className="nav-motes">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="nav-mote" style={{
+              left: `${8 + (i * 7.5) % 84}%`,
+              animationDelay: `${i * 1.3}s`,
+              animationDuration: `${8 + (i % 4) * 2}s`,
+              width: `${2 + (i % 3)}px`,
+              height: `${2 + (i % 3)}px`,
+              opacity: 0.15 + (i % 3) * 0.08,
+            }} />
+          ))}
+        </div>
         <div className="navigator-center">
           <div className="navigator-glow s-el" style={{ transitionDelay: "0s" }} />
+          {/* Orbit particles */}
+          <div className="orbit-ring orbit-ring-1 s-el" style={{ transitionDelay: "0.3s" }}>
+            <div className="orbit-dot" />
+          </div>
+          <div className="orbit-ring orbit-ring-2 s-el" style={{ transitionDelay: "0.5s" }}>
+            <div className="orbit-dot" />
+          </div>
+          <div className="orbit-ring orbit-ring-3 s-el" style={{ transitionDelay: "0.7s" }}>
+            <div className="orbit-dot" />
+          </div>
           <div className="navigator-sapling s-el" style={{ transitionDelay: "0.2s" }}>
             <svg width="100" height="200" viewBox="0 0 60 120">
               <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
@@ -680,7 +703,13 @@ export default function LandingPage() {
             </svg>
           </div>
           <div className="navigator-message s-el" style={{ transitionDelay: "0.5s" }}>
-            <p className="navigator-message-text">{NAV_MESSAGE}</p>
+            <p className="navigator-message-text">
+              {NAV_MESSAGE_WORDS.map((word, i) => (
+                <span key={i} className="nav-word" style={{ animationDelay: `${0.8 + i * 0.12}s` }}>
+                  {word}{" "}
+                </span>
+              ))}
+            </p>
           </div>
           <div className="navigator-label s-el" style={{ transitionDelay: "0.8s" }}>NAVIGATOR AI</div>
         </div>
@@ -1088,6 +1117,89 @@ export default function LandingPage() {
           margin-top: 24px;
           position: relative;
           z-index: 3;
+        }
+
+        /* Orbit particles */
+        .orbit-ring {
+          position: absolute;
+          top: 50%; left: 50%;
+          border-radius: 50%;
+          border: 1px solid rgba(75,165,130,0.06);
+          pointer-events: none;
+          z-index: 2;
+        }
+        .orbit-ring-1 {
+          width: 200px; height: 200px;
+          margin-top: -130px; margin-left: -100px;
+          animation: orbitSpin 12s linear infinite;
+        }
+        .orbit-ring-2 {
+          width: 300px; height: 300px;
+          margin-top: -180px; margin-left: -150px;
+          animation: orbitSpin 20s linear infinite reverse;
+        }
+        .orbit-ring-3 {
+          width: 400px; height: 400px;
+          margin-top: -230px; margin-left: -200px;
+          animation: orbitSpin 28s linear infinite;
+        }
+        .orbit-dot {
+          position: absolute;
+          top: -3px; left: 50%;
+          width: 5px; height: 5px;
+          margin-left: -2.5px;
+          border-radius: 50%;
+          background: rgba(75,165,130,0.5);
+          box-shadow: 0 0 8px rgba(75,165,130,0.3);
+        }
+        .orbit-ring-2 .orbit-dot {
+          width: 4px; height: 4px; margin-left: -2px;
+          background: rgba(75,165,130,0.35);
+          box-shadow: 0 0 6px rgba(75,165,130,0.2);
+        }
+        .orbit-ring-3 .orbit-dot {
+          width: 3px; height: 3px; margin-left: -1.5px;
+          background: rgba(75,165,130,0.25);
+          box-shadow: 0 0 5px rgba(75,165,130,0.15);
+        }
+        @keyframes orbitSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        /* Word-by-word reveal */
+        .nav-word {
+          display: inline-block;
+          opacity: 0;
+          filter: blur(4px);
+          animation: wordReveal 0.5s ${C.easeContent} forwards;
+        }
+        .s-visible .nav-word {
+          animation: wordReveal 0.5s ${C.easeContent} forwards;
+        }
+        @keyframes wordReveal {
+          to { opacity: 1; filter: blur(0); }
+        }
+
+        /* Floating ambient motes */
+        .nav-motes {
+          position: absolute; inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 1;
+        }
+        .nav-mote {
+          position: absolute;
+          bottom: -10px;
+          border-radius: 50%;
+          background: rgba(75,165,130,0.4);
+          animation: moteFloat linear infinite;
+        }
+        @keyframes moteFloat {
+          0%   { transform: translateY(0) translateX(0); opacity: 0; }
+          10%  { opacity: 1; }
+          90%  { opacity: 1; }
+          100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
         }
 
         /* ════════════════════════════════════════════════════════════
