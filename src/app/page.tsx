@@ -598,13 +598,28 @@ function useParallax() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 4 — Three-Act Cycle (auto-advance + dot navigation)
+ * SECTION 4 — Three-Act Cycle
+ *   Auto-advance · dot navigation · scroll-driven act switching
+ *   Wheel/touch hijacks page scroll while section is >70 % visible.
+ *   Release on Act 1 scroll-up (→ Section 3) or Act 3 scroll-down (→ Section 5).
+ *   Manual scroll pauses auto-cycle for 15 s; dot clicks restart it immediately.
  * ═══════════════════════════════════════════════════════════════════════════ */
 function useActCycle(sectionRef: React.RefObject<HTMLElement | null>, actCount = 3, intervalMs = 9000) {
   const [activeAct, setActiveAct] = useState(0);
+  const actRef = useRef(0);                    // mirror for sync access in event handlers
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inViewRef = useRef(false);
+  const isLockedRef = useRef(false);           // true when section >70 % visible
+  const releasedRef = useRef(false);           // prevents re-lock after edge release
+  const transRef = useRef(false);              // blocks input during crossfade
+  const cooldownRef = useRef(false);           // 2 s debounce between scroll advances
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartRef = useRef(0);
 
+  // Keep actRef in sync with React state
+  useEffect(() => { actRef.current = activeAct; }, [activeAct]);
+
+  /* ── timer helpers ── */
   const clearTimer = useCallback(() => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
   }, []);
@@ -613,36 +628,139 @@ function useActCycle(sectionRef: React.RefObject<HTMLElement | null>, actCount =
     clearTimer();
     if (inViewRef.current) {
       timerRef.current = setInterval(() => {
-        setActiveAct((prev) => (prev + 1) % actCount);
+        setActiveAct((prev) => {
+          const next = (prev + 1) % actCount;
+          actRef.current = next;
+          return next;
+        });
       }, intervalMs);
     }
   }, [actCount, intervalMs, clearTimer]);
 
+  /* ── goToAct: dot clicks → restart auto-cycle immediately ── */
   const goToAct = useCallback((index: number) => {
+    actRef.current = index;
     setActiveAct(index);
     clearTimer();
+    if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
     if (inViewRef.current) startTimer();
   }, [clearTimer, startTimer]);
 
+  /* ── scrollToAct: wheel / touch → pause auto-cycle 15 s ── */
+  const scrollToAct = useCallback((index: number) => {
+    actRef.current = index;
+    setActiveAct(index);
+    clearTimer();
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      if (inViewRef.current) startTimer();
+    }, 15000);
+  }, [clearTimer, startTimer]);
+
+  /* ── main effect: observer + wheel + touch ── */
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
+    /* IntersectionObserver — visibility + scroll-lock */
     const obs = new IntersectionObserver(
       ([entry]) => {
+        const ratio = entry.intersectionRatio;
+        const wasInView = inViewRef.current;
         inViewRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
+
+        if (entry.isIntersecting && !wasInView) {
           section.classList.add("s4-visible");
           startTimer();
-        } else {
+        }
+        if (!entry.isIntersecting && wasInView) {
           clearTimer();
         }
+
+        // Lock when >70 % visible (unless user just released past an edge)
+        if (ratio > 0.7) {
+          if (!releasedRef.current) isLockedRef.current = true;
+        } else {
+          isLockedRef.current = false;
+        }
+
+        // Reset the released flag once the section fully leaves the viewport
+        if (!entry.isIntersecting) releasedRef.current = false;
       },
-      { threshold: 0.3 }
+      { threshold: [0.3, 0.7] },
     );
     obs.observe(section);
-    return () => { obs.disconnect(); clearTimer(); };
-  }, [sectionRef, startTimer, clearTimer]);
+
+    /* Wheel handler ({ passive: false } so preventDefault works) */
+    const onWheel = (e: WheelEvent) => {
+      if (!isLockedRef.current || transRef.current || cooldownRef.current) return;
+
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const cur = actRef.current;
+
+      // Edge release — let the default scroll take over
+      if (dir === 1 && cur === actCount - 1) {
+        isLockedRef.current = false;
+        releasedRef.current = true;
+        return;
+      }
+      if (dir === -1 && cur === 0) {
+        isLockedRef.current = false;
+        releasedRef.current = true;
+        return;
+      }
+
+      // Block page scroll, advance act
+      e.preventDefault();
+
+      cooldownRef.current = true;
+      setTimeout(() => { cooldownRef.current = false; }, 2000);
+      transRef.current = true;
+      setTimeout(() => { transRef.current = false; }, 1500);
+
+      const next = cur + dir;
+      if (next >= 0 && next < actCount) scrollToAct(next);
+    };
+
+    /* Touch handlers (mobile swipe) */
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartRef.current = e.touches[0].clientY;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!isLockedRef.current || transRef.current || cooldownRef.current) return;
+
+      const diff = touchStartRef.current - e.changedTouches[0].clientY;
+      if (Math.abs(diff) < 50) return;
+
+      const dir = diff > 0 ? 1 : -1;
+      const cur = actRef.current;
+
+      if (dir === 1 && cur === actCount - 1) { isLockedRef.current = false; releasedRef.current = true; return; }
+      if (dir === -1 && cur === 0) { isLockedRef.current = false; releasedRef.current = true; return; }
+
+      cooldownRef.current = true;
+      setTimeout(() => { cooldownRef.current = false; }, 2000);
+      transRef.current = true;
+      setTimeout(() => { transRef.current = false; }, 1500);
+
+      const next = cur + dir;
+      if (next >= 0 && next < actCount) scrollToAct(next);
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    section.addEventListener("touchstart", onTouchStart, { passive: true });
+    section.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      obs.disconnect();
+      clearTimer();
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      window.removeEventListener("wheel", onWheel);
+      section.removeEventListener("touchstart", onTouchStart);
+      section.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [sectionRef, actCount, startTimer, clearTimer, scrollToAct]);
 
   return { activeAct, goToAct };
 }
