@@ -34,6 +34,32 @@ const PARTICLES = [
   { radius: 160, speed: 10, start: 324, opacity: 0.4 },
 ];
 
+const PIPELINE_DOTS = [
+  { left: 6,  top: 40, status: "active",      delay: 0   },
+  { left: 11, top: 55, status: "active",      delay: 0.5 },
+  { left: 20, top: 42, status: "active",      delay: 0.3 },
+  { left: 25, top: 52, status: "active",      delay: 0.8 },
+  { left: 28, top: 48, status: "caution",     delay: 0.6 },
+  { left: 40, top: 48, status: "caution",     delay: 0.2 },
+  { left: 44, top: 46, status: "active",      delay: 0.7 },
+  { left: 47, top: 55, status: "rejected",    delay: 0.4 },
+  { left: 60, top: 45, status: "recommended", delay: 0.1 },
+  { left: 66, top: 52, status: "caution",     delay: 0.9 },
+  { left: 77, top: 47, status: "recommended", delay: 0.5 },
+  { left: 83, top: 50, status: "recommended", delay: 0.3 },
+  { left: 93, top: 48, status: "recommended", delay: 0.7 },
+];
+
+const FLOW_LINES = [
+  { top: 30, delay: 0 },
+  { top: 40, delay: 1.2 },
+  { top: 50, delay: 2.4 },
+  { top: 60, delay: 3.6 },
+  { top: 70, delay: 4.8 },
+];
+
+const PIPELINE_STAGES = ["PUBLISHED", "APPLICATIONS", "AI SCORED", "SHORTLISTED", "INTERVIEW", "AWARDED"];
+
 /* ═══════════════════════════════════════════════════════════════════════════
  * UTILITY: Canvas base hook — handles sizing, DPR, resize, animation loop
  * ═══════════════════════════════════════════════════════════════════════════ */
@@ -634,6 +660,10 @@ export default function LandingPage() {
   const [revealedWords, setRevealedWords] = useState(0);
   const wordTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  /* Act 2 — pipeline entrance phase (0=hidden, 1=river, 2=stages, 3=particles, 4=message, 5=label) */
+  const [pipelinePhase, setPipelinePhase] = useState(0);
+  const pipelineTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
   /* Act 3 — role card stagger + label */
   const [revealedCards, setRevealedCards] = useState(0);
   const [rolesLabelShow, setRolesLabelShow] = useState(false);
@@ -651,6 +681,22 @@ export default function LandingPage() {
       setRevealedWords(0);
     }
     return () => wordTimers.current.forEach(clearTimeout);
+  }, [activeAct]);
+
+  useEffect(() => {
+    pipelineTimers.current.forEach(clearTimeout);
+    pipelineTimers.current = [];
+    if (activeAct === 1) {
+      setPipelinePhase(0);
+      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(1), 100));   // river
+      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(2), 300));   // stages
+      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(3), 600));   // particles
+      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(4), 1200));  // message
+      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(5), 1600));  // label
+    } else {
+      setPipelinePhase(0);
+    }
+    return () => pipelineTimers.current.forEach(clearTimeout);
   }, [activeAct]);
 
   useEffect(() => {
@@ -806,7 +852,61 @@ export default function LandingPage() {
         {/* Act 2: Spatial Pipeline */}
         <div className={`act ${activeAct === 1 ? "act-active" : ""}`}>
           <div className="act-content">
-            <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 2 — Spatial Pipeline placeholder</p>
+            {/* Stage labels */}
+            <div className="pipeline-stages">
+              {PIPELINE_STAGES.map((s, i) => (
+                <span key={s} className={`pipeline-stage ${pipelinePhase >= 2 ? "pipeline-stage-show" : ""}`}
+                  style={{ transitionDelay: `${i * 0.1}s` }}>{s}</span>
+              ))}
+            </div>
+
+            {/* River container */}
+            <div className={`pipeline-river-container ${pipelinePhase >= 1 ? "pipeline-river-show" : ""}`}>
+              <svg className="pipeline-river" viewBox="0 0 1200 200" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="riverGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(75,165,195,0.3)" />
+                    <stop offset="40%" stopColor="rgba(75,165,195,0.5)" />
+                    <stop offset="50%" stopColor="rgba(75,165,195,0.6)" />
+                    <stop offset="60%" stopColor="rgba(75,165,195,0.45)" />
+                    <stop offset="100%" stopColor="rgba(75,165,195,0.25)" />
+                  </linearGradient>
+                  <filter id="caustic">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="1">
+                      <animate attributeName="seed" from="1" to="10" dur="8s" repeatCount="indefinite" />
+                    </feTurbulence>
+                    <feDisplacementMap in="SourceGraphic" scale="6" />
+                  </filter>
+                </defs>
+                <path d="M0,40 C100,40 150,40 200,45 C300,50 350,55 400,70 C450,80 480,90 500,92 C520,94 530,95 550,95 C570,95 580,94 600,92 C620,90 650,80 700,70 C750,55 800,50 900,45 C1000,40 1100,40 1200,40 L1200,160 C1100,160 1000,160 900,155 C800,150 750,145 700,130 C650,120 620,110 600,108 C580,106 570,105 550,105 C530,105 520,106 500,108 C480,110 450,120 400,130 C350,145 300,150 200,155 C150,160 100,160 0,160 Z"
+                  fill="url(#riverGrad)" filter="url(#caustic)" />
+              </svg>
+
+              {/* Flow lines */}
+              <div className="pipeline-flow-lines">
+                {FLOW_LINES.map((fl, i) => (
+                  <div key={i} className="flow-line" style={{ top: `${fl.top}%`, animationDelay: `${fl.delay}s` }} />
+                ))}
+              </div>
+
+              {/* Application particles */}
+              <div className="pipeline-particles">
+                {PIPELINE_DOTS.map((d, i) => (
+                  <div key={i}
+                    className={`pipeline-dot particle-${d.status} ${pipelinePhase >= 3 ? "pipeline-dot-show" : ""}`}
+                    style={{ left: `${d.left}%`, top: `${d.top}%`, animationDelay: `${d.delay}s`,
+                      transitionDelay: `${i * 0.08}s` }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Message card */}
+            <div className={`pipeline-message ${pipelinePhase >= 4 ? "pipeline-message-show" : ""}`}>
+              <p className="pipeline-message-text">13 applications across 6 stages. 3 recommended. 2 cautioned. 1 rejected.</p>
+            </div>
+
+            {/* Label */}
+            <div className={`pipeline-label ${pipelinePhase >= 5 ? "pipeline-label-show" : ""}`}>SPATIAL PIPELINE</div>
           </div>
         </div>
 
@@ -1378,6 +1478,131 @@ export default function LandingPage() {
           z-index: 3;
         }
 
+        /* ── Act 2: Spatial Pipeline ── */
+        .pipeline-stages {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+          max-width: 1100px;
+          padding: 0 48px;
+          margin-bottom: 24px;
+        }
+        .pipeline-stage {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 2.5px;
+          text-transform: uppercase;
+          color: rgba(230,232,240,0.3);
+          opacity: 0;
+          transform: translateY(10px);
+          transition: opacity 0.6s ${C.easeContent}, transform 0.6s ${C.easeContent};
+        }
+        .pipeline-stage-show { opacity: 1; transform: translateY(0); }
+
+        .pipeline-river-container {
+          position: relative;
+          width: 100%;
+          max-width: 1100px;
+          height: 220px;
+          margin: 0 auto;
+          opacity: 0;
+          transition: opacity 1s ${C.easeContent};
+        }
+        .pipeline-river-show { opacity: 1; }
+        .pipeline-river { width: 100%; height: 100%; }
+
+        .pipeline-flow-lines {
+          position: absolute; top: 0; left: 0;
+          width: 100%; height: 100%;
+          pointer-events: none; overflow: hidden;
+        }
+        .flow-line {
+          position: absolute;
+          height: 1px; width: 150px;
+          background: linear-gradient(to right, transparent, rgba(230,232,240,0.08), transparent);
+          animation: flowDrift 6s linear infinite;
+        }
+        @keyframes flowDrift {
+          0%   { transform: translateX(-200px); }
+          100% { transform: translateX(1300px); }
+        }
+
+        .pipeline-particles {
+          position: absolute; top: 0; left: 0;
+          width: 100%; height: 100%;
+          pointer-events: none;
+        }
+        .pipeline-dot {
+          position: absolute;
+          width: 10px; height: 10px;
+          border-radius: 50%;
+          animation: particleFloat 3s ease-in-out infinite;
+          opacity: 0;
+          transition: opacity 0.5s ${C.easeContent};
+          transform: translate(-50%, -50%);
+        }
+        .pipeline-dot-show { opacity: 1; }
+
+        .particle-recommended {
+          background: rgba(74,140,106,0.85);
+          box-shadow: 0 0 8px rgba(74,140,106,0.4);
+        }
+        .particle-caution {
+          background: rgba(175,148,63,0.85);
+          box-shadow: 0 0 8px rgba(175,148,63,0.4);
+        }
+        .particle-active {
+          background: rgba(75,130,180,0.85);
+          box-shadow: 0 0 8px rgba(75,130,180,0.4);
+        }
+        .particle-rejected {
+          background: rgba(150,90,90,0.5);
+          box-shadow: 0 0 6px rgba(150,90,90,0.2);
+        }
+        @keyframes particleFloat {
+          0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+          50% { transform: translate(-50%, -50%) translateY(-4px); }
+        }
+
+        .pipeline-message {
+          background: rgba(230,232,240,0.03);
+          border: 1px solid rgba(230,232,240,0.06);
+          border-radius: 16px;
+          padding: 24px 36px;
+          max-width: 580px;
+          text-align: center;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          margin-top: 32px;
+          opacity: 0;
+          transform: translateY(15px);
+          transition: opacity 0.8s ${C.easeContent}, transform 0.8s ${C.easeContent};
+        }
+        .pipeline-message-show { opacity: 1; transform: translateY(0); }
+        .pipeline-message-text {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 15px;
+          font-weight: 300;
+          line-height: 1.7;
+          color: rgba(230,232,240,0.5);
+          margin: 0;
+        }
+
+        .pipeline-label {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          color: rgba(230,232,240,0.2);
+          margin-top: 20px;
+          text-align: center;
+          opacity: 0;
+          transition: opacity 0.6s ${C.easeContent};
+        }
+        .pipeline-label-show { opacity: 1; }
+
         /* ── Act 3: Three Roles ── */
         .roles-container {
           display: grid;
@@ -1545,6 +1770,12 @@ export default function LandingPage() {
           .text-bl { left:32px; right:32px; bottom:64px; }
           .vision-emblem { width:120px; height:120px; }
           .act-content { padding:32px 24px; }
+          .pipeline-stages { padding:0 16px; }
+          .pipeline-stage { font-size:8px; letter-spacing:1.5px; }
+          .pipeline-river-container { height:160px; }
+          .pipeline-dot { width:7px; height:7px; }
+          .pipeline-message { max-width:90vw; padding:20px 24px; }
+          .pipeline-message-text { font-size:13px; }
           .navigator-glow { width:240px; height:240px; }
           .navigator-sapling svg { width:80px; height:160px; }
           .navigator-message { max-width:90vw; padding:24px 28px; }
