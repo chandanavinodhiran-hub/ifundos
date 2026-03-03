@@ -1189,7 +1189,7 @@ export default function LandingPage() {
           font-family: 'DM Sans', sans-serif;
           font-size: 44px;
           font-weight: 300;
-          color: rgba(230,232,240,0.85);
+          color: rgba(230,232,240,0.95);
           letter-spacing: 1.5px;
           margin: 0 0 52px;
           text-align: center;
@@ -1210,15 +1210,15 @@ export default function LandingPage() {
           font-weight: 400;
           letter-spacing: 3px;
           text-transform: uppercase;
-          color: rgba(230,232,240,0.35);
+          color: rgba(230,232,240,0.5);
         }
         .access-input {
           background: transparent;
           border: none;
-          border-bottom: 1px solid rgba(230,232,240,0.12);
+          border-bottom: 1px solid rgba(230,232,240,0.2);
           border-radius: 0;
           padding: 16px 0;
-          color: rgba(230,232,240,0.7);
+          color: rgba(230,232,240,0.85);
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
           font-weight: 300;
@@ -1227,16 +1227,16 @@ export default function LandingPage() {
           transition: border-color 0.4s ${C.easeContent};
         }
         .access-input::placeholder {
-          color: rgba(230,232,240,0.2);
+          color: rgba(230,232,240,0.3);
           font-weight: 300;
           letter-spacing: 0.5px;
         }
         .access-input:focus {
-          border-bottom-color: rgba(230,232,240,0.5);
+          border-bottom-color: rgba(230,232,240,0.6);
         }
         .access-submit {
           background: transparent;
-          border: 1px solid rgba(230,232,240,0.2);
+          border: 1px solid rgba(230,232,240,0.35);
           border-radius: 0;
           padding: 16px 56px;
           font-family: 'DM Sans', sans-serif;
@@ -1244,7 +1244,7 @@ export default function LandingPage() {
           font-weight: 400;
           letter-spacing: 3px;
           text-transform: uppercase;
-          color: rgba(230,232,240,0.5);
+          color: rgba(230,232,240,0.7);
           cursor: pointer;
           transition: all 0.4s ${C.easeContent};
           margin-top: 8px;
@@ -1252,14 +1252,14 @@ export default function LandingPage() {
         }
         .access-submit:hover {
           background: rgba(230,232,240,0.05);
-          border-color: rgba(230,232,240,0.4);
-          color: rgba(230,232,240,0.8);
+          border-color: rgba(230,232,240,0.6);
+          color: rgba(230,232,240,0.95);
         }
         .access-footer {
           margin: 24px 0 0;
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
-          color: rgba(230,232,240,0.2);
+          color: rgba(230,232,240,0.35);
           text-align: center;
         }
 
