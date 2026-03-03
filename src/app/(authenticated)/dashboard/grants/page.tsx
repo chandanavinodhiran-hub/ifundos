@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NeuProgress } from "@/components/ui/neu-progress";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
-import { EmptyState } from "@/components/ui/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ import {
   Plane,
   BarChart3,
 } from "lucide-react";
+import DynamicShadowCard from "@/components/DynamicShadowCard";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -174,6 +174,7 @@ export default function ActiveGrantsPage() {
 }
 
 function ActiveGrantsInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const filterEvidence = searchParams.get("filter") === "evidence";
   const [contracts, setContracts] = useState<ContractItem[]>([]);
@@ -260,8 +261,32 @@ function ActiveGrantsInner() {
   /* ---- Loading state ---- */
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+      <div className="space-y-6 pb-safe page-enter">
+        <div>
+          <div className="skeleton-bar h-2 w-20 mb-2" style={{ opacity: 0.4 }} />
+          <div className="skeleton-bar h-6 w-36" style={{ opacity: 0.5 }} />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="skeleton-card p-4" style={{ height: 90 }}>
+              <div className="flex flex-col items-center gap-2">
+                <div className="skeleton-bar h-8 w-12" style={{ opacity: 0.5 }} />
+                <div className="skeleton-bar h-2 w-14" style={{ opacity: 0.3 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        {[1,2].map(i => (
+          <div key={i} className="skeleton-card p-4" style={{ height: 120 }}>
+            <div className="skeleton-bar h-4 w-40 mb-2" style={{ opacity: 0.5 }} />
+            <div className="skeleton-bar h-3 w-32 mb-3" style={{ opacity: 0.3 }} />
+            <div className="skeleton-bar h-2 w-full mb-2" style={{ opacity: 0.2 }} />
+            <div className="flex items-center justify-between">
+              <div className="skeleton-bar h-5 w-20" style={{ opacity: 0.3 }} />
+              <div className="skeleton-bar h-5 w-16" style={{ opacity: 0.3 }} />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -276,9 +301,9 @@ function ActiveGrantsInner() {
   }
 
   return (
-    <div className="space-y-6 pb-safe">
+    <div className="space-y-6 pb-safe page-enter">
       {/* ── Page Header ── */}
-      <div>
+      <div className="animate-in-1">
         <p className="text-eyebrow">{filterEvidence ? "EVIDENCE REVIEW" : "GRANTS"}</p>
         <h1 className="text-xl font-bold text-sovereign-charcoal mt-1">
           {filterEvidence ? "Grants with Pending Evidence" : "Active Grants"}
@@ -286,41 +311,54 @@ function ActiveGrantsInner() {
       </div>
 
       {/* ── 3 Compact Stat Wells ── */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 animate-in-2">
         {/* Active count */}
-        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 flex flex-col items-center justify-center">
-          <span className="font-display text-2xl text-sovereign-charcoal leading-none">
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-6 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 300, color: "#2C3044" }}>
             <AnimatedCounter end={summaryStats.active} duration={1000} />
           </span>
-          <span className="text-eyebrow mt-1">Active</span>
-        </div>
+          <span className="label-style mt-1">Active</span>
+        </DynamicShadowCard>
 
         {/* Total Disbursed */}
-        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 flex flex-col items-center justify-center">
-          <span className="font-mono text-lg font-semibold text-sovereign-charcoal leading-none tabular-nums">
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-6 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 300, color: "#2C3044" }}>
             {formatSAR(summaryStats.totalDisbursed)}
           </span>
-          <span className="text-eyebrow mt-1">Disbursed</span>
-        </div>
+          <span className="label-style mt-1">Disbursed</span>
+        </DynamicShadowCard>
 
         {/* Pending Evidence */}
-        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 flex flex-col items-center justify-center">
-          <span className="font-display text-2xl text-amber leading-none">
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-6 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 300, color: "#2C3044" }}>
             <AnimatedCounter end={summaryStats.pendingEvidence} duration={1000} />
           </span>
-          <span className="text-eyebrow mt-1">Pending</span>
-        </div>
+          <span className="label-style mt-1">Pending</span>
+        </DynamicShadowCard>
       </div>
 
       {/* ── Grant Cards ── */}
       {sorted.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title="No active grants yet"
-          description="Grants appear here after contracts are awarded from the RFP pipeline."
-        />
+        <DynamicShadowCard inset intensity={1} className="neu-empty-inset p-8">
+          <div className="smart-empty">
+            <div className="smart-empty-icon">
+              <FileText className="w-7 h-7" style={{ color: "var(--text-muted)" }} />
+            </div>
+            <h3>No grants awarded yet</h3>
+            <p>
+              Grants appear here after applications are shortlisted and contracts awarded from the Pipeline.
+              Reviewing pending applications is the first step toward active grants.
+            </p>
+            <button
+              onClick={() => router.push('/dashboard/applications')}
+              className="smart-empty-action"
+            >
+              Go to Pipeline <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </DynamicShadowCard>
       ) : (
-        <div className="space-y-3 stagger-children">
+        <div className="space-y-3 stagger-children animate-in-3">
           {sorted.map((contract) => {
             const urgency = getUrgency(contract);
             const totalMs = contract.milestones.length;
@@ -330,11 +368,11 @@ function ActiveGrantsInner() {
             const progressPct = totalMs > 0 ? Math.round((verifiedMs / totalMs) * 100) : 0;
 
             return (
-              <button
+              <DynamicShadowCard
                 key={contract.id}
-                type="button"
-                className={`relative w-full text-left bg-neu-base rounded-[18px] shadow-neu-raised neu-press p-4 ${accentBarClass(urgency)} transition-shadow`}
+                intensity={2}
                 onClick={() => openContract(contract)}
+                className={`relative w-full text-left bg-neu-base rounded-[18px] shadow-neu-raised neu-press p-4 ${accentBarClass(urgency)} transition-shadow`}
               >
                 {/* Top row: contractor + budget */}
                 <div className="flex items-start justify-between mb-2">
@@ -374,7 +412,7 @@ function ActiveGrantsInner() {
                     {contract.status}
                   </Badge>
                 </div>
-              </button>
+              </DynamicShadowCard>
             );
           })}
         </div>
@@ -460,7 +498,7 @@ function ActiveGrantsInner() {
                           )}
                         </div>
 
-                        <div className="flex-1 bg-neu-light rounded-2xl shadow-neu-raised-sm p-3">
+                        <div className="flex-1 neu-display-inset rounded-2xl p-3">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2 min-w-0">
                               <p className="font-semibold text-sm text-sovereign-charcoal truncate">
@@ -513,7 +551,7 @@ function ActiveGrantsInner() {
                         return (
                           <div
                             key={ev.id}
-                            className="relative bg-neu-light rounded-2xl shadow-neu-raised-sm p-3 accent-left-amber"
+                            className="relative neu-display-inset rounded-2xl p-3 accent-left-amber"
                           >
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
@@ -587,7 +625,7 @@ function ActiveGrantsInner() {
                     {selectedContract.disbursements.map((d) => (
                       <div
                         key={d.id}
-                        className="flex items-center justify-between bg-neu-light rounded-2xl shadow-neu-raised-sm p-3"
+                        className="flex items-center justify-between neu-display-inset rounded-2xl p-3"
                       >
                         <div className="flex items-center gap-2">
                           {d.status === "RELEASED" ? (
@@ -660,7 +698,7 @@ function InfoTile({
   mono?: boolean;
 }) {
   return (
-    <div className="bg-neu-dark/30 rounded-xl p-2.5">
+    <div className="neu-info-tile rounded-xl p-2.5">
       <p className="text-eyebrow text-[10px]">{label}</p>
       <p
         className={`text-sm font-semibold text-sovereign-charcoal mt-0.5 truncate ${

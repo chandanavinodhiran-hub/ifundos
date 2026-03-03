@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Label } from "@/components/ui/label";
-import { Mail, Lock, LogIn, Loader2, Hexagon } from "lucide-react";
+import dynamic from "next/dynamic";
+
+/* ── Canvas-based forest background (client only, no SSR) ──────── */
+const ForestCanopy = dynamic(() => import("@/components/ForestCanopy"), {
+  ssr: false,
+});
 
 export default function LoginPage() {
   return (
@@ -15,6 +19,10 @@ export default function LoginPage() {
   );
 }
 
+/* ================================================================== */
+/* Login Form                                                          */
+/* ================================================================== */
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -23,6 +31,54 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [entering, setEntering] = useState(false);
+
+  const canopyRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const fogRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
+
+  /* Top-level cursor dot — lives above all stacking contexts */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${e.clientX}px`;
+        cursorRef.current.style.top = `${e.clientY}px`;
+      }
+    };
+    document.addEventListener("mousemove", handler);
+    return () => document.removeEventListener("mousemove", handler);
+  }, []);
+
+  /** Fog dissolve transition — card fades, canopy blurs, fog rolls in → redirect */
+  const playEnterTransition = useCallback((destination: string) => {
+    setEntering(true);
+
+    // After 300ms delay, begin the fog dissolve
+    setTimeout(() => {
+      // Card fades out — just opacity, no scaling, no movement
+      if (cardRef.current) {
+        cardRef.current.style.transition = "opacity 600ms ease-out";
+        cardRef.current.style.opacity = "0";
+      }
+      // Canopy blurs — morning fog rolling through the forest
+      if (canopyRef.current) {
+        canopyRef.current.style.transition = "filter 1000ms ease-in-out";
+        canopyRef.current.style.filter = "blur(20px)";
+      }
+      // Fog overlay fades in — forest dissolves toward dashboard color
+      if (fogRef.current) {
+        fogRef.current.style.transition = "opacity 1200ms ease-in-out";
+        fogRef.current.style.opacity = "1";
+      }
+    }, 300);
+
+    // At 1300ms, redirect — last frame is blurred canopy barely visible through fog
+    setTimeout(() => {
+      router.push(destination);
+      router.refresh();
+    }, 1300);
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,169 +94,320 @@ function LoginForm() {
 
       if (result?.error) {
         setError(result.error);
+        setLoading(false);
       } else {
+        let destination = "/";
+
         if (callbackUrl) {
-          router.push(callbackUrl);
+          destination = callbackUrl;
         } else {
           const res = await fetch("/api/auth/session");
           const session = await res.json();
           const role = session?.user?.role;
+
+          if (role === "FUND_MANAGER" || role === "ADMIN" || role === "CONTRACTOR" || role === "AUDITOR") {
+            fetch("/api/stats").catch(() => {/* fire-and-forget */});
+          }
+
           switch (role) {
-            case "CONTRACTOR":
-              router.push("/contractor");
-              break;
-            case "FUND_MANAGER":
-              router.push("/dashboard");
-              break;
-            case "ADMIN":
-              router.push("/admin");
-              break;
-            case "AUDITOR":
-              router.push("/audit");
-              break;
-            default:
-              router.push("/");
+            case "CONTRACTOR": destination = "/contractor"; break;
+            case "FUND_MANAGER": destination = "/dashboard"; break;
+            case "ADMIN": destination = "/admin"; break;
+            case "AUDITOR": destination = "/audit"; break;
+            default: destination = "/";
           }
         }
-        router.refresh();
+
+        // Play cinematic transition instead of instant redirect
+        playEnterTransition(destination);
       }
     } catch {
       setError("An unexpected error occurred");
-    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="login-shell min-h-screen flex flex-col items-center justify-center bg-neu-base px-4 relative overflow-hidden">
-      {/* Soft neumorphic background texture */}
-      <div className="absolute inset-0 opacity-30" style={{
-        backgroundImage: "radial-gradient(circle at 50% 50%, rgba(184,148,63,0.08) 0%, transparent 60%)",
-      }} />
-      {/* Top-left glow */}
-      <div className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-neu-light rounded-full blur-3xl opacity-60" />
-      {/* Bottom-right shadow */}
-      <div className="absolute -bottom-20 -right-20 w-[400px] h-[400px] bg-neu-darker rounded-full blur-3xl opacity-40" />
+    <div
+      style={{
+        minHeight: "100vh",
+        overflow: "hidden",
+        fontFamily: "'DM Sans', sans-serif",
+        cursor: "none",
+        background: "#050c06",
+      }}
+    >
+      {/* Full-screen animated forest canopy — wrapped for cinematic zoom */}
+      <div ref={canopyRef} style={{ position: "fixed", inset: 0, transformOrigin: "center center", zIndex: 0 }}>
+        <ForestCanopy />
+      </div>
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo / Branding */}
-        <div className="text-center mb-8">
-          <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-neu-raised-lg"
-            style={{
-              background: "linear-gradient(135deg, #b8943f 0%, #d4b665 60%, #b8943f 100%)",
-            }}
-          >
-            <Hexagon className="w-8 h-8 text-sovereign-charcoal" />
+      {/* Centered card wrapper */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 10,
+        }}
+      >
+        {/* Frosted glass card */}
+        <div
+          ref={cardRef}
+          className="forest-card-in"
+          style={{
+            width: 390,
+            padding: "42px 36px 36px",
+            borderRadius: "32px 32px 24px 24px",
+            background: "rgba(6, 16, 8, 0.6)",
+            backdropFilter: "blur(50px) saturate(1.3)",
+            WebkitBackdropFilter: "blur(50px) saturate(1.3)",
+          }}
+        >
+          {/* ── Logo ──────────────────────────────────────────────── */}
+          <div className="forest-fade-in" style={{ textAlign: "center", marginBottom: 30, animationDelay: "0.2s" }}>
+            {/* Sovereign emblem */}
+            <img
+              src="/emblem.png"
+              alt="iFundOS"
+              width={76}
+              height={76}
+              className="emblem-breathe"
+              style={{
+                display: "block",
+                margin: "0 auto 12px",
+              }}
+            />
+
+            <div
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 38,
+                fontWeight: 200,
+                color: "rgba(230, 228, 240, 0.90)",
+                letterSpacing: 3,
+                textShadow: "0 0 30px rgba(130, 100, 220, 0.08)",
+                marginBottom: 2,
+              }}
+            >
+              iFundOS
+            </div>
           </div>
-          <h1 className="text-3xl font-display font-bold text-sovereign-charcoal tracking-tight mt-4">
-            iFundOS
-          </h1>
-          <p className="text-sovereign-gold text-sm font-medium mt-1">
-            Intelligent Fund Operating System
-          </p>
-          <p className="text-sovereign-stone text-xs mt-1">
-            Saudi Green Initiative
-          </p>
-        </div>
 
-        {/* Neumorphic form card */}
-        <div className="rounded-[18px] bg-neu-base shadow-neu-raised-lg p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-sovereign-charcoal">Welcome Back</h2>
-            <p className="text-sm text-sovereign-stone mt-1">
-              Sign in to access your dashboard
-            </p>
-          </div>
+          {/* ── Error message ──────────────────────────────────────── */}
+          {error && (
+            <div
+              style={{
+                background: "rgba(180, 60, 60, 0.12)",
+                border: "1px solid rgba(180, 60, 60, 0.2)",
+                borderRadius: 11,
+                padding: "10px 14px",
+                marginBottom: 17,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+                color: "rgba(255, 160, 160, 0.85)",
+              }}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(255,120,120,0.7)", flexShrink: 0 }} />
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="rounded-xl bg-critical/10 border border-critical/20 text-critical px-4 py-3 text-sm flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-critical shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sovereign-charcoal font-medium text-sm">
+          {/* ── Form ──────────────────────────────────────────────── */}
+          <form onSubmit={handleSubmit}>
+            {/* Email */}
+            <div className="forest-slide-up" style={{ marginBottom: 17, animationDelay: "0.3s" }}>
+              <label
+                htmlFor="forest-email"
+                style={{
+                  display: "block",
+                  fontSize: 9.5,
+                  fontWeight: 500,
+                  color: "rgba(170,200,170,0.4)",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
                 Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sovereign-stone" />
+              </label>
+              <div
+                className="forest-input-wrap"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "rgba(255,255,255,0.035)",
+                  border: "1px solid rgba(90,150,90,0.08)",
+                  borderRadius: 11,
+                  padding: "0 13px",
+                  transition: "all 0.3s",
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(170,200,170,0.22)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 9, flexShrink: 0 }}>
+                  <rect x="2" y="4" width="20" height="16" rx="3" />
+                  <polyline points="2 4 12 13 22 4" />
+                </svg>
                 <input
-                  id="email"
+                  id="forest-email"
                   type="email"
                   placeholder="you@organization.sa"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="flex h-12 w-full rounded-xl border-0 bg-neu-dark/50 shadow-neu-inset pl-10 pr-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sovereign-gold/40 transition-all"
+                  style={{
+                    width: "100%",
+                    padding: "12px 0",
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 13,
+                    color: "rgba(210,230,210,0.8)",
+                    cursor: "none",
+                  }}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sovereign-charcoal font-medium text-sm">
+            {/* Password */}
+            <div className="forest-slide-up" style={{ marginBottom: 17, animationDelay: "0.4s" }}>
+              <label
+                htmlFor="forest-password"
+                style={{
+                  display: "block",
+                  fontSize: 9.5,
+                  fontWeight: 500,
+                  color: "rgba(170,200,170,0.4)",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
                 Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sovereign-stone" />
+              </label>
+              <div
+                className="forest-input-wrap"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "rgba(255,255,255,0.035)",
+                  border: "1px solid rgba(90,150,90,0.08)",
+                  borderRadius: 11,
+                  padding: "0 13px",
+                  transition: "all 0.3s",
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(170,200,170,0.22)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 9, flexShrink: 0 }}>
+                  <rect x="3" y="11" width="18" height="11" rx="3" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
                 <input
-                  id="password"
+                  id="forest-password"
                   type="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="flex h-12 w-full rounded-xl border-0 bg-neu-dark/50 shadow-neu-inset pl-10 pr-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sovereign-gold/40 transition-all"
+                  style={{
+                    width: "100%",
+                    padding: "12px 0",
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 13,
+                    color: "rgba(210,230,210,0.8)",
+                    cursor: "none",
+                  }}
                 />
               </div>
             </div>
 
+            {/* Sign In button */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-neu-raised-sm neu-press cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sovereign-charcoal"
+              disabled={loading || entering}
+              className={`forest-slide-up amethyst-btn${entering ? " entering-pulse" : ""}`}
               style={{
-                background: "linear-gradient(135deg, #b8943f 0%, #d4b665 60%, #b8943f 100%)",
+                animationDelay: entering ? undefined : "0.5s",
+                opacity: loading && !entering ? 0.6 : undefined,
               }}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4" />
-                  Sign In
-                </>
-              )}
+              {entering ? "Entering..." : loading ? "Signing in…" : "Sign In →"}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neu-darker/50" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-neu-base px-3 text-sovereign-stone">New contractor?</span>
-              </div>
-            </div>
+          {/* ── Footer links ──────────────────────────────────────── */}
+          <div className="forest-fade-in" style={{ textAlign: "center", marginTop: 20, animationDelay: "0.6s" }}>
+            <p style={{ fontSize: 11, color: "rgba(170,200,170,0.22)", marginBottom: 2 }}>
+              New contractor?
+            </p>
             <Link
               href="/register"
-              className="inline-block mt-3 text-sm text-sovereign-gold hover:text-sovereign-gold/80 font-medium transition-colors"
+              style={{
+                fontSize: 11,
+                color: "rgba(70,160,110,0.55)",
+                textDecoration: "none",
+                cursor: "none",
+              }}
             >
-              Register your organization &rarr;
+              Register your organization →
             </Link>
           </div>
         </div>
-
-        <p className="text-center text-xs text-sovereign-stone mt-8">
-          Powered by <span className="font-semibold text-sovereign-gold">Iozera Technologies</span>
-        </p>
       </div>
+
+      {/* Fog dissolve overlay — softens forest into dashboard background */}
+      <div
+        ref={fogRef}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 50,
+          opacity: 0,
+          pointerEvents: "none",
+          background: "linear-gradient(180deg, rgba(232, 235, 242, 0.92) 0%, rgba(232, 235, 242, 0.88) 60%, rgba(221, 223, 232, 0.85) 100%)",
+        }}
+      />
+
+      {/* Powered by — bottom center */}
+      <div
+        className="forest-fade-in"
+        style={{
+          position: "fixed",
+          bottom: 18,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+          fontSize: 9,
+          fontWeight: 400,
+          color: "rgba(255, 255, 255, 0.12)",
+          letterSpacing: 1.5,
+          animationDelay: "0.8s",
+        }}
+      >
+        Powered by Iozera Technologies
+      </div>
+
+      {/* Custom cursor dot — top-level, above all stacking contexts */}
+      <div
+        ref={cursorRef}
+        style={{
+          width: 5,
+          height: 5,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.5)",
+          position: "fixed",
+          pointerEvents: "none",
+          zIndex: 9999,
+          transform: "translate(-50%,-50%)",
+          boxShadow: "0 0 12px rgba(255,255,255,0.15)",
+        }}
+      />
     </div>
   );
 }

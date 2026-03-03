@@ -11,12 +11,12 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
-        /* Neumorphic */
-        neu: "border-0 bg-neu-dark text-sovereign-charcoal font-semibold",
-        "neu-gold": "border-0 bg-[rgba(184,148,63,0.12)] text-sovereign-gold font-semibold",
-        "neu-verified": "border-0 bg-verified/10 text-verified font-semibold",
-        "neu-amber": "border-0 bg-amber/10 text-amber font-semibold",
-        "neu-critical": "border-0 bg-critical/10 text-critical font-semibold",
+        /* Neumorphic — inset for non-clickable badge pills */
+        neu: "border-0 bg-[#E2E5ED] text-sovereign-charcoal font-semibold shadow-[inset_2px_2px_5px_rgba(155,161,180,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]",
+        "neu-gold": "border-0 bg-[#E2E5ED] text-sovereign-gold font-semibold shadow-[inset_2px_2px_5px_rgba(155,161,180,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]",
+        "neu-verified": "border-0 bg-[#E2E5ED] text-verified font-semibold shadow-[inset_2px_2px_5px_rgba(155,161,180,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]",
+        "neu-amber": "border-0 bg-[#E2E5ED] text-envfund font-semibold shadow-[inset_2px_2px_5px_rgba(155,161,180,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]",
+        "neu-critical": "border-0 bg-[#E2E5ED] text-critical font-semibold shadow-[inset_2px_2px_5px_rgba(155,161,180,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]",
       },
     },
     defaultVariants: { variant: "default" },

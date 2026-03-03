@@ -46,3 +46,6 @@ next-env.d.ts
 /data/
 
 .vercel
+
+# Large video files (exceed GitHub 100MB limit)
+public/section2-bg.mp4

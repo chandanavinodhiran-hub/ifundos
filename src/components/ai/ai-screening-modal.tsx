@@ -135,7 +135,7 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
   return (
     <div
       className="fixed inset-0 flex items-center justify-center"
-      style={{ background: "rgba(26, 23, 20, 0.6)", backdropFilter: "blur(8px)", zIndex: 200 }}
+      style={{ background: "rgba(30, 34, 53, 0.6)", backdropFilter: "blur(8px)", zIndex: 200 }}
     >
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
@@ -146,10 +146,10 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
         style={{
           width: "calc(100% - 48px)",
           maxWidth: 360,
-          background: "#e8e0d0",
+          background: "#F0F2F8",
           borderRadius: 24,
           boxShadow:
-            "8px 8px 24px rgba(156,148,130,0.5), -8px -8px 24px rgba(255,250,240,0.7), 0 20px 60px rgba(0,0,0,0.25)",
+            "8px 8px 24px rgba(155,161,180,0.4), -8px -8px 24px rgba(255,255,255,0.7), 0 20px 60px rgba(0,0,0,0.25)",
         }}
       >
         {/* ── Header ── */}
@@ -165,9 +165,9 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
                 width: 36,
                 height: 36,
                 borderRadius: 12,
-                background: "#e8e0d0",
+                background: "#E6E9EF",
                 boxShadow:
-                  "inset 3px 3px 8px rgba(140,132,115,0.5), inset -3px -3px 8px rgba(255,250,240,0.6)",
+                  "inset 3px 3px 8px rgba(155,161,180,0.4), inset -3px -3px 8px rgba(255,255,255,0.6)",
               }}
             >
               <div
@@ -176,8 +176,8 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
                   width: 14,
                   height: 14,
                   borderRadius: "50%",
-                  background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)",
-                  boxShadow: "0 0 10px rgba(184,148,63,0.5)",
+                  background: "radial-gradient(circle at 35% 35%, #7B8DC8, #5C6FB5)",
+                  boxShadow: "0 0 10px rgba(92,111,181,0.5)",
                 }}
               />
             </div>
@@ -186,14 +186,14 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
                 style={{
                   fontSize: 16,
                   fontWeight: 700,
-                  color: "#1a1714",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  color: "#1E2235",
+                  fontFamily: "'DM Sans', sans-serif",
                   lineHeight: 1.3,
                 }}
               >
                 AI Screening — Live
               </p>
-              <p style={{ fontSize: 12, color: "#8a8275", lineHeight: 1.3 }}>
+              <p style={{ fontSize: 12, color: "#9CA0B0", lineHeight: 1.3 }}>
                 {app.orgName} · {app.rfpTitle}
               </p>
             </div>
@@ -207,16 +207,16 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
               width: 32,
               height: 32,
               borderRadius: "50%",
-              background: "#e8e0d0",
+              background: "#E6E9EF",
               boxShadow:
-                "3px 3px 8px rgba(156,148,130,0.45), -3px -3px 8px rgba(255,250,240,0.8)",
+                "3px 3px 8px rgba(155,161,180,0.4), -3px -3px 8px rgba(255,255,255,0.7)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               border: "none",
             }}
           >
-            <X style={{ width: 14, height: 14, color: "#8a8275" }} />
+            <X style={{ width: 14, height: 14, color: "#9CA0B0" }} />
           </button>
         </div>
 
@@ -224,14 +224,14 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
         <div
           style={{
             margin: "0 20px",
-            background: "#1a1714",
+            background: "#1E2235",
             borderRadius: 16,
             padding: 20,
             boxShadow:
-              "inset 3px 3px 10px rgba(0,0,0,0.4), inset -2px -2px 8px rgba(50,45,38,0.3)",
-            fontFamily: "'JetBrains Mono', monospace",
+              "inset 3px 3px 10px rgba(0,0,0,0.4), inset -2px -2px 8px rgba(40,45,70,0.3)",
+            fontFamily: "'DM Sans', sans-serif",
             fontSize: 12,
-            color: "#9a9488",
+            color: "#9CA0B0",
             lineHeight: 1.7,
             minHeight: 180,
           }}
@@ -241,7 +241,7 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
             style={{
               fontSize: 10,
               fontWeight: 600,
-              color: "#b8943f",
+              color: "#5C6FB5",
               letterSpacing: "1.2px",
               textTransform: "uppercase",
               marginBottom: 14,
@@ -265,23 +265,23 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
               >
                 {/* Status dot */}
                 {isDone ? (
-                  <span style={{ color: "#4a7c59", fontSize: 10, width: 12, textAlign: "center" }}>●</span>
+                  <span style={{ color: "#3D8B5E", fontSize: 10, width: 12, textAlign: "center" }}>●</span>
                 ) : isCurrent ? (
                   <span
                     className="animate-ember"
-                    style={{ color: "#b8943f", fontSize: 10, width: 12, textAlign: "center" }}
+                    style={{ color: "#5C6FB5", fontSize: 10, width: 12, textAlign: "center" }}
                   >
                     ●
                   </span>
                 ) : (
-                  <span style={{ color: "#3a352e", fontSize: 10, width: 12, textAlign: "center" }}>○</span>
+                  <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 10, width: 12, textAlign: "center" }}>○</span>
                 )}
 
                 {/* Label */}
                 <span
                   style={{
                     flex: 1,
-                    color: isDone ? "#9a9488" : isCurrent ? "#f0ead9" : "#3a352e",
+                    color: isDone ? "#9CA0B0" : isCurrent ? "#E8EBF5" : "rgba(255,255,255,0.3)",
                     fontWeight: isCurrent ? 500 : 400,
                   }}
                 >
@@ -291,9 +291,9 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
                 {/* Right side: check + score, or processing */}
                 {isDone && (
                   <span className="flex items-center" style={{ gap: 8 }}>
-                    <span style={{ color: "#4a7c59" }}>✓</span>
+                    <span style={{ color: "#3D8B5E" }}>✓</span>
                     {score != null && (
-                      <span style={{ color: "#f0ead9", fontWeight: 500, minWidth: 20, textAlign: "right" }}>
+                      <span style={{ color: "#E8EBF5", fontWeight: 500, minWidth: 20, textAlign: "right" }}>
                         {Math.round(score)}
                       </span>
                     )}
@@ -302,7 +302,7 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
                 {isCurrent && (
                   <span
                     className="animate-pulse"
-                    style={{ color: "#b8943f", fontSize: 10 }}
+                    style={{ color: "#5C6FB5", fontSize: 10 }}
                   >
                     processing
                   </span>
@@ -318,9 +318,9 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
             margin: "16px 20px",
             height: 6,
             borderRadius: 3,
-            background: "#e8e0d0",
+            background: "#E6E9EF",
             boxShadow:
-              "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+              "inset 3px 3px 8px rgba(155,161,180,0.4), inset -3px -3px 8px rgba(255,255,255,0.7)",
             overflow: "hidden",
           }}
         >
@@ -328,10 +328,10 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
             style={{
               height: "100%",
               borderRadius: 3,
-              background: "linear-gradient(135deg, #b8943f, #d4b665)",
+              background: "linear-gradient(135deg, #5C6FB5, #7B8DC8)",
               boxShadow: allDone
-                ? "0 0 12px rgba(184,148,63,0.5)"
-                : "0 0 8px rgba(184,148,63,0.35)",
+                ? "0 0 12px rgba(92,111,181,0.5)"
+                : "0 0 8px rgba(92,111,181,0.35)",
               width: `${progressPct}%`,
               transition: "width 0.4s ease",
             }}
@@ -348,24 +348,24 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
           }}
         >
           {[
-            { label: "Elapsed", value: `${(elapsedMs / 1000).toFixed(1)}s`, color: "#b8943f", strike: false },
-            { label: "AI avg", value: "~45s", color: "#9a9488", strike: false },
-            { label: "Manual", value: "~3 days", color: "#9a9488", strike: true },
+            { label: "Elapsed", value: `${(elapsedMs / 1000).toFixed(1)}s`, color: "#5C6FB5", strike: false },
+            { label: "AI avg", value: "~45s", color: "#9CA0B0", strike: false },
+            { label: "Manual", value: "~3 days", color: "#C47F3A", strike: true },
           ].map((metric) => (
             <div
               key={metric.label}
               className="text-center flex-1"
               style={{
-                background: "var(--neu-dark)",
+                background: "#E6E9EF",
                 borderRadius: 12,
                 padding: "8px 10px",
                 boxShadow:
-                  "inset 2px 2px 5px rgba(140,132,115,0.4), inset -2px -2px 5px rgba(255,250,240,0.5)",
+                  "inset 2px 2px 5px rgba(155,161,180,0.4), inset -2px -2px 5px rgba(255,255,255,0.5)",
               }}
             >
               <p
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "'DM Sans', sans-serif",
                   fontSize: 13,
                   fontWeight: 600,
                   color: metric.color,
@@ -378,7 +378,7 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
               <p
                 style={{
                   fontSize: 9,
-                  color: "#8a8275",
+                  color: "#9CA0B0",
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                   marginTop: 2,
@@ -397,15 +397,15 @@ export function AIScreeningModal({ open, onClose, application }: AIScreeningModa
               onClick={handleViewResults}
               className="cursor-pointer w-full transition-transform active:scale-[0.97]"
               style={{
-                background: "#1a1714",
-                color: "#f0ead9",
+                background: "#1E2235",
+                color: "#E8EBF5",
                 borderRadius: 14,
                 padding: "14px 0",
                 fontSize: 14,
                 fontWeight: 700,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 boxShadow:
-                  "4px 4px 12px rgba(156,148,130,0.5), -4px -4px 12px rgba(255,250,240,0.6)",
+                  "4px 4px 12px rgba(155,161,180,0.4), -4px -4px 12px rgba(255,255,255,0.6)",
                 border: "none",
                 letterSpacing: "0.3px",
               }}

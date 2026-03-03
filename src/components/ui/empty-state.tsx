@@ -20,8 +20,8 @@ export function EmptyState({
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
         style={{
-          background: "#e8e0d0",
-          boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+          background: "var(--bg-dark)",
+          boxShadow: "var(--press)",
         }}
       >
         <Icon className="w-8 h-8 text-sovereign-stone" />

@@ -13,12 +13,18 @@ interface NeuProgressProps {
   delay?: number;
   /** Use deeper groove track for dimension score bars */
   groove?: boolean;
+  /** Override track CSS class */
+  trackClassName?: string;
+  /** Override fill CSS class */
+  fillClassName?: string;
+  /** Override track height */
+  trackHeight?: number;
 }
 
 const fillGradients = {
-  gold: "linear-gradient(90deg, #b8943f, #d4b665)",
+  gold: "linear-gradient(90deg, rgba(75, 165, 195, 0.7), rgba(75, 165, 195, 0.9))",
   green: "linear-gradient(90deg, #4a7c59, #6a9c79)",
-  amber: "linear-gradient(90deg, #b87a3f, #d4a665)",
+  amber: "linear-gradient(90deg, rgba(75, 165, 195, 0.5), rgba(75, 165, 195, 0.7))",
   critical: "linear-gradient(90deg, #9c4a4a, #b86a6a)",
 };
 
@@ -31,6 +37,9 @@ export function NeuProgress({
   className,
   delay = 0,
   groove = false,
+  trackClassName,
+  fillClassName,
+  trackHeight,
 }: NeuProgressProps) {
   const [animatedWidth, setAnimatedWidth] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
@@ -71,16 +80,17 @@ export function NeuProgress({
       )}
       <div
         className={cn(
-          groove ? "dimension-bar-track" : "neu-track",
-          size === "sm" ? "h-2" : "h-3"
+          trackClassName || (groove ? "dimension-bar-track" : "neu-track"),
+          !trackHeight && (size === "sm" ? "h-2" : "h-3")
         )}
+        style={trackHeight ? { height: `${trackHeight}px` } : undefined}
       >
         <div
-          className="h-full rounded-full transition-all duration-800 ease-out"
+          className={cn("h-full rounded-full transition-all duration-800 ease-out", fillClassName)}
           style={{
             width: `${animatedWidth}%`,
             background: fillGradients[variant],
-            boxShadow: variant === "gold" ? "0 0 8px rgba(184,148,63,0.35)" : undefined,
+            boxShadow: variant === "gold" ? "0 0 8px rgba(75,165,195,0.3)" : undefined,
             transitionDuration: "0.8s",
           }}
         />

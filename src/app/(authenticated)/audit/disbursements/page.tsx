@@ -66,7 +66,7 @@ export default function AuditorDisbursements() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--accent)" }} />
       </div>
     );
   }
@@ -87,16 +87,16 @@ export default function AuditorDisbursements() {
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-[100px] md:pb-0">
+    <div className="space-y-5 pb-[100px] md:pb-0">
       {/* Header */}
       <div>
-        <p className="font-mono text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#b8943f" }}>
+        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#b8943f", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}>
           FINANCE
         </p>
-        <h1 className="text-[22px] mt-0.5" style={{ fontFamily: "var(--font-sans)", fontWeight: 800, color: "#1a1714" }}>
+        <h1 className="text-[22px] mt-0.5" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, color: "var(--text-primary)" }}>
           Disbursements
         </h1>
-        <p className="text-[13px]" style={{ color: "#7a7265" }}>
+        <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
           Payment tracking and milestone verification
         </p>
       </div>
@@ -105,8 +105,8 @@ export default function AuditorDisbursements() {
       <div
         className="rounded-[18px] p-4"
         style={{
-          background: "#e8e0d0",
-          boxShadow: "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
+          background: "var(--bg-light)",
+          boxShadow: "var(--raise-sm)",
         }}
       >
         {/* Three inset wells */}
@@ -120,14 +120,14 @@ export default function AuditorDisbursements() {
               key={well.label}
               className="p-3 text-center rounded-[14px]"
               style={{
-                background: "#e8e0d0",
-                boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+                background: "var(--bg-dark)",
+                boxShadow: "var(--press)",
               }}
             >
-              <p className="font-mono text-[14px] font-bold leading-tight" style={{ color: "#1a1714" }}>
+              <p className="font-mono text-[14px] font-bold leading-tight" style={{ color: "var(--text-primary)" }}>
                 {well.value}
               </p>
-              <p className="text-[9px] font-semibold uppercase tracking-wider mt-1" style={{ color: "#7a7265" }}>
+              <p className="text-[9px] font-semibold uppercase tracking-wider mt-1" style={{ color: "var(--text-secondary)" }}>
                 {well.label}
               </p>
             </div>
@@ -139,8 +139,8 @@ export default function AuditorDisbursements() {
           <div
             className="h-3 rounded-full overflow-hidden"
             style={{
-              background: "#e8e0d0",
-              boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+              background: "var(--bg-dark)",
+              boxShadow: "var(--press-sm)",
             }}
           >
             <div className="h-full flex">
@@ -155,16 +155,16 @@ export default function AuditorDisbursements() {
                   className="h-full"
                   style={{
                     width: `${committedPct - disbursedPct}%`,
-                    background: "linear-gradient(90deg, #b8943f, #d4b665)",
+                    background: "linear-gradient(90deg, rgba(75,165,195,0.5), rgba(75,165,195,0.7))",
                   }}
                 />
               )}
             </div>
           </div>
-          <div className="flex gap-4 mt-1.5 text-[10px] font-mono" style={{ color: "#9a9488" }}>
+          <div className="flex gap-4 mt-1.5 text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
             <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#4a7c59" }} />Disbursed</span>
-            <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#b8943f" }} />Committed</span>
-            <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#d9d0be" }} />Remaining</span>
+            <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "rgba(75,165,195,0.6)" }} />Committed</span>
+            <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "var(--bg-deeper)" }} />Remaining</span>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function AuditorDisbursements() {
       {/* Contracts with milestone progress */}
       {stats.contracts.length > 0 ? (
         <div className="space-y-3">
-          <h2 className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "#7a7265" }}>
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             ACTIVE CONTRACTS
           </h2>
           {stats.contracts.map((contract) => {
@@ -189,20 +189,20 @@ export default function AuditorDisbursements() {
                 key={contract.id}
                 className="rounded-[18px] p-4"
                 style={{
-                  background: "#e8e0d0",
-                  boxShadow: "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
+                  background: "var(--bg-light)",
+                  boxShadow: "var(--raise-sm)",
                 }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[15px] font-bold" style={{ color: "#1a1714" }}>
+                    <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>
                       {contract.organization.name}
                     </h3>
-                    <p className="text-[12px]" style={{ color: "#7a7265" }}>
+                    <p className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
                       {contract.program.name}
                     </p>
                   </div>
-                  <span className="font-mono text-[14px] font-bold shrink-0" style={{ color: "#1a1714" }}>
+                  <span className="font-mono text-[14px] font-bold shrink-0" style={{ color: "var(--text-primary)" }}>
                     {formatSAR(contract.awardAmount)}
                   </span>
                 </div>
@@ -222,8 +222,8 @@ export default function AuditorDisbursements() {
                 {/* Next milestone */}
                 {nextMilestone && (
                   <div className="flex items-center gap-2 mt-2">
-                    <Calendar className="w-3.5 h-3.5" style={{ color: "#7a7265" }} />
-                    <span className="text-[11px]" style={{ color: "#7a7265" }}>
+                    <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
+                    <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                       Next: {nextMilestone.title ?? "Milestone"}{" "}
                       <span className="font-mono">
                         · {formatSAR(nextMilestone.disbursementAmount)}
@@ -233,7 +233,7 @@ export default function AuditorDisbursements() {
                 )}
 
                 {/* Disbursed vs total */}
-                <div className="flex items-center gap-2 mt-2 text-[11px] font-mono" style={{ color: "#9a9488" }}>
+                <div className="flex items-center gap-2 mt-2 text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
                   <span>Disbursed: {formatSAR(disbursed)} / {formatSAR(contract.awardAmount)}</span>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export default function AuditorDisbursements() {
       {/* Disbursement Timeline (when payments exist) */}
       {completedMilestones.length > 0 && (
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#7a7265" }}>
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
             PAYMENT TIMELINE
           </h2>
           <div className="space-y-0">
@@ -260,22 +260,22 @@ export default function AuditorDisbursements() {
               <div
                 key={ms.id}
                 className="flex gap-3 py-3 border-b"
-                style={{ borderColor: "rgba(156,148,130,0.15)" }}
+                style={{ borderColor: "rgba(160,166,185,0.12)" }}
               >
                 <div className="flex flex-col items-center">
                   <span className="w-2 h-2 rounded-full" style={{ background: "#4a7c59" }} />
-                  <div className="w-px flex-1" style={{ background: "rgba(156,148,130,0.2)" }} />
+                  <div className="w-px flex-1" style={{ background: "rgba(160,166,185,0.15)" }} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-baseline justify-between">
-                    <span className="font-mono text-[14px] font-bold" style={{ color: "#1a1714" }}>
+                    <span className="font-mono text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>
                       {formatSAR(ms.disbursementAmount)}
                     </span>
-                    <span className="font-mono text-[10px]" style={{ color: "#9a9488" }}>
+                    <span className="font-mono text-[10px]" style={{ color: "var(--text-tertiary)" }}>
                       Milestone {ms.sequence}
                     </span>
                   </div>
-                  <p className="text-[12px]" style={{ color: "#7a7265" }}>
+                  <p className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
                     {ms.contractor} · {ms.title}
                   </p>
                   <div className="flex items-center gap-1 mt-1 text-[10px]" style={{ color: "#4a7c59" }}>

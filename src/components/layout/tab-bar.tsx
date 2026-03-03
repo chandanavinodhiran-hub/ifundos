@@ -86,19 +86,17 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
 
   /** Check if a tab matches the current route */
   function isActive(href: string) {
-    // Exact match for root pages (e.g. /dashboard, /contractor)
     const segments = href.split("/").filter(Boolean);
     if (segments.length <= 1) return pathname === href;
     return pathname.startsWith(href);
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 desktop:hidden tab-bar-nav">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 desktop:hidden tab-bar-neu">
       <div
-        className="flex items-end justify-around bg-neu-base px-2"
+        className="flex items-end justify-around px-2"
         style={{
           paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
-          boxShadow: "-6px -6px 14px rgba(255,250,240,0.8), 6px -6px 14px rgba(156,148,130,0.3)",
         }}
       >
         {tabs.map((tab) => {
@@ -112,26 +110,27 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
                 key="navigator-orb"
                 onClick={() => handleTabClick(tab)}
                 className="relative flex flex-col items-center cursor-pointer"
-                style={{ marginTop: "-14px" }}
+                style={{ marginTop: "-8px" }}
               >
-                {/* Elevated charcoal sphere */}
-                <div
-                  className="w-[44px] h-[44px] rounded-full flex items-center justify-center"
-                  style={{
-                    background: "#1a1714",
-                    boxShadow: "4px 4px 10px rgba(156,148,130,0.5), -4px -4px 10px rgba(255,250,240,0.6)",
-                  }}
-                >
-                  {/* Gold gradient center with pulse */}
-                  <div
-                    className="w-[14px] h-[14px] rounded-full animate-orb-pulse"
-                    style={{
-                      background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)",
-                      boxShadow: "0 0 12px rgba(184,148,63,0.35)",
-                    }}
-                  />
+                {/* Orbital ring wrapper */}
+                <div className="navigator-orb-wrapper">
+                  {/* The orb sphere */}
+                  <div className="navigator-orb">
+                    {/* Inner gradient core */}
+                    <div
+                      className="w-[10px] h-[10px] rounded-full relative z-[1]"
+                      style={{
+                        background: "radial-gradient(circle at 35% 35%, #A8B5DB, #7B8DC8)",
+                        boxShadow: "0 0 8px rgba(92,111,181,0.45)",
+                      }}
+                    />
+                  </div>
                 </div>
-                <span className="text-[10px] font-semibold text-sovereign-gold mt-1">
+                <span
+                  key={pathname}
+                  className="text-[10px] font-semibold mt-1 orb-label-pulse"
+                  style={{ color: "var(--accent)" }}
+                >
                   {tab.label}
                 </span>
               </button>
@@ -144,9 +143,21 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
               key={tab.href}
               onClick={() => handleTabClick(tab)}
               className={cn(
-                "relative flex flex-col items-center justify-center min-w-[56px] min-h-[56px] pt-2 cursor-pointer transition-colors",
-                active ? "text-sovereign-charcoal" : "text-[#9a9488]"
+                "relative flex flex-col items-center justify-center min-w-[56px] pt-2 cursor-pointer transition-all duration-200",
+                active
+                  ? "min-h-[56px] rounded-2xl px-3 py-1.5"
+                  : "min-h-[56px]"
               )}
+              style={{
+                color: active ? "var(--accent-dark)" : "var(--text-muted)",
+                ...(active
+                  ? {
+                      background: "#DFE2EA",
+                      boxShadow:
+                        "inset 4px 4px 10px rgba(155,161,180,0.35), inset -4px -4px 10px rgba(255,255,255,0.55)",
+                    }
+                  : {}),
+              }}
             >
               <div className="relative">
                 <Icon className={cn("w-5 h-5", active && "stroke-[2.5]")} />
@@ -155,8 +166,8 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
                   <span
                     className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full"
                     style={{
-                      background: "#b8943f",
-                      boxShadow: "0 0 6px rgba(184,148,63,0.4)",
+                      background: "var(--accent)",
+                      boxShadow: "0 0 6px rgba(92,111,181,0.4)",
                     }}
                   />
                 )}
@@ -164,7 +175,7 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
               <span
                 className={cn(
                   "text-[10px] mt-0.5",
-                  active ? "font-bold text-sovereign-charcoal" : "font-medium text-[#9a9488]"
+                  active ? "font-bold" : "font-medium"
                 )}
               >
                 {tab.label}
@@ -173,7 +184,7 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
               {active && (
                 <span
                   className="absolute bottom-0.5 w-1 h-1 rounded-full"
-                  style={{ background: "#b8943f" }}
+                  style={{ background: "var(--accent)", boxShadow: "0 0 6px rgba(92,111,181,0.3)" }}
                 />
               )}
             </button>

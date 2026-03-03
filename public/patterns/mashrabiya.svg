@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <!--
+    Authentic Mashrabiya Lattice Tile — Interlocking curved bands
+    Tiles seamlessly in all directions. Use CSS filter to colorize.
+    Bold strokes for prominent lattice presence.
+  -->
+  <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Primary interlocking ogee (pointed oval) bands -->
+    <path d="M50,0 C30,14 30,36 50,50 C70,36 70,14 50,0" stroke-width="2"/>
+    <path d="M50,50 C30,64 30,86 50,100 C70,86 70,64 50,50" stroke-width="2"/>
+    <path d="M0,50 C14,30 36,30 50,50 C36,70 14,70 0,50" stroke-width="2"/>
+    <path d="M50,50 C64,30 86,30 100,50 C86,70 64,70 50,50" stroke-width="2"/>
+
+    <!-- Corner arcs for seamless tiling -->
+    <path d="M0,0 C20,14 20,36 0,50" stroke-width="2"/>
+    <path d="M0,0 C14,20 36,20 50,0" stroke-width="2"/>
+    <path d="M100,0 C80,14 80,36 100,50" stroke-width="2"/>
+    <path d="M100,0 C86,20 64,20 50,0" stroke-width="2"/>
+    <path d="M0,100 C20,86 20,64 0,50" stroke-width="2"/>
+    <path d="M0,100 C14,80 36,80 50,100" stroke-width="2"/>
+    <path d="M100,100 C80,86 80,64 100,50" stroke-width="2"/>
+    <path d="M100,100 C86,80 64,80 50,100" stroke-width="2"/>
+
+    <!-- Inner detail bands (concentric ogees for depth) -->
+    <path d="M50,10 C36,20 36,30 50,40 C64,30 64,20 50,10" stroke-width="0.8" opacity="0.6"/>
+    <path d="M50,60 C36,70 36,80 50,90 C64,80 64,70 50,60" stroke-width="0.8" opacity="0.6"/>
+    <path d="M10,50 C20,36 30,36 40,50 C30,64 20,64 10,50" stroke-width="0.8" opacity="0.6"/>
+    <path d="M60,50 C70,36 80,36 90,50 C80,64 70,64 60,50" stroke-width="0.8" opacity="0.6"/>
+
+    <!-- Cross-hatch weave bands (diagonal interlocking) -->
+    <path d="M25,0 C25,12.5 37.5,25 50,25 C62.5,25 75,12.5 75,0" stroke-width="0.6" opacity="0.35"/>
+    <path d="M25,100 C25,87.5 37.5,75 50,75 C62.5,75 75,87.5 75,100" stroke-width="0.6" opacity="0.35"/>
+    <path d="M0,25 C12.5,25 25,37.5 25,50 C25,62.5 12.5,75 0,75" stroke-width="0.6" opacity="0.35"/>
+    <path d="M100,25 C87.5,25 75,37.5 75,50 C75,62.5 87.5,75 100,75" stroke-width="0.6" opacity="0.35"/>
+
+    <!-- Node circles at major intersections -->
+    <circle cx="50" cy="50" r="4" stroke-width="1.4"/>
+    <circle cx="50" cy="0" r="4" stroke-width="1.4"/>
+    <circle cx="50" cy="100" r="4" stroke-width="1.4"/>
+    <circle cx="0" cy="50" r="4" stroke-width="1.4"/>
+    <circle cx="100" cy="50" r="4" stroke-width="1.4"/>
+
+    <!-- Corner nodes (quarter-circles for tiling) -->
+    <circle cx="0" cy="0" r="4" stroke-width="1.4"/>
+    <circle cx="100" cy="0" r="4" stroke-width="1.4"/>
+    <circle cx="0" cy="100" r="4" stroke-width="1.4"/>
+    <circle cx="100" cy="100" r="4" stroke-width="1.4"/>
+
+    <!-- Center dots -->
+    <circle cx="50" cy="50" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="0" cy="0" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="100" cy="0" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="0" cy="100" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="100" cy="100" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="50" cy="0" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="50" cy="100" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="0" cy="50" r="1.5" fill="#000" stroke="none"/>
+    <circle cx="100" cy="50" r="1.5" fill="#000" stroke="none"/>
+
+    <!-- Fine radial lines at center node (watch-dial detail) -->
+    <line x1="50" y1="44" x2="50" y2="46" stroke-width="0.5" opacity="0.4"/>
+    <line x1="50" y1="54" x2="50" y2="56" stroke-width="0.5" opacity="0.4"/>
+    <line x1="44" y1="50" x2="46" y2="50" stroke-width="0.5" opacity="0.4"/>
+    <line x1="54" y1="50" x2="56" y2="50" stroke-width="0.5" opacity="0.4"/>
+  </g>
+</svg>

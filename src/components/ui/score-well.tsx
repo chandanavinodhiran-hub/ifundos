@@ -13,8 +13,8 @@ interface ScoreWellProps {
 }
 
 const verdictColor = (score: number) => {
-  if (score >= 75) return "text-sovereign-gold";
-  if (score >= 50) return "text-amber";
+  if (score >= 75) return "text-envfund";
+  if (score >= 50) return "text-envfund";
   return "text-critical";
 };
 
@@ -72,7 +72,7 @@ export function ScoreWell({
         </span>
       )}
       {label && (
-        <span className="text-[10px] text-sovereign-stone font-medium">
+        <span className="text-[10px] font-medium" style={{ color: "var(--text-tertiary)" }}>
           {label}
         </span>
       )}

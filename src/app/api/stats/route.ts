@@ -197,10 +197,10 @@ export async function GET() {
   }
 
   if (role === "FUND_MANAGER") {
-    const [openRfps, applicationsInReview, activeGrants, programs, recentAudit, rfpPipelines] = await Promise.all([
+    const [openRfps, applicationsInReview, activeGrants, programs, recentAudit, rfpPipelines, pipelineApplications] = await Promise.all([
       prisma.rFP.count({ where: { status: "OPEN" } }),
       prisma.application.count({
-        where: { status: { in: ["SUBMITTED", "SCORING", "IN_REVIEW", "SHORTLISTED", "QUESTIONNAIRE_PENDING", "QUESTIONNAIRE_SUBMITTED"] } },
+        where: { status: { in: ["PUBLISHED", "SUBMITTED", "SCORING", "IN_REVIEW", "SHORTLISTED", "QUESTIONNAIRE_PENDING", "QUESTIONNAIRE_SUBMITTED", "INTERVIEW"] } },
       }),
       prisma.contract.count({ where: { status: "ACTIVE" } }),
       prisma.program.findMany({
@@ -219,6 +219,19 @@ export async function GET() {
           applications: { select: { status: true } },
         },
       }),
+      // Pipeline applications — full data for SpatialPipeline visualization
+      prisma.application.findMany({
+        where: { status: { not: "DRAFT" } },
+        select: {
+          id: true,
+          status: true,
+          compositeScore: true,
+          proposedBudget: true,
+          organization: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
     ]);
 
     const totalDisbursed = programs.reduce((sum: number, p: { budgetDisbursed: number }) => sum + p.budgetDisbursed, 0);
@@ -232,6 +245,7 @@ export async function GET() {
       programs,
       recentActivity: recentAudit,
       rfpPipelines,
+      pipelineApplications,
     });
   }
 

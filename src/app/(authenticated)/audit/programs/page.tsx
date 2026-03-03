@@ -103,23 +103,23 @@ export default function AuditorPrograms() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--accent)" }} />
       </div>
     );
   }
   if (!stats) return null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-[100px] md:pb-0">
+    <div className="space-y-5 pb-[100px] md:pb-0">
       {/* Header */}
       <div>
-        <p className="font-mono text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#b8943f" }}>
+        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#b8943f", fontFamily: "'DM Sans', sans-serif", letterSpacing: "2.5px" }}>
           OVERSIGHT
         </p>
-        <h1 className="text-[22px] mt-0.5" style={{ fontFamily: "var(--font-sans)", fontWeight: 800, color: "#1a1714" }}>
+        <h1 className="text-[22px] mt-0.5" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, color: "var(--text-primary)" }}>
           Programs
         </h1>
-        <p className="text-[13px]" style={{ color: "#7a7265" }}>
+        <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
           Budget allocation and program health
         </p>
       </div>
@@ -138,24 +138,24 @@ export default function AuditorPrograms() {
             <button
               className="w-full text-left rounded-[18px] p-4 cursor-pointer"
               style={{
-                background: "#e8e0d0",
-                boxShadow: "6px 6px 14px rgba(156,148,130,0.45), -6px -6px 14px rgba(255,250,240,0.8)",
+                background: "var(--bg-light)",
+                boxShadow: "var(--raise-sm)",
               }}
               onClick={() => setExpandedId(expanded ? null : program.id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[16px] font-bold" style={{ color: "#1a1714" }}>
+                  <h3 className="text-[16px] font-bold" style={{ color: "var(--text-primary)" }}>
                     {program.name}
                   </h3>
-                  <p className="font-mono text-[15px] font-bold mt-1" style={{ color: "#1a1714" }}>
+                  <p className="font-mono text-[15px] font-bold mt-1" style={{ color: "var(--text-primary)" }}>
                     {formatSAR(program.budgetTotal)}
                   </p>
                 </div>
                 <ChevronRight
                   className="w-5 h-5 shrink-0 transition-transform duration-200"
                   style={{
-                    color: "#9a9488",
+                    color: "var(--text-tertiary)",
                     transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
                   }}
                 />
@@ -166,8 +166,8 @@ export default function AuditorPrograms() {
                 <div
                   className="h-3 rounded-full overflow-hidden"
                   style={{
-                    background: "#e8e0d0",
-                    boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+                    background: "var(--bg-dark)",
+                    boxShadow: "var(--press-sm)",
                   }}
                 >
                   <div className="h-full flex">
@@ -182,21 +182,21 @@ export default function AuditorPrograms() {
                         className="h-full"
                         style={{
                           width: `${committedPct - disbursedPct}%`,
-                          background: "linear-gradient(90deg, #b8943f, #d4b665)",
+                          background: "linear-gradient(90deg, rgba(75,165,195,0.5), rgba(75,165,195,0.7))",
                         }}
                       />
                     )}
                   </div>
                 </div>
-                <div className="flex gap-4 mt-1.5 text-[10px] font-mono" style={{ color: "#9a9488" }}>
+                <div className="flex gap-4 mt-1.5 text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
                   <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#4a7c59" }} />Disbursed</span>
-                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#b8943f" }} />Committed</span>
-                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#d9d0be" }} />Remaining</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "rgba(75,165,195,0.6)" }} />Committed</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "var(--bg-deeper)" }} />Remaining</span>
                 </div>
               </div>
 
               {/* Stats row */}
-              <p className="text-[12px] mt-3" style={{ color: "#7a7265" }}>
+              <p className="text-[12px] mt-3" style={{ color: "var(--text-secondary)" }}>
                 {program.rfps.length} RFP{program.rfps.length !== 1 ? "s" : ""} · {activeGrants} Active Grant{activeGrants !== 1 ? "s" : ""} · {totalApps} Application{totalApps !== 1 ? "s" : ""}
               </p>
 
@@ -209,7 +209,7 @@ export default function AuditorPrograms() {
               </div>
 
               {/* Fund manager */}
-              <p className="text-[11px] mt-1.5" style={{ color: "#9a9488" }}>
+              <p className="text-[11px] mt-1.5" style={{ color: "var(--text-tertiary)" }}>
                 Managed by {stats.fmName}
               </p>
             </button>
@@ -231,21 +231,22 @@ export default function AuditorPrograms() {
                     <div
                       className="p-3 rounded-[14px] text-center"
                       style={{
-                        background: "#e8e0d0",
-                        boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
+                        background: "var(--bg-dark)",
+                        boxShadow: "var(--press)",
                       }}
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#7a7265" }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
                         CONCORDANCE RATE
                       </p>
                       <p
-                        className="font-sans font-extrabold text-[24px] mt-0.5"
+                        className="text-[24px] font-light mt-0.5"
+                        /* DM Sans light — matches FM stat-number pattern */
                         style={{ color: rate === 100 ? "#4a7c59" : "#b87a3f" }}
                       >
                         {rate}%
                       </p>
                       {divergent > 0 && (
-                        <p className="text-[11px] mt-0.5" style={{ color: "#b87a3f" }}>
+                        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
                           {divergent} divergent decision{divergent !== 1 ? "s" : ""}
                         </p>
                       )}
@@ -259,13 +260,13 @@ export default function AuditorPrograms() {
                     key={rfp.id}
                     className="rounded-[14px] p-3"
                     style={{
-                      background: "#e8e0d0",
-                      boxShadow: "4px 4px 10px rgba(156,148,130,0.35), -4px -4px 10px rgba(255,250,240,0.7)",
+                      background: "var(--bg-light)",
+                      boxShadow: "var(--raise-sm)",
                     }}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-[14px] font-bold" style={{ color: "#1a1714" }}>{rfp.title}</h4>
+                        <h4 className="text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>{rfp.title}</h4>
                         <span
                           className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
                           style={{
@@ -276,7 +277,7 @@ export default function AuditorPrograms() {
                           {rfp.status}
                         </span>
                       </div>
-                      <span className="text-[12px] font-mono" style={{ color: "#7a7265" }}>
+                      <span className="text-[12px] font-mono" style={{ color: "var(--text-secondary)" }}>
                         {rfp.applications.length} apps
                       </span>
                     </div>
@@ -301,7 +302,7 @@ export default function AuditorPrograms() {
                     })()}
 
                     {/* Concordance for this RFP */}
-                    <p className="text-[11px] mt-2" style={{ color: "#7a7265" }}>
+                    <p className="text-[11px] mt-2" style={{ color: "var(--text-secondary)" }}>
                       Decision concordance: {concordanceRate(rfp.applications)}%
                     </p>
                   </div>
@@ -314,7 +315,7 @@ export default function AuditorPrograms() {
 
       {stats.programs.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-[14px]" style={{ color: "#9a9488" }}>No programs found</p>
+          <p className="text-[14px]" style={{ color: "var(--text-tertiary)" }}>No programs found</p>
         </div>
       )}
     </div>

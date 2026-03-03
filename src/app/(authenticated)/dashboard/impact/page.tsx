@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScoreWell } from "@/components/ui/score-well";
 import { NeuProgress } from "@/components/ui/neu-progress";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
-import { Loader2, TreePine, Wallet, Target, CheckCircle2 } from "lucide-react";
+import { TreePine, Wallet, Target, CheckCircle2 } from "lucide-react";
+import DynamicShadowCard from "@/components/DynamicShadowCard";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -82,8 +83,36 @@ export default function ImpactDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+      <div className="space-y-4 pb-safe page-enter">
+        <div>
+          <div className="skeleton-bar h-2 w-16 mb-2" style={{ opacity: 0.4 }} />
+          <div className="skeleton-bar h-6 w-44" style={{ opacity: 0.5 }} />
+        </div>
+        <div className="skeleton-card p-5" style={{ height: 200 }}>
+          <div className="skeleton-bar h-2 w-28 mb-4" style={{ opacity: 0.4 }} />
+          <div className="flex flex-col items-center gap-2">
+            <div className="skeleton-circle w-20 h-20" />
+            <div className="skeleton-bar h-2 w-16" style={{ opacity: 0.3 }} />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[1,2].map(i => (
+            <div key={i} className="skeleton-card p-4" style={{ height: 80 }}>
+              <div className="skeleton-bar h-2 w-16 mb-2" style={{ opacity: 0.4 }} />
+              <div className="skeleton-bar h-8 w-10 mx-auto" style={{ opacity: 0.5 }} />
+            </div>
+          ))}
+        </div>
+        {[1,2,3].map(i => (
+          <div key={i} className="skeleton-card p-5" style={{ height: 140 }}>
+            <div className="skeleton-bar h-2 w-24 mb-3" style={{ opacity: 0.4 }} />
+            <div className="grid grid-cols-3 gap-2">
+              {[1,2,3].map(j => (
+                <div key={j} className="skeleton-bar h-16" style={{ opacity: 0.3, borderRadius: 14 }} />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -118,27 +147,22 @@ export default function ImpactDashboardPage() {
     : 0;
 
   return (
-    <div className="space-y-4 pb-safe">
+    <div className="space-y-4 pb-safe page-enter">
       {/* Header */}
-      <div>
+      <div className="animate-in-1">
         <p className="text-eyebrow">IMPACT</p>
         <h1 className="text-xl font-bold text-sovereign-charcoal font-display">Environmental Impact</h1>
       </div>
 
       {/* ============ Tree Counter Card — prominent inset well ============ */}
-      <div
-        className="rounded-[20px] p-5 space-y-4"
-        style={{
-          boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)",
-        }}
-      >
+      <DynamicShadowCard inset intensity={2} className="rounded-[20px] p-5 space-y-4 animate-in-2">
         <div className="flex items-center gap-2 text-sovereign-stone">
           <TreePine className="w-4 h-4" />
           <span className="text-eyebrow">TREES PLANTED</span>
         </div>
 
         <div className="flex flex-col items-center gap-1">
-          <div className="score-well score-well-lg">
+          <div className="score-well score-well-lg" style={{ boxShadow: "8px 8px 20px rgba(92,160,62,0.15), -8px -8px 20px rgba(255,255,255,0.7)" }}>
             <span className="font-sans font-extrabold leading-none" style={{ fontSize: 40, color: "#4a7c59" }}>
               <AnimatedCounter end={summary.totalTreesPlanted} duration={1200} />
             </span>
@@ -157,301 +181,324 @@ export default function ImpactDashboardPage() {
             variant="green"
             label="Tree Planting Progress"
             showValue
+            trackClassName="neu-progress-track"
+            fillClassName="neu-progress-fill"
+            trackHeight={8}
           />
           <p className="text-[11px] font-mono text-sovereign-stone text-right">
             {summary.totalTreesPlanted.toLocaleString()} / {summary.totalTreesTarget.toLocaleString()}
           </p>
         </div>
-      </div>
+      </DynamicShadowCard>
 
       {/* ============ KPI Row ============ */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 text-center">
+      <div className="grid grid-cols-2 gap-3 animate-in-3">
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset px-4 py-3 text-center">
           <p className="text-eyebrow text-sovereign-stone">Active Grants</p>
-          <p className="font-sans font-extrabold text-sovereign-charcoal mt-1" style={{ fontSize: "28px", lineHeight: 1 }}>
+          <p className="stat-number mt-1" style={{ color: "var(--text-primary)" }}>
             <AnimatedCounter end={summary.activeContracts} duration={1200} />
           </p>
           <p className="text-[10px] text-sovereign-stone">{summary.completedContracts} completed</p>
-        </div>
-        <div className="bg-neu-base rounded-[18px] shadow-neu-inset px-4 py-3 text-center">
+        </DynamicShadowCard>
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset px-4 py-3 text-center">
           <p className="text-eyebrow text-sovereign-stone">Avg AI Score</p>
-          <p className="font-sans font-extrabold text-sovereign-gold mt-1" style={{ fontSize: "28px", lineHeight: 1 }}>
+          <p className="stat-number mt-1" style={{ color: "var(--accent)" }}>
             <AnimatedCounter end={applicationStats.avgScore} duration={1200} />
           </p>
           <p className="text-[10px] text-sovereign-stone">{applicationStats.total} applications</p>
-        </div>
+        </DynamicShadowCard>
       </div>
 
       {/* ============ SGI Target Card ============ */}
-      <Card variant="neu-raised">
-        <CardContent className="p-5 pt-5 space-y-3">
-          <div className="flex items-center gap-2 text-sovereign-stone">
-            <Target className="w-4 h-4" />
-            <span className="text-eyebrow">SGI TARGET ALIGNMENT</span>
-          </div>
+      <DynamicShadowCard intensity={2} className="animate-in-4">
+        <Card variant="neu-raised">
+          <CardContent className="p-5 pt-5 space-y-3">
+            <div className="flex items-center gap-2 text-sovereign-stone">
+              <Target className="w-4 h-4" />
+              <span className="text-eyebrow">SGI TARGET ALIGNMENT</span>
+            </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
-              <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "24px", lineHeight: 1 }}>
-                {summary.totalTreesTarget > 0 ? summary.totalTreesTarget.toLocaleString() : "---"}
-              </p>
-              <p className="text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Target</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+              <div className="neu-stat-inset p-2 sm:p-3">
+                <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "clamp(16px, 4vw, 24px)", lineHeight: 1 }}>
+                  {summary.totalTreesTarget > 0 ? summary.totalTreesTarget.toLocaleString() : "N/A"}
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Target</p>
+              </div>
+              <div className="neu-stat-inset p-2 sm:p-3">
+                <p className="font-sans font-extrabold text-sovereign-gold" style={{ fontSize: "clamp(16px, 4vw, 24px)", lineHeight: 1 }}>
+                  {treePct}%
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Progress</p>
+              </div>
+              <div className="neu-stat-inset p-2 sm:p-3">
+                <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "clamp(16px, 4vw, 24px)", lineHeight: 1 }}>
+                  {summary.totalContracts}
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Contracts</p>
+              </div>
             </div>
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
-              <p className="font-sans font-extrabold text-sovereign-gold" style={{ fontSize: "24px", lineHeight: 1 }}>
-                {treePct}%
-              </p>
-              <p className="text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Progress</p>
-            </div>
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
-              <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "24px", lineHeight: 1 }}>
-                {summary.totalContracts}
-              </p>
-              <p className="text-[10px] text-sovereign-stone uppercase tracking-wide mt-1">Contracts</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </DynamicShadowCard>
 
       {/* ============ Budget Breakdown Card ============ */}
-      <Card variant="neu-raised">
-        <CardContent className="p-5 pt-5 space-y-4">
-          <div className="flex items-center gap-2 text-sovereign-stone">
-            <Wallet className="w-4 h-4" />
-            <span className="text-eyebrow">BUDGET BREAKDOWN</span>
-          </div>
+      <DynamicShadowCard intensity={2} className="animate-in-5">
+        <Card variant="neu-raised">
+          <CardContent className="p-5 pt-5 space-y-4">
+            <div className="flex items-center gap-2 text-sovereign-stone">
+              <Wallet className="w-4 h-4" />
+              <span className="text-eyebrow">BUDGET BREAKDOWN</span>
+            </div>
 
-          {/* Budget summary insets */}
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
-              <p className="font-mono font-bold text-sovereign-charcoal" style={{ fontSize: "14px", lineHeight: 1.2 }}>{formatSAR(summary.totalBudget)}</p>
-              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Total</p>
+            {/* Budget summary insets */}
+            <div className="grid grid-cols-3 gap-2 text-center budget-grid-responsive">
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3">
+                <p className="text-sovereign-charcoal" style={{ lineHeight: 1.2 }}>
+                  <span className="stat-number" style={{ fontSize: "clamp(20px, 5vw, 36px)" }}>{formatSARNumber(summary.totalBudget)}</span>
+                  {" "}<span className="mono-data" style={{ fontSize: "clamp(8px, 2vw, 12px)" }}>SAR</span>
+                </p>
+                <p className="text-[10px] text-sovereign-stone uppercase mt-1">Total</p>
+              </div>
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3">
+                <p className="text-sovereign-gold" style={{ lineHeight: 1.2 }}>
+                  <span className="stat-number" style={{ fontSize: "clamp(20px, 5vw, 36px)" }}>{formatSARNumber(summary.totalAwardAmount)}</span>
+                  {" "}<span className="mono-data" style={{ fontSize: "clamp(8px, 2vw, 12px)" }}>SAR</span>
+                </p>
+                <p className="text-[10px] text-sovereign-stone uppercase mt-1">Awarded</p>
+              </div>
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3">
+                <p className="text-verified" style={{ lineHeight: 1.2 }}>
+                  <span className="stat-number" style={{ fontSize: "clamp(20px, 5vw, 36px)" }}>{formatSARNumber(summary.totalDisbursed)}</span>
+                  {" "}<span className="mono-data" style={{ fontSize: "clamp(8px, 2vw, 12px)" }}>SAR</span>
+                </p>
+                <p className="text-[10px] text-sovereign-stone uppercase mt-1">Disbursed</p>
+              </div>
             </div>
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
-              <p className="font-mono font-bold text-sovereign-gold" style={{ fontSize: "14px", lineHeight: 1.2 }}>{formatSAR(summary.totalAwardAmount)}</p>
-              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Awarded</p>
-            </div>
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3">
-              <p className="font-mono font-bold text-verified" style={{ fontSize: "14px", lineHeight: 1.2 }}>{formatSAR(summary.totalDisbursed)}</p>
-              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Disbursed</p>
-            </div>
-          </div>
 
-          {/* Budget progress bars */}
-          <div className="space-y-3">
+            {/* Budget progress bars */}
+            <div className="space-y-3">
+              <NeuProgress
+                value={awardedPct}
+                variant="gold"
+                label="Awarded"
+                showValue
+                delay={200}
+              />
+              <NeuProgress
+                value={disbursedPct}
+                variant="green"
+                label="Disbursed"
+                showValue
+                delay={400}
+              />
+            </div>
+
+          </CardContent>
+        </Card>
+      </DynamicShadowCard>
+
+      {/* ============ By Program Card ============ */}
+      {programBreakdown.length > 0 && (
+        <DynamicShadowCard intensity={2} className="neu-raised w-full p-5 space-y-3">
+          <p className="label-style">By Program</p>
+          {programBreakdown.map((p, i) => (
+            <div key={p.name} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-sovereign-charcoal">{p.name}</span>
+                <span className="mono-data">{formatSAR(p.budgetTotal)}</span>
+              </div>
+              <NeuProgress
+                value={p.disbursedPct}
+                variant="green"
+                size="sm"
+                delay={300 + i * 100}
+              />
+              <div className="flex gap-3 text-[10px] text-sovereign-stone">
+                <span className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold" />
+                  Awarded: {p.allocationPct}%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-verified" />
+                  Disbursed: {p.disbursedPct}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </DynamicShadowCard>
+      )}
+
+      {/* ============ Milestone Completion Card ============ */}
+      <DynamicShadowCard intensity={2}>
+        <Card variant="neu-raised">
+          <CardContent className="p-5 pt-5 space-y-4">
+            <div className="flex items-center gap-2 text-sovereign-stone">
+              <CheckCircle2 className="w-4 h-4" />
+              <span className="text-eyebrow">MILESTONE COMPLETION</span>
+            </div>
+
             <NeuProgress
-              value={awardedPct}
+              value={milestoneStats.completionRate}
               variant="gold"
-              label="Awarded"
+              label="Overall Completion"
+              showValue
+            />
+
+            <div className="space-y-2">
+              <MilestoneRow
+                label="Verified"
+                value={milestoneStats.verified}
+                total={milestoneStats.total}
+                variant="green"
+              />
+              <MilestoneRow
+                label="Evidence Submitted"
+                value={milestoneStats.evidenceSubmitted}
+                total={milestoneStats.total}
+                variant="amber"
+              />
+              <MilestoneRow
+                label="Pending"
+                value={milestoneStats.pending}
+                total={milestoneStats.total}
+                variant="gold"
+              />
+            </div>
+
+            {/* Evidence stats */}
+            <div className="pt-3 border-t border-neu-dark/60">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-sovereign-stone mb-2">Evidence Review</p>
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3 text-center">
+                  <p className="font-sans font-extrabold text-verified" style={{ fontSize: "clamp(18px, 4vw, 26px)", lineHeight: 1 }}>{evidenceStats.approved}</p>
+                  <p className="text-[9px] sm:text-[10px] text-sovereign-stone mt-1">Approved</p>
+                </div>
+                <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3 text-center">
+                  <p className="font-sans font-extrabold text-sovereign-gold" style={{ fontSize: "clamp(18px, 4vw, 26px)", lineHeight: 1 }}>{evidenceStats.pending}</p>
+                  <p className="text-[9px] sm:text-[10px] text-sovereign-stone mt-1">Pending</p>
+                </div>
+                <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3 text-center">
+                  <p className="font-sans font-extrabold text-critical" style={{ fontSize: "clamp(18px, 4vw, 26px)", lineHeight: 1 }}>{evidenceStats.rejected}</p>
+                  <p className="text-[9px] sm:text-[10px] text-sovereign-stone mt-1">Rejected</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </DynamicShadowCard>
+
+      {/* ============ Contractor Performance Card ============ */}
+      <DynamicShadowCard intensity={2}>
+        <Card variant="neu-raised">
+          <CardContent className="p-5 pt-5 space-y-3">
+            <span className="text-eyebrow text-sovereign-stone">CONTRACTOR RANKINGS</span>
+
+            {contractorPerformance.length === 0 ? (
+              <p className="text-center text-sovereign-stone text-sm py-6">
+                No contractor data available yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {contractorPerformance.map((cp, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-neu-dark rounded-[14px] shadow-neu-inset p-4 space-y-2"
+                  >
+                    {/* Name + Rank */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                            idx === 0
+                              ? "bg-sovereign-gold/20 text-sovereign-gold"
+                              : idx === 1
+                              ? "bg-sovereign-stone/20 text-sovereign-stone"
+                              : "bg-neu-base text-sovereign-stone"
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <p className="text-sm font-bold text-sovereign-charcoal">{cp.contractorName}</p>
+                          <p className="text-[10px] text-sovereign-stone">{cp.rfpTitle}</p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={
+                          cp.contractStatus === "ACTIVE"
+                            ? "neu-verified"
+                            : cp.contractStatus === "COMPLETED"
+                            ? "neu-gold"
+                            : "neu"
+                        }
+                      >
+                        {cp.contractStatus}
+                      </Badge>
+                    </div>
+
+                    {/* Score + milestones */}
+                    <div className="flex items-center gap-3">
+                      <ScoreWell
+                        score={cp.aiScore || 0}
+                        size="sm"
+                        animated={false}
+                      />
+                      <div className="flex-1 space-y-1">
+                        <NeuProgress
+                          value={cp.completionRate}
+                          variant="gold"
+                          label={`Milestones ${cp.milestonesCompleted}/${cp.milestonesTotal}`}
+                          size="sm"
+                        />
+                        <p className="text-[10px] font-mono text-sovereign-stone text-right">
+                          {formatSAR(cp.awardAmount)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </DynamicShadowCard>
+
+      {/* ============ Application Funnel Card ============ */}
+      <DynamicShadowCard intensity={2}>
+        <Card variant="neu-raised">
+          <CardContent className="p-5 pt-5 space-y-4">
+            <span className="text-eyebrow text-sovereign-stone">APPLICATION FUNNEL</span>
+
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3 text-center">
+                <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "clamp(20px, 5vw, 26px)", lineHeight: 1 }}>
+                  {applicationStats.total}
+                </p>
+                <p className="text-[10px] text-sovereign-stone uppercase mt-1">Received</p>
+              </div>
+              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-2 sm:p-3 text-center">
+                <p className="font-sans font-extrabold text-verified" style={{ fontSize: "clamp(20px, 5vw, 26px)", lineHeight: 1 }}>
+                  {applicationStats.approved}
+                </p>
+                <p className="text-[10px] text-sovereign-stone uppercase mt-1">Approved</p>
+              </div>
+            </div>
+
+            <NeuProgress
+              value={
+                applicationStats.total > 0
+                  ? Math.round((applicationStats.approved / applicationStats.total) * 100)
+                  : 0
+              }
+              variant="green"
+              label="Approval Rate"
               showValue
               delay={200}
             />
-            <NeuProgress
-              value={disbursedPct}
-              variant="green"
-              label="Disbursed"
-              showValue
-              delay={400}
-            />
-          </div>
-
-          {/* Per-program breakdown */}
-          {programBreakdown.length > 0 && (
-            <div className="space-y-3 pt-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-sovereign-stone">By Program</p>
-              {programBreakdown.map((p, i) => (
-                <div key={p.name} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-sovereign-charcoal">{p.name}</span>
-                    <span className="text-[10px] font-mono text-sovereign-stone">{formatSAR(p.budgetTotal)}</span>
-                  </div>
-                  <NeuProgress
-                    value={p.disbursedPct}
-                    variant="green"
-                    size="sm"
-                    delay={300 + i * 100}
-                  />
-                  <div className="flex gap-3 text-[10px] text-sovereign-stone">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold" />
-                      Awarded: {p.allocationPct}%
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-verified" />
-                      Disbursed: {p.disbursedPct}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ============ Milestone Completion Card ============ */}
-      <Card variant="neu-raised">
-        <CardContent className="p-5 pt-5 space-y-4">
-          <div className="flex items-center gap-2 text-sovereign-stone">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-eyebrow">MILESTONE COMPLETION</span>
-          </div>
-
-          <NeuProgress
-            value={milestoneStats.completionRate}
-            variant="gold"
-            label="Overall Completion"
-            showValue
-          />
-
-          <div className="space-y-2">
-            <MilestoneRow
-              label="Verified"
-              value={milestoneStats.verified}
-              total={milestoneStats.total}
-              variant="green"
-            />
-            <MilestoneRow
-              label="Evidence Submitted"
-              value={milestoneStats.evidenceSubmitted}
-              total={milestoneStats.total}
-              variant="amber"
-            />
-            <MilestoneRow
-              label="Pending"
-              value={milestoneStats.pending}
-              total={milestoneStats.total}
-              variant="gold"
-            />
-          </div>
-
-          {/* Evidence stats */}
-          <div className="pt-3 border-t border-neu-dark/60">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-sovereign-stone mb-2">Evidence Review</p>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
-                <p className="font-sans font-extrabold text-verified" style={{ fontSize: "26px", lineHeight: 1 }}>{evidenceStats.approved}</p>
-                <p className="text-[10px] text-sovereign-stone mt-1">Approved</p>
-              </div>
-              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
-                <p className="font-sans font-extrabold text-sovereign-gold" style={{ fontSize: "26px", lineHeight: 1 }}>{evidenceStats.pending}</p>
-                <p className="text-[10px] text-sovereign-stone mt-1">Pending</p>
-              </div>
-              <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
-                <p className="font-sans font-extrabold text-critical" style={{ fontSize: "26px", lineHeight: 1 }}>{evidenceStats.rejected}</p>
-                <p className="text-[10px] text-sovereign-stone mt-1">Rejected</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ============ Contractor Performance Card ============ */}
-      <Card variant="neu-raised">
-        <CardContent className="p-5 pt-5 space-y-3">
-          <span className="text-eyebrow text-sovereign-stone">CONTRACTOR RANKINGS</span>
-
-          {contractorPerformance.length === 0 ? (
-            <p className="text-center text-sovereign-stone text-sm py-6">
-              No contractor data available yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {contractorPerformance.map((cp, idx) => (
-                <div
-                  key={idx}
-                  className="bg-neu-dark rounded-[14px] shadow-neu-inset p-4 space-y-2"
-                >
-                  {/* Name + Rank */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                          idx === 0
-                            ? "bg-sovereign-gold/20 text-sovereign-gold"
-                            : idx === 1
-                            ? "bg-sovereign-stone/20 text-sovereign-stone"
-                            : "bg-neu-base text-sovereign-stone"
-                        }`}
-                      >
-                        {idx + 1}
-                      </span>
-                      <div>
-                        <p className="text-sm font-bold text-sovereign-charcoal">{cp.contractorName}</p>
-                        <p className="text-[10px] text-sovereign-stone">{cp.rfpTitle}</p>
-                      </div>
-                    </div>
-                    <Badge
-                      variant={
-                        cp.contractStatus === "ACTIVE"
-                          ? "neu-verified"
-                          : cp.contractStatus === "COMPLETED"
-                          ? "neu-gold"
-                          : "neu"
-                      }
-                    >
-                      {cp.contractStatus}
-                    </Badge>
-                  </div>
-
-                  {/* Score + milestones */}
-                  <div className="flex items-center gap-3">
-                    <ScoreWell
-                      score={cp.aiScore || 0}
-                      size="sm"
-                      animated={false}
-                    />
-                    <div className="flex-1 space-y-1">
-                      <NeuProgress
-                        value={cp.completionRate}
-                        variant="gold"
-                        label={`Milestones ${cp.milestonesCompleted}/${cp.milestonesTotal}`}
-                        size="sm"
-                      />
-                      <p className="text-[10px] font-mono text-sovereign-stone text-right">
-                        {formatSAR(cp.awardAmount)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ============ Application Funnel Card ============ */}
-      <Card variant="neu-raised">
-        <CardContent className="p-5 pt-5 space-y-4">
-          <span className="text-eyebrow text-sovereign-stone">APPLICATION FUNNEL</span>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
-              <p className="font-sans font-extrabold text-sovereign-charcoal" style={{ fontSize: "26px", lineHeight: 1 }}>
-                {applicationStats.total}
-              </p>
-              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Received</p>
-            </div>
-            <div className="bg-neu-dark rounded-[14px] shadow-neu-inset p-3 text-center">
-              <p className="font-sans font-extrabold text-verified" style={{ fontSize: "26px", lineHeight: 1 }}>
-                {applicationStats.approved}
-              </p>
-              <p className="text-[10px] text-sovereign-stone uppercase mt-1">Approved</p>
-            </div>
-          </div>
-
-          <NeuProgress
-            value={
-              applicationStats.total > 0
-                ? Math.round((applicationStats.approved / applicationStats.total) * 100)
-                : 0
-            }
-            variant="green"
-            label="Approval Rate"
-            showValue
-            delay={200}
-          />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </DynamicShadowCard>
     </div>
   );
 }
@@ -494,4 +541,12 @@ function formatSAR(amount: number): string {
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M SAR`;
   if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K SAR`;
   return `${amount} SAR`;
+}
+
+/** Returns just the numeric portion without "SAR" suffix */
+function formatSARNumber(amount: number): string {
+  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`;
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
+  return String(amount);
 }

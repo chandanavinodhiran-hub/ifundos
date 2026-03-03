@@ -2,21 +2,26 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
-/* ─── Card Hierarchy — Sovereign + Neumorphic ─────────────────────── */
+/* ─── Card Hierarchy — Lit Room Neumorphic Depth System ─────────────── */
+/* RAISED = touchable objects ON the desk (outer shadows)               */
+/* RECESSED = wells carved INTO the desk (inner shadows)                */
+/* All backgrounds are opaque cool grey to keep ambient light effect     */
 const cardVariants = cva(
-  "rounded-2xl text-card-foreground transition-shadow",
+  "rounded-[20px] transition-all duration-[400ms]",
   {
     variants: {
       variant: {
-        /* Sovereign (desktop/non-FM) */
-        default:  "bg-sovereign-cream border border-sovereign-warm/20 shadow-sovereign",
-        elevated: "bg-sovereign-ivory border border-sovereign-warm/30 shadow-elevated",
-        recessed: "bg-sovereign-parchment border border-sovereign-warm/15 shadow-none",
-        ai:       "bg-sovereign-charcoal text-sovereign-parchment border-l-2 border-sovereign-gold shadow-sovereign",
-        /* Neumorphic (mobile-first FM) */
-        "neu-raised":  "bg-neu-base rounded-[18px] shadow-neu-raised border-0 neu-press",
-        "neu-inset":   "bg-neu-base rounded-[18px] shadow-neu-inset border-0",
-        "neu-ai":      "bg-sovereign-charcoal text-neu-light rounded-[18px] shadow-neu-raised border-0",
+        /* Lit Room neumorphic cards */
+        default:  "rounded-[20px] border border-[rgba(255,255,255,0.4)]",
+        elevated: "rounded-[20px] border border-[rgba(255,255,255,0.5)]",
+        recessed: "rounded-[16px] border border-[rgba(255,255,255,0.2)]",
+        ai:       "rounded-[20px] border-l-2 border-[rgba(92,111,181,0.3)]",
+        /* Neumorphic presets */
+        "neu-raised":  "rounded-[20px] border border-[rgba(255,255,255,0.5)] neu-press",
+        "neu-inset":   "rounded-[16px] border border-[rgba(255,255,255,0.2)]",
+        "neu-ai":      "rounded-[20px] border border-[rgba(92,111,181,0.15)]",
+        /* Glass — frosted translucent with directional borders */
+        "glass":       "rounded-[22px]",
       },
     },
     defaultVariants: {
@@ -30,10 +35,39 @@ export interface CardProps
     VariantProps<typeof cardVariants> {}
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant, ...props }, ref) => (
+  ({ className, variant, style, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(cardVariants({ variant }), className)}
+      style={{
+        background: variant === "glass"
+          ? "rgba(240, 242, 248, 0.55)"
+          : variant === "ai" || variant === "neu-ai"
+          ? "var(--bg-dark)"
+          : variant === "neu-inset" || variant === "recessed"
+          ? "var(--bg-dark)"
+          : variant === "neu-raised" || variant === "elevated"
+          ? "var(--bg-light)"
+          : "var(--bg-card)",
+        color: "var(--text-primary)",
+        boxShadow: variant === "glass"
+          ? "0 8px 32px rgba(0, 0, 0, 0.06)"
+          : variant === "neu-raised" || variant === "elevated"
+          ? "var(--raise-lg)"
+          : variant === "neu-inset" || variant === "recessed"
+          ? "var(--press)"
+          : undefined,
+        ...(variant === "glass" ? {
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.6)",
+          borderLeft: "1px solid rgba(255, 255, 255, 0.6)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
+          borderRight: "1px solid rgba(255, 255, 255, 0.15)",
+        } : {}),
+        transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        ...style,
+      }}
       {...props}
     />
   )
@@ -56,7 +90,7 @@ CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p ref={ref} className={cn("text-sm", className)} style={{ color: "var(--text-secondary)" }} {...props} />
   )
 );
 CardDescription.displayName = "CardDescription";

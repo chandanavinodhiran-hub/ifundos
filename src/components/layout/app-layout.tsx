@@ -10,6 +10,7 @@ import { NavigatorButton } from "@/components/navigator/navigator-button";
 import { NavigatorChat } from "@/components/navigator/navigator-chat";
 import { NavigatorAvatar } from "@/components/navigator/navigator-avatar";
 import { cn } from "@/lib/utils";
+import { AmbientCaustics } from "@/components/ambient-caustics";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -22,20 +23,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <NavigatorProvider>
-      <div className={cn(
-        "app-shell flex h-screen overflow-hidden",
-        useTabBarNav ? "bg-neu-base" : "bg-sovereign-parchment"
-      )}>
-        {/* Sidebar: hidden on mobile+tablet, visible at desktop (≥1200px) */}
+      <div className="app-shell flex h-screen overflow-hidden" style={{ background: "var(--surface-base)" }}>
+        {/* Layer 2 — Ambient caustic light canvas (behind content, above body gradient) */}
+        <AmbientCaustics />
+
+        {/* Sidebar: hidden on mobile+tablet, visible at desktop (>=1200px) */}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} disableMobileDrawer={useTabBarNav} />
         <div className="flex flex-col flex-1 overflow-hidden min-w-0">
           <Topbar onMenuToggle={() => setSidebarOpen(true)} />
           <main className={cn(
-            "flex-1 overflow-y-auto p-4 md:p-6 desktop:p-8 relative",
-            useTabBarNav && "pb-safe desktop:pb-8"
+            "flex-1 overflow-y-auto p-4 md:p-6 desktop:px-8 desktop:pt-6 desktop:pb-10 relative main-vignette",
+            useTabBarNav && "pb-safe desktop:pb-10"
           )}>
-            <div className="dot-grid-bg" />
-            <div className="relative z-10 stagger-children">{children}</div>
+            <div className="max-w-[1100px] mx-auto relative z-10">{children}</div>
           </main>
         </div>
 

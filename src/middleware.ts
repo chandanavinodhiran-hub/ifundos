@@ -16,10 +16,16 @@ const ROLE_ROUTES: Record<string, string[]> = {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Static assets from public/ — skip auth check
+  if (/\.(?:png|jpg|jpeg|gif|svg|ico|webp|mp4|webm|woff2?|ttf|css|js)$/i.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // Public routes — skip auth check
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
+    pathname.startsWith("/landing") ||
     pathname.startsWith("/api/") ||
     pathname === "/"
   ) {
@@ -72,6 +78,6 @@ function getRoleHomePath(role: string): string {
 export const config = {
   matcher: [
     // Protect all routes except static files and API
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|mp4|webm)$).*)",
   ],
 };

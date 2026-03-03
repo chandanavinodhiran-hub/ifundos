@@ -93,7 +93,7 @@ function getDaysLeft(deadline: string | null): number | null {
 
 function getDaysLeftColor(daysLeft: number): string {
   if (daysLeft < 7) return "#9c4a4a";
-  if (daysLeft <= 30) return "#b87a3f";
+  if (daysLeft <= 30) return "rgba(75, 165, 195, 0.8)";
   return "#4a7c59";
 }
 
@@ -265,13 +265,24 @@ export default function ContractorRFPDetailPage({
   return (
     <div className="space-y-5 max-w-2xl mx-auto pb-[100px] md:pb-0">
       {/* Back Button */}
-      <Button
-        variant="neu-ghost"
-        size="sm"
+      <button
         onClick={() => router.push("/contractor/rfps")}
+        className="group inline-flex items-center gap-1 cursor-pointer"
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: "rgba(30, 34, 53, 0.5)",
+          background: "none",
+          border: "none",
+          padding: 0,
+          transition: "color 0.2s ease-out",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = "#5C6FB5"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(30, 34, 53, 0.5)"; }}
       >
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Opportunities
-      </Button>
+        <ArrowLeft className="w-4 h-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5" />
+        Back to Opportunities
+      </button>
 
       {/* Header Card */}
       <Card variant="neu-raised" className="p-5">
@@ -288,15 +299,14 @@ export default function ContractorRFPDetailPage({
                 className="inline-block"
                 style={{
                   padding: "4px 10px",
-                  borderRadius: "8px",
-                  background: "#e8e0d0",
-                  boxShadow: "inset 2px 2px 5px rgba(156,148,130,0.35), inset -2px -2px 5px rgba(255,250,240,0.6)",
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  letterSpacing: "0.5px",
+                  borderRadius: 20,
+                  background: rfp.status === "OPEN" ? "rgba(74, 140, 106, 0.08)" : "rgba(122, 114, 101, 0.08)",
+                  border: rfp.status === "OPEN" ? "1px solid rgba(74, 140, 106, 0.15)" : "1px solid rgba(122, 114, 101, 0.15)",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: "1.5px",
                   textTransform: "uppercase" as const,
-                  color: rfp.status === "OPEN" ? "#4a7c59" : "#7a7265",
-                  border: "none",
+                  color: rfp.status === "OPEN" ? "rgba(74, 140, 106, 0.8)" : "#7a7265",
                 }}
               >
                 {rfp.status}
@@ -397,13 +407,13 @@ export default function ContractorRFPDetailPage({
       )}
 
       {/* AI Match Assessment */}
-      <Card variant="neu-ai" className="p-5">
+      <Card variant="neu-ai" className="p-5" style={{ borderLeft: "3px solid rgba(74, 140, 106, 0.4)" }}>
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-2 h-2 rounded-full" style={{ background: "linear-gradient(135deg, #b8943f, #d4b665)" }} />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "#b8943f" }}>AI MATCH ASSESSMENT</span>
+          <div className="w-2 h-2 rounded-full" style={{ background: "rgba(74, 140, 106, 0.7)" }} />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "rgba(74, 140, 106, 0.7)" }}>AI MATCH ASSESSMENT</span>
         </div>
-        <p className="text-[16px] font-bold text-white mb-2">Navigator sees a strong match</p>
-        <p className="text-[13px] leading-relaxed" style={{ color: "#9a9488" }}>
+        <p className="text-[16px] font-medium mb-2" style={{ color: "rgba(30, 34, 53, 0.8)" }}>Navigator sees a strong match</p>
+        <p className="text-[13px] leading-relaxed" style={{ color: "rgba(30, 34, 53, 0.55)" }}>
           {buildMatchCopy()}
         </p>
       </Card>
@@ -543,7 +553,7 @@ export default function ContractorRFPDetailPage({
               <div key={i} className="flex items-center gap-3">
                 <span className="text-[13px] font-medium text-sovereign-charcoal min-w-[120px]">{dim.dimension}</span>
                 <div className="flex-1 h-2 bg-neu-dark/20 rounded-full overflow-hidden shadow-neu-inset">
-                  <div className="h-full rounded-full" style={{ width: `${dim.weight}%`, background: "linear-gradient(90deg, #b8943f, #d4b665)" }} />
+                  <div className="h-full rounded-full" style={{ width: `${dim.weight}%`, background: "linear-gradient(90deg, rgba(75, 165, 195, 0.7), rgba(75, 165, 195, 0.9))" }} />
                 </div>
                 <span className="text-[12px] font-mono text-sovereign-stone w-10 text-right">{dim.weight}%</span>
               </div>

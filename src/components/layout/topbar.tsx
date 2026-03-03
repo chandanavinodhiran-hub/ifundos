@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
-import { roleLabels, roleBadgeVariant } from "@/lib/navigation";
+import { roleLabels } from "@/lib/navigation";
 import { LogOut, Building2, Menu, Hexagon, Settings, Bell, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,6 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
 
   const role = user?.role ?? "";
   const roleLabel = roleLabels[role] ?? role;
-  const badgeClass = roleBadgeVariant[role] ?? "bg-gray-100 text-gray-800";
   const isFundManager = role === "FUND_MANAGER";
   const isContractor = role === "CONTRACTOR";
   const isAuditor = role === "AUDITOR";
@@ -36,9 +35,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
     if (!menuOpen) return;
     function handleClick(e: MouseEvent) {
       const target = e.target as Node;
-      // Don't close if clicking inside the desktop dropdown area
       if (dropdownRef.current && dropdownRef.current.contains(target)) return;
-      // Don't close if clicking inside the mobile portal sheet
       if (sheetRef.current && sheetRef.current.contains(target)) return;
       setMenuOpen(false);
     }
@@ -55,75 +52,88 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
 
   return (
     <>
-      <header className={cn(
-        "h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 relative",
-        useTabBar
-          ? "bg-neu-light border-neu-dark/50"
-          : "bg-sovereign-cream border-sovereign-warm/20"
-      )} style={{ zIndex: 100 }}>
-        {/* Left: Hamburger (only for roles without tab bar) + context */}
-        <div className="flex items-center gap-2 text-sm text-sovereign-stone min-w-0">
+      <header
+        className="h-14 md:h-16 border-b flex items-center justify-between px-3 md:px-6 shrink-0 header-heartbeat"
+        style={{
+          zIndex: 100,
+          background: "var(--surface-base)",
+          borderColor: "rgba(255,255,255,0.25)",
+        }}
+      >
+        {/* Left: Hamburger + context */}
+        <div className="flex items-center gap-2 text-sm min-w-0" style={{ color: "var(--text-secondary)" }}>
           {!useTabBar && (
             <button
               type="button"
               onClick={onMenuToggle}
-              className="p-2 -ml-1 desktop:hidden rounded-lg cursor-pointer shrink-0 hover:bg-sovereign-parchment"
+              className="p-2 -ml-1 desktop:hidden rounded-lg cursor-pointer shrink-0 transition-colors"
+              style={{ WebkitTapHighlightColor: "transparent" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.3)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              <Menu className="w-5 h-5 text-sovereign-charcoal" />
+              <Menu className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
             </button>
           )}
-          {/* Mobile + Tablet: show iFundOS logo (hidden on desktop where sidebar has it) */}
+          {/* Mobile + Tablet: show iFundOS logo */}
           <div className="flex items-center gap-2 desktop:hidden">
-            <div className="w-7 h-7 rounded-lg bg-sovereign-gold flex items-center justify-center shrink-0">
-              <Hexagon className="w-4 h-4 text-sovereign-charcoal" />
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "var(--accent)", boxShadow: "var(--raise-sm)" }}
+            >
+              <Hexagon className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-sm text-sovereign-charcoal">iFundOS</span>
+            <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>iFundOS</span>
           </div>
-          {/* Desktop: show org name (sidebar has the logo) */}
-          <Building2 className="w-4 h-4 hidden desktop:block shrink-0" />
-          <span className="font-medium truncate hidden desktop:inline">{user?.organizationName ?? "iFundOS"}</span>
+          {/* Desktop: show org name — DM Sans 11px subtle */}
+          <Building2 className="w-3.5 h-3.5 hidden desktop:block shrink-0" style={{ color: "var(--text-tertiary)" }} />
+          <span className="font-medium hidden desktop:inline" style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
+            {user?.organizationName ?? "iFundOS"}
+          </span>
         </div>
 
         {/* Right: User info + avatar */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0 relative" ref={dropdownRef}>
-          {/* Tablet+Desktop: name + role badge */}
+          {/* Tablet+Desktop: role badge only (name shown in greeting) */}
           <div className={cn("text-right", useTabBar ? "hidden md:block" : "hidden sm:block")}>
-            <p className="text-sm font-medium text-sovereign-charcoal leading-tight truncate max-w-[120px]">
-              {user?.name ?? "User"}
-            </p>
             <span
-              className={cn(
-                "inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-0.5",
-                useTabBar ? "bg-[rgba(184,148,63,0.12)] text-sovereign-gold" : badgeClass
-              )}
+              className="inline-block text-[9px] font-semibold px-2.5 py-0.5 rounded-full"
+              style={{
+                background: "var(--bg-dark)",
+                color: "var(--accent)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                boxShadow: "var(--press-sm)",
+                fontFamily: "'DM Sans', sans-serif",
+                letterSpacing: "0.5px",
+              }}
             >
               {roleLabel}
             </span>
           </div>
 
-          {/* Avatar circle — tappable */}
+          {/* Avatar circle — raised */}
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shrink-0 transition-shadow"
+            className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer shrink-0 transition-shadow"
             style={{
-              background: "#1a1714",
+              background: "var(--surface-light)",
               boxShadow: menuOpen
-                ? "inset 2px 2px 4px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(60,55,45,0.2)"
-                : "2px 2px 6px rgba(156,148,130,0.4), -2px -2px 6px rgba(255,250,240,0.6)",
+                ? "var(--press)"
+                : "var(--raise-sm)",
             }}
           >
-            <span className="text-xs font-bold text-sovereign-gold">{initials}</span>
+            <span className="text-xs font-bold" style={{ color: "var(--accent)" }}>{initials}</span>
           </button>
 
           {/* Desktop Dropdown */}
           {menuOpen && (
             <div
-              className="hidden md:block absolute top-[52px] right-0 w-[280px] rounded-2xl p-4"
+              className="hidden md:block absolute top-[52px] right-0 w-[280px] rounded-[20px] p-4"
               style={{
                 zIndex: 9999,
-                background: "#e8e0d0",
-                boxShadow: "8px 8px 24px rgba(156,148,130,0.5), -8px -8px 24px rgba(255,250,240,0.7), 0 10px 40px rgba(0,0,0,0.15)",
+                background: "var(--surface-light)",
+                border: "1px solid rgba(255,255,255,0.4)",
+                boxShadow: "var(--raise-lg)",
               }}
             >
               <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} onClose={() => setMenuOpen(false)} />
@@ -132,13 +142,13 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
         </div>
       </header>
 
-      {/* Mobile Bottom Sheet — rendered via portal at document body to escape overflow:hidden containers */}
+      {/* Mobile Bottom Sheet */}
       {menuOpen && mounted && createPortal(
         <div ref={sheetRef} className="md:hidden" style={{ position: "relative", zIndex: 99999 }}>
           {/* Overlay */}
           <div
             className="fixed inset-0"
-            style={{ zIndex: 99999, background: "rgba(26, 23, 20, 0.4)", backdropFilter: "blur(4px)" }}
+            style={{ zIndex: 99999, background: "rgba(30, 34, 53, 0.5)", backdropFilter: "blur(4px)" }}
             onClick={() => setMenuOpen(false)}
           />
           {/* Sheet */}
@@ -146,14 +156,16 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
             className="fixed bottom-0 left-0 right-0 animate-slide-up-sheet avatar-sheet"
             style={{
               zIndex: 100000,
-              background: "#e8e0d0",
+              background: "var(--surface-light)",
+              border: "1px solid rgba(255,255,255,0.4)",
+              borderBottom: "none",
               borderRadius: "24px 24px 0 0",
               padding: "16px 24px 40px",
-              boxShadow: "0 -8px 30px rgba(0,0,0,0.2)",
+              boxShadow: "var(--raise-lg)",
             }}
           >
             {/* Handle bar */}
-            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "rgba(122,114,101,0.3)" }} />
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "var(--text-muted)" }} />
             <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} onClose={() => setMenuOpen(false)} />
           </div>
         </div>,
@@ -189,75 +201,81 @@ function AvatarMenuContent({
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
           style={{
-            background: "#1a1714",
-            boxShadow: "2px 2px 6px rgba(156,148,130,0.4), -2px -2px 6px rgba(255,250,240,0.6)",
+            background: "var(--bg-dark)",
+            boxShadow: "var(--press)",
           }}
         >
-          <span className="text-sm font-bold text-sovereign-gold">{initials}</span>
+          <span className="text-sm font-bold" style={{ color: "var(--accent)" }}>{initials}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-[16px] font-bold" style={{ color: "#1a1714" }}>
+          <p className="font-display text-[16px]" style={{ color: "var(--text-primary)", fontWeight: 500 }}>
             {user?.name ?? "User"}
           </p>
-          <p className="text-[12px]" style={{ color: "#7a7265" }}>
+          <p className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
             {roleLabel} · {user?.organizationName ?? "iFundOS"}
           </p>
-          <p className="text-[12px] font-mono truncate" style={{ color: "#9a9488" }}>
+          <p className="text-[12px] truncate" style={{ color: "var(--text-tertiary)" }}>
             {user?.email ?? ""}
           </p>
         </div>
       </div>
 
       {/* Divider */}
-      <div style={{ borderTop: "1px solid rgba(156,148,130,0.2)" }} />
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.25)" }} />
 
       {/* Menu items */}
       <div className="space-y-1">
         <button
           type="button"
-          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-neu-dark/30 active:bg-neu-dark/50"
+          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors"
           onClick={(e) => { e.stopPropagation(); onClose(); }}
           style={{ WebkitTapHighlightColor: "transparent" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.3)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
           <div className="flex items-center gap-3 pointer-events-none">
-            <Settings className="w-4 h-4" style={{ color: "#7a7265" }} />
-            <span className="text-[14px] font-medium" style={{ color: "#1a1714" }}>Account Settings</span>
+            <Settings className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Account Settings</span>
           </div>
-          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "#9a9488" }} />
+          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "var(--text-tertiary)" }} />
         </button>
         <button
           type="button"
-          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-neu-dark/30 active:bg-neu-dark/50"
+          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors"
           onClick={(e) => { e.stopPropagation(); onClose(); }}
           style={{ WebkitTapHighlightColor: "transparent" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.3)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
           <div className="flex items-center gap-3 pointer-events-none">
-            <Bell className="w-4 h-4" style={{ color: "#7a7265" }} />
-            <span className="text-[14px] font-medium" style={{ color: "#1a1714" }}>Notification Preferences</span>
+            <Bell className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Notification Preferences</span>
           </div>
-          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "#9a9488" }} />
+          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "var(--text-tertiary)" }} />
         </button>
       </div>
 
       {/* Divider */}
-      <div style={{ borderTop: "1px solid rgba(156,148,130,0.2)" }} />
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.25)" }} />
 
       {/* Sign Out */}
       <button
         type="button"
-        className="w-full flex items-center gap-3 py-3 px-2 rounded-xl cursor-pointer transition-colors hover:bg-[rgba(156,74,74,0.08)] active:bg-[rgba(156,74,74,0.15)]"
+        className="w-full flex items-center gap-3 py-3 px-2 rounded-xl cursor-pointer transition-colors"
         onClick={handleSignOut}
         style={{ WebkitTapHighlightColor: "transparent" }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(220,80,80,0.08)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
       >
-        <LogOut className="w-4 h-4 pointer-events-none" style={{ color: "#9c4a4a" }} />
-        <span className="text-[14px] font-semibold pointer-events-none" style={{ color: "#9c4a4a" }}>Sign Out</span>
+        <LogOut className="w-4 h-4 pointer-events-none" style={{ color: "#e05555" }} />
+        <span className="text-[13px] font-semibold pointer-events-none" style={{ color: "#e05555" }}>Sign Out</span>
       </button>
 
       {/* Divider */}
-      <div style={{ borderTop: "1px solid rgba(156,148,130,0.2)" }} />
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.25)" }} />
 
       {/* Footer */}
-      <p className="text-[10px] text-center" style={{ color: "#9a9488" }}>
+      <p className="text-[10px] text-center" style={{ color: "var(--text-tertiary)" }}>
         Powered by Iozera Technologies
       </p>
     </div>

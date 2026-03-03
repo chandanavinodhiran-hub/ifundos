@@ -85,9 +85,9 @@ function getNodeStates(status: string): NodeState[] {
 function getAccent(status: string): string {
   if (["APPROVED"].includes(status)) return "accent-left-green";
   if (["REJECTED"].includes(status)) return "accent-left-critical";
-  if (["QUESTIONNAIRE_PENDING"].includes(status)) return "accent-left-amber";
-  if (["SCORING"].includes(status)) return "accent-left-gold";
-  return "accent-left-gold";
+  if (["QUESTIONNAIRE_PENDING"].includes(status)) return "accent-left-green";
+  if (["SCORING"].includes(status)) return "accent-left-green";
+  return "accent-left-green";
 }
 
 function getStatusBadge(status: string): { label: string; variant: "neu-gold" | "neu-verified" | "neu-amber" | "neu-critical" | "neu" } {
@@ -152,7 +152,7 @@ export default function ContractorApplicationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "rgba(75, 165, 195, 0.7)" }} />
       </div>
     );
   }
@@ -167,11 +167,11 @@ export default function ContractorApplicationsPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto pb-[100px] md:pb-0">
+    <div className="space-y-5 pb-[100px] md:pb-0">
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "#b8943f" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: "rgba(30, 34, 53, 0.4)" }}>
             Applications
           </p>
           <h1 className="text-xl font-extrabold text-sovereign-charcoal">
@@ -288,7 +288,7 @@ function ApplicationCard({
               <ScoreWell score={app.compositeScore} size="sm" animated />
             ) : app.status === "SCORING" ? (
               <div className="score-well-sm">
-                <Loader2 className="w-4 h-4 animate-spin text-sovereign-gold" />
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: "rgba(75, 165, 195, 0.7)" }} />
               </div>
             ) : null}
           </div>
@@ -299,31 +299,33 @@ function ApplicationCard({
           <div className="flex items-center justify-between px-1">
             {LIFECYCLE_NODES.map((label, idx) => {
               const state = nodeStates[idx];
+              const dotSize = (state === "completed" || state === "awarded") ? 28
+                : (state === "current" || state === "scoring") ? 32
+                : 24;
               return (
                 <div key={label} className="flex items-center" style={{ flex: idx < LIFECYCLE_NODES.length - 1 ? "1 1 0" : "0 0 auto" }}>
                   {/* Node */}
-                  <div className="flex flex-col items-center" style={{ width: 32 }}>
+                  <div className="flex flex-col items-center" style={{ width: 36 }}>
                     <div
                       className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center transition-all relative",
+                        "rounded-full flex items-center justify-center transition-all relative",
                       )}
-                      style={nodeStyle(state)}
+                      style={{ width: dotSize, height: dotSize, ...nodeStyle(state) }}
                     >
                       {(state === "completed" || state === "awarded") && (
-                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                        <Check className="text-white" style={{ width: 14, height: 14 }} strokeWidth={2.5} />
                       )}
                       {(state === "current" || state === "scoring") && (
                         <div
-                          className="rounded-full"
+                          className="rounded-full tracker-dot-pulse"
                           style={{
                             position: "absolute",
-                            top: 6,
-                            left: 6,
-                            right: 6,
-                            bottom: 6,
-                            background: "#b8943f",
-                            boxShadow: "0 0 10px rgba(184,148,63,0.35)",
-                            animation: state === "scoring" ? "lcNodePulse 1.2s ease-in-out infinite" : "lcNodePulse 2s ease-in-out infinite",
+                            top: 7,
+                            left: 7,
+                            right: 7,
+                            bottom: 7,
+                            background: "rgba(75, 165, 195, 0.8)",
+                            boxShadow: "0 0 8px rgba(75, 165, 195, 0.3)",
                           }}
                         />
                       )}
@@ -332,11 +334,11 @@ function ApplicationCard({
                           className="rounded-full"
                           style={{
                             position: "absolute",
-                            top: 9,
-                            left: 9,
-                            right: 9,
-                            bottom: 9,
-                            background: "#d9d0be",
+                            top: 7,
+                            left: 7,
+                            right: 7,
+                            bottom: 7,
+                            background: "rgba(30, 34, 53, 0.12)",
                             borderRadius: "50%",
                           }}
                         />
@@ -349,9 +351,9 @@ function ApplicationCard({
                       className="text-[9px] font-semibold uppercase tracking-wide mt-1.5 text-center leading-none"
                       style={{
                         color: state === "completed" || state === "awarded" ? "#4a7c59"
-                          : state === "current" || state === "scoring" ? "#b8943f"
+                          : state === "current" || state === "scoring" ? "rgba(75, 165, 195, 0.8)"
                           : state === "rejected" ? "#9c4a4a"
-                          : "#9a9488",
+                          : "rgba(30, 34, 53, 0.35)",
                       }}
                     >
                       {label}
@@ -374,12 +376,12 @@ function ApplicationCard({
       {/* ── Score row ── */}
       {app.compositeScore != null && !isExpanded && (
         <div className="mx-4 mb-3">
-          <div className="flex items-center justify-between px-3 py-2 rounded-[18px]" style={{ background: "#e8e0d0", boxShadow: "inset 4px 4px 12px rgba(140,132,115,0.5), inset -4px -4px 12px rgba(255,250,240,0.6)" }}>
+          <div className="flex items-center justify-between px-3 py-2 rounded-[18px]" style={{ background: "rgba(75, 165, 195, 0.06)", border: "1px solid rgba(75, 165, 195, 0.12)" }}>
             <div className="flex items-center gap-2">
-              <span className="text-[24px] font-extrabold font-sans" style={{ color: "#b8943f" }}>
+              <span className="text-[24px] font-extrabold font-sans" style={{ color: "rgba(75, 165, 195, 0.8)" }}>
                 {Math.round(app.compositeScore)}
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-sovereign-stone">
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(30, 34, 53, 0.4)" }}>
                 AI Score
               </span>
             </div>
@@ -405,23 +407,23 @@ function ApplicationCard({
             <div className="ai-brief-panel">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold animate-ember" />
-                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "#b8943f", textTransform: "uppercase" }}>
+                  <span className="w-1.5 h-1.5 rounded-full animate-ember" style={{ background: "rgba(74, 140, 106, 0.7)" }} />
+                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "rgba(75, 165, 195, 0.7)", textTransform: "uppercase" }}>
                     AI Feedback
                   </span>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); onChat(); }}
                   className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer"
-                  style={{ background: "#2a2520", boxShadow: "2px 2px 6px rgba(0,0,0,0.5), -2px -2px 6px rgba(60,55,48,0.3)" }}
+                  style={{ background: "rgba(30, 34, 53, 0.12)", boxShadow: "2px 2px 6px rgba(155,161,180,0.3), -2px -2px 6px rgba(255,255,255,0.5)" }}
                 >
-                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)", boxShadow: "0 0 8px rgba(184,148,63,0.35)" }} />
+                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, rgba(92, 111, 181, 0.7), rgba(75, 100, 160, 0.9))", boxShadow: "0 0 8px rgba(92, 111, 181, 0.3)" }} />
                 </button>
               </div>
-              <p style={{ fontSize: "16px", fontWeight: 700, color: "#f0ead9", marginBottom: "8px" }}>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "rgba(30, 34, 53, 0.8)", marginBottom: "8px" }}>
                 {contractorFeedbackTitle(app.decisionPacket?.recommendation, app.compositeScore)}
               </p>
-              <p style={{ fontSize: "13px", fontWeight: 400, color: "#9a9488", lineHeight: 1.8 }}>
+              <p style={{ fontSize: "13px", fontWeight: 400, color: "rgba(30, 34, 53, 0.55)", lineHeight: 1.8 }}>
                 {contractorFeedbackBody(app.decisionPacket?.executiveSummary, app.decisionPacket?.narrative, app.compositeScore)}
               </p>
             </div>
@@ -432,23 +434,23 @@ function ApplicationCard({
             <div className="ai-brief-panel">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sovereign-gold animate-ember" />
-                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "#b8943f", textTransform: "uppercase" as const }}>
+                  <span className="w-1.5 h-1.5 rounded-full animate-ember" style={{ background: "rgba(74, 140, 106, 0.7)" }} />
+                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "rgba(75, 165, 195, 0.7)", textTransform: "uppercase" as const }}>
                     AI Feedback
                   </span>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); onChat(); }}
                   className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer"
-                  style={{ background: "#2a2520", boxShadow: "2px 2px 6px rgba(0,0,0,0.5), -2px -2px 6px rgba(60,55,48,0.3)" }}
+                  style={{ background: "rgba(30, 34, 53, 0.12)", boxShadow: "2px 2px 6px rgba(155,161,180,0.3), -2px -2px 6px rgba(255,255,255,0.5)" }}
                 >
-                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #d4b665, #b8943f)", boxShadow: "0 0 8px rgba(184,148,63,0.35)" }} />
+                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, rgba(92, 111, 181, 0.7), rgba(75, 100, 160, 0.9))", boxShadow: "0 0 8px rgba(92, 111, 181, 0.3)" }} />
                 </button>
               </div>
-              <p style={{ fontSize: "16px", fontWeight: 700, color: "#f0ead9", marginBottom: "8px" }}>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "rgba(30, 34, 53, 0.8)", marginBottom: "8px" }}>
                 {contractorFeedbackTitle(null, app.compositeScore)}
               </p>
-              <p style={{ fontSize: "13px", fontWeight: 400, color: "#9a9488", lineHeight: 1.8 }}>
+              <p style={{ fontSize: "13px", fontWeight: 400, color: "rgba(30, 34, 53, 0.55)", lineHeight: 1.8 }}>
                 {contractorFeedbackBody(null, null, app.compositeScore)}
               </p>
             </div>
@@ -491,7 +493,7 @@ function ApplicationCard({
             )}
             {risks.length > 0 && (
               <div className="accent-bar-amber pl-3 py-2">
-                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#b87a3f" }}>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "rgba(75, 165, 195, 0.7)" }}>
                   Areas to Strengthen
                 </p>
                 {risks.slice(0, 3).map((r, i) => (
@@ -546,24 +548,24 @@ function nodeStyle(state: NodeState): React.CSSProperties {
   switch (state) {
     case "completed":
     case "awarded":
-      return { background: "#4a7c59" };
+      return { background: "rgba(74, 140, 106, 0.9)" };
     case "current":
     case "scoring":
       return {
         position: "relative",
-        background: "#e8e0d0",
-        boxShadow: "3px 3px 8px rgba(156,148,130,0.4), -3px -3px 8px rgba(255,250,240,0.75)",
+        background: "rgba(228, 231, 238, 0.6)",
+        boxShadow: "3px 3px 8px rgba(155, 161, 180, 0.3), -3px -3px 8px rgba(255, 255, 255, 0.7)",
       };
     case "rejected":
       return {
-        background: "#e8e0d0",
-        boxShadow: "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+        background: "rgba(228, 231, 238, 0.5)",
+        boxShadow: "inset 3px 3px 8px rgba(155, 161, 180, 0.3), inset -3px -3px 8px rgba(255, 255, 255, 0.6)",
       };
     case "future":
     default:
       return {
-        background: "#e8e0d0",
-        boxShadow: "inset 3px 3px 8px rgba(156,148,130,0.4), inset -3px -3px 8px rgba(255,250,240,0.7)",
+        background: "rgba(228, 231, 238, 0.5)",
+        boxShadow: "inset 3px 3px 8px rgba(155, 161, 180, 0.3), inset -3px -3px 8px rgba(255, 255, 255, 0.6)",
         position: "relative",
       };
   }
@@ -571,17 +573,17 @@ function nodeStyle(state: NodeState): React.CSSProperties {
 
 function lineStyle(from: NodeState, to: NodeState): React.CSSProperties {
   if (from === "completed" && (to === "completed" || to === "awarded")) {
-    return { background: "rgba(74,124,89,0.6)" };
+    return { background: "rgba(74, 140, 106, 0.6)" };
   }
   if (from === "completed" && (to === "current" || to === "scoring")) {
-    return { background: "linear-gradient(to right, rgba(74,124,89,0.6), #b8943f)" };
+    return { background: "linear-gradient(to right, rgba(74, 140, 106, 0.6), rgba(75, 165, 195, 0.6))" };
   }
   if (from === "completed" && to === "rejected") {
-    return { background: "linear-gradient(to right, rgba(74,124,89,0.6), #9c4a4a)" };
+    return { background: "linear-gradient(to right, rgba(74, 140, 106, 0.6), #9c4a4a)" };
   }
   return {
-    background: "#e8e0d0",
-    boxShadow: "inset 1px 1px 3px rgba(156,148,130,0.3), inset -1px -1px 3px rgba(255,250,240,0.5)",
+    background: "rgba(228, 231, 238, 0.5)",
+    boxShadow: "inset 1px 1px 3px rgba(155, 161, 180, 0.25), inset -1px -1px 3px rgba(255, 255, 255, 0.5)",
   };
 }
 

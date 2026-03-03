@@ -43,11 +43,6 @@ function getDaysLeft(deadline: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-function getDaysLeftColor(daysLeft: number): string {
-  if (daysLeft < 7) return "#9c4a4a";
-  if (daysLeft <= 30) return "#b87a3f";
-  return "#4a7c59";
-}
 
 const TIER_ORDER: Record<string, number> = { T0: 0, T1: 1, T2: 2, T3: 3, T4: 4 };
 
@@ -158,7 +153,7 @@ export default function BrowseRFPsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "rgba(75, 165, 195, 0.7)" }} />
       </div>
     );
   }
@@ -178,7 +173,7 @@ export default function BrowseRFPsPage() {
       <div>
         <p
           className="text-[10px] font-semibold uppercase tracking-[0.15em]"
-          style={{ color: "#b8943f" }}
+          style={{ color: "rgba(30, 34, 53, 0.4)" }}
         >
           OPPORTUNITIES
         </p>
@@ -208,9 +203,14 @@ export default function BrowseRFPsPage() {
           onClick={() => setProgramFilter("matching")}
           className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
             programFilter === "matching"
-              ? "bg-[rgba(184,148,63,0.12)] text-[#b8943f] font-bold border border-[rgba(184,148,63,0.25)]"
+              ? "font-bold"
               : "shadow-neu-inset bg-neu-dark/20 text-sovereign-stone"
           }`}
+          style={programFilter === "matching" ? {
+            background: "rgba(92, 111, 181, 0.8)",
+            color: "#fff",
+            border: "1px solid rgba(92, 111, 181, 0.9)",
+          } : undefined}
         >
           ✦ Matching
         </button>
@@ -272,10 +272,23 @@ export default function BrowseRFPsPage() {
                   </h3>
                   <div className="shrink-0">
                     {eligibility.eligible ? (
-                      <Badge variant="neu-verified" className="neu-badge-inset">
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                      <span
+                        className="inline-flex items-center gap-1"
+                        style={{
+                          background: "rgba(74, 140, 106, 0.08)",
+                          border: "1px solid rgba(74, 140, 106, 0.15)",
+                          color: "rgba(74, 140, 106, 0.85)",
+                          fontSize: 10,
+                          fontWeight: 600,
+                          letterSpacing: "1.5px",
+                          padding: "3px 10px",
+                          borderRadius: 20,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        <CheckCircle2 className="w-3 h-3" />
                         Eligible
-                      </Badge>
+                      </span>
                     ) : (
                       <div className="relative group">
                         <Badge variant="neu-critical" className="cursor-help">
@@ -298,15 +311,15 @@ export default function BrowseRFPsPage() {
                   {rfp.program.budgetTotal > 0 && (
                     <span
                       className="text-[13px] font-mono"
-                      style={{ color: "#b8943f" }}
+                      style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.5)" }}
                     >
                       {formatSAR(rfp.program.budgetTotal)}
                     </span>
                   )}
                   {daysLeft !== null && daysLeft >= 0 && (
                     <span
-                      className="text-[12px] font-semibold"
-                      style={{ color: getDaysLeftColor(daysLeft) }}
+                      className="text-[13px]"
+                      style={{ fontWeight: 500, color: "rgba(30, 34, 53, 0.5)" }}
                     >
                       {daysLeft}d left
                     </span>
@@ -328,8 +341,8 @@ export default function BrowseRFPsPage() {
                 {/* AI Match indicator */}
                 {eligibility.eligible && (
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0 animate-ember" style={{ background: "#b8943f" }} />
-                    <span className="text-[12px]" style={{ color: "#b8943f" }}>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0 animate-ember" style={{ background: "rgba(74, 140, 106, 0.7)" }} />
+                    <span className="text-[12px]" style={{ color: "rgba(74, 140, 106, 0.7)" }}>
                       Strong match — your profile meets all eligibility criteria
                     </span>
                   </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -30,7 +29,14 @@ import {
   X,
   Calendar,
   Users,
+  ArrowRight,
+  ClipboardList,
+  Shield,
+  BarChart3,
+  FileCheck,
+  Building2,
 } from "lucide-react";
+import DynamicShadowCard from "@/components/DynamicShadowCard";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -61,6 +67,33 @@ interface ScoringDimension {
   name: string;
   weight: number;
   criteria: string;
+}
+
+interface RFPDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  deadline: string | null;
+  eligibilityCriteria: string | null;
+  scoringRubric: string | null;
+  evidenceRequirements: string | null;
+  createdAt: string;
+  program: { id: string; name: string };
+  applications: {
+    id: string;
+    status: string;
+    createdAt: string;
+    organization: { id: string; name: string; type: string; trustTier: string | null };
+    decisionPacket: { compositeScore: number } | null;
+  }[];
+  questionnaireQuestions: {
+    id: string;
+    questionText: string;
+    questionType: string;
+    isRequired: boolean;
+    sortOrder: number;
+  }[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -153,11 +186,14 @@ function accentLeftForStatus(status: string): string {
 /* ------------------------------------------------------------------ */
 
 export default function RFPManagerPage() {
-  const router = useRouter();
-
   const [rfps, setRfps] = useState<RFP[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  /* --- inline detail expansion --- */
+  const [expandedRfpId, setExpandedRfpId] = useState<string | null>(null);
+  const [rfpDetail, setRfpDetail] = useState<RFPDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   /* --- programs for the dropdown --- */
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -212,6 +248,34 @@ export default function RFPManagerPage() {
   useEffect(() => {
     fetchRfps();
   }, [fetchRfps]);
+
+  /* ---------------------------------------------------------------- */
+  /* Toggle RFP detail expansion                                       */
+  /* ---------------------------------------------------------------- */
+  const toggleExpand = useCallback(
+    async (rfpId: string) => {
+      if (expandedRfpId === rfpId) {
+        setExpandedRfpId(null);
+        setRfpDetail(null);
+        return;
+      }
+      setExpandedRfpId(rfpId);
+      setRfpDetail(null);
+      setDetailLoading(true);
+      try {
+        const res = await fetch(`/api/rfps/${rfpId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRfpDetail(data.rfp ?? null);
+        }
+      } catch {
+        /* silent */
+      } finally {
+        setDetailLoading(false);
+      }
+    },
+    [expandedRfpId]
+  );
 
   /* fetch programs when dialog opens */
   useEffect(() => {
@@ -341,8 +405,35 @@ export default function RFPManagerPage() {
   /* ---------------------------------------------------------------- */
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" />
+      <div className="space-y-6 pb-[180px] page-enter">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="skeleton-bar h-2 w-20 mb-2" style={{ opacity: 0.4 }} />
+            <div className="skeleton-bar h-6 w-32" style={{ opacity: 0.5 }} />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="skeleton-card p-4" style={{ height: 80 }}>
+              <div className="flex flex-col items-center gap-2">
+                <div className="skeleton-bar h-7 w-10" style={{ opacity: 0.5 }} />
+                <div className="skeleton-bar h-2 w-14" style={{ opacity: 0.3 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          {[1,2].map(i => (
+            <div key={i} className="skeleton-card p-5" style={{ height: 140 }}>
+              <div className="skeleton-bar h-4 w-48 mb-3" style={{ opacity: 0.5 }} />
+              <div className="skeleton-bar h-3 w-32 mb-4" style={{ opacity: 0.3 }} />
+              <div className="flex items-center justify-between">
+                <div className="skeleton-bar h-3 w-24" style={{ opacity: 0.3 }} />
+                <div className="skeleton-bar h-3 w-16" style={{ opacity: 0.3 }} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -350,26 +441,70 @@ export default function RFPManagerPage() {
   return (
     <div className="space-y-6 pb-[180px]">
       {/* Header */}
-      <div>
-        <p className="text-eyebrow">RFP MANAGER</p>
-        <h1 className="text-xl font-bold text-sovereign-charcoal font-display">Your RFPs</h1>
+      <div className="flex items-center justify-between stagger-1 animate-in-1">
+        <div>
+          <p className="text-eyebrow">RFP MANAGER</p>
+          <h1 className="text-xl font-bold text-sovereign-charcoal font-display">Your RFPs</h1>
+        </div>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="hidden desktop:flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer neu-btn-press"
+          style={{
+            background: "linear-gradient(135deg, #5C6FB5, #7B8DC8)",
+            color: "white",
+            boxShadow: "5px 5px 15px rgba(92,111,181,0.35), -3px -3px 10px rgba(255,255,255,0.5)",
+            border: "none",
+          }}
+        >
+          <Plus className="w-4 h-4" />
+          Create RFP
+        </button>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-3 gap-3 stagger-2 animate-in-2">
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-4 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 28, fontWeight: 300, color: "var(--accent)" }}>
+            <AnimatedCounter end={sortedRfps.length} duration={1000} />
+          </span>
+          <span className="label-style mt-1">Total RFPs</span>
+        </DynamicShadowCard>
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-4 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 28, fontWeight: 300, color: "#5CA03E" }}>
+            <AnimatedCounter end={sortedRfps.filter(r => r.status === "OPEN").length} duration={1000} delay={100} />
+          </span>
+          <span className="label-style mt-1">Open</span>
+        </DynamicShadowCard>
+        <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-4 flex flex-col items-center justify-center">
+          <span className="stat-number" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 28, fontWeight: 300, color: "var(--text-primary)" }}>
+            <AnimatedCounter end={sortedRfps.reduce((s, r) => s + (r._count?.applications ?? 0), 0)} duration={1000} delay={200} />
+          </span>
+          <span className="label-style mt-1">Applications</span>
+        </DynamicShadowCard>
       </div>
 
       {/* RFP Card Grid */}
       {sortedRfps.length === 0 ? (
-        <Card variant="neu-inset">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center pt-6">
-            <div className="empty-icon-well w-14 h-14 rounded-2xl flex items-center justify-center mb-3">
-              <FileText className="w-7 h-7 text-sovereign-stone" />
+        <div className="neu-empty-inset p-8">
+          <div className="smart-empty">
+            <div className="smart-empty-icon">
+              <FileText className="w-7 h-7" style={{ color: "var(--text-muted)" }} />
             </div>
-            <p className="text-sovereign-stone font-medium">No RFPs created yet</p>
-            <p className="text-sm text-sovereign-stone/70 mt-1">
-              Tap the + button to create your first RFP
+            <h3>No RFPs created yet</h3>
+            <p>
+              RFPs are how contractors discover and apply for your funding programs.
+              Creating your first RFP is the first step toward finding the right environmental partners.
             </p>
-          </CardContent>
-        </Card>
+            <button
+              onClick={() => setDialogOpen(true)}
+              className="smart-empty-action"
+            >
+              Create your first RFP <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 animate-in-3">
           {sortedRfps.map((rfp) => {
             const daysLeft = rfp.deadline
               ? Math.ceil(
@@ -390,12 +525,14 @@ export default function RFPManagerPage() {
                 ? "#b87a3f"
                 : undefined;
 
+            const isExpanded = expandedRfpId === rfp.id;
+
             return (
+              <DynamicShadowCard key={rfp.id} intensity={2}>
               <Card
-                key={rfp.id}
                 variant="neu-raised"
-                className={`relative cursor-pointer transition-transform active:scale-[0.98] ${accentLeftForStatus(rfp.status)}`}
-                onClick={() => router.push(`/dashboard/rfps/${rfp.id}`)}
+                className={`relative cursor-pointer transition-transform active:scale-[0.98] overflow-hidden ${accentLeftForStatus(rfp.status)}`}
+                onClick={() => toggleExpand(rfp.id)}
               >
                 <CardContent className="p-5 pt-5 space-y-3">
                   {/* Title + Status */}
@@ -403,29 +540,41 @@ export default function RFPManagerPage() {
                     <h3 className="text-[15px] font-bold text-sovereign-charcoal leading-snug line-clamp-2">
                       {rfp.title}
                     </h3>
-                    {rfp.status === "OPEN" ? (
-                      <span
-                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0"
-                        style={{
-                          color: "#4a7c59",
-                          background: "var(--neu-dark)",
-                          boxShadow: "inset 2px 2px 4px rgba(156,148,130,0.35), inset -2px -2px 4px rgba(255,250,240,0.6)",
-                        }}
-                      >
-                        {rfp.status}
-                      </span>
-                    ) : (
-                      <Badge
-                        variant={STATUS_VARIANT[rfp.status] ?? "neu"}
-                        className="shadow-neu-inset shrink-0"
-                      >
-                        {rfp.status}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {rfp.status === "OPEN" ? (
+                        <span
+                          className="inline-flex items-center"
+                          style={{
+                            background: "rgba(74, 140, 106, 0.08)",
+                            color: "rgba(74, 140, 106, 0.75)",
+                            border: "1px solid rgba(74, 140, 106, 0.15)",
+                            borderRadius: 20,
+                            padding: "3px 10px",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            letterSpacing: "1.5px",
+                          }}
+                        >
+                          {rfp.status}
+                        </span>
+                      ) : (
+                        <Badge
+                          variant={STATUS_VARIANT[rfp.status] ?? "neu"}
+                          className="shadow-neu-inset"
+                        >
+                          {rfp.status}
+                        </Badge>
+                      )}
+                      <ChevronDown
+                        className={`w-4 h-4 text-sovereign-stone transition-transform duration-300 ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
                   </div>
 
                   {/* Program name */}
-                  <p className="text-xs text-sovereign-stone">
+                  <p className="text-xs text-sovereign-stone" style={{ opacity: 0.7, fontStyle: "italic" }}>
                     {rfp.program?.name ?? "No program"}
                   </p>
 
@@ -434,7 +583,7 @@ export default function RFPManagerPage() {
                     {/* Applications count */}
                     <div className="flex items-center gap-1.5 text-xs text-sovereign-stone">
                       <Users className="w-3.5 h-3.5" />
-                      <span className="font-semibold text-sovereign-charcoal">
+                      <span className="mono-data font-semibold" style={{ color: "#2C3044" }}>
                         {rfp._count?.applications ?? 0}
                       </span>
                       <span>applications</span>
@@ -446,38 +595,267 @@ export default function RFPManagerPage() {
                       style={{ color: daysColor || "#9a9488", fontWeight: daysColor ? 600 : 400 }}
                     >
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>{daysLabel}</span>
+                      <span className="mono-data">{daysLabel}</span>
                     </div>
                   </div>
 
                   {/* Deadline date */}
                   {rfp.deadline && (
-                    <p className="text-[11px] font-mono text-sovereign-stone/70">
-                      Due: {new Date(rfp.deadline).toLocaleDateString()}
+                    <p className="text-[11px] text-sovereign-stone/70">
+                      Due: <span className="mono-data">{new Date(rfp.deadline).toLocaleDateString()}</span>
                     </p>
+                  )}
+
+                  {/* ===== Expanded Detail Panel ===== */}
+                  {isExpanded && (
+                    <div
+                      className="mt-4 pt-4 space-y-4"
+                      style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {detailLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Loader2 className="w-5 h-5 animate-spin text-sovereign-stone" />
+                          <span className="ml-2 text-sm text-sovereign-stone">Loading details...</span>
+                        </div>
+                      ) : rfpDetail ? (
+                        <>
+                          {/* Description */}
+                          {rfpDetail.description && (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-sovereign-charcoal uppercase tracking-wider">
+                                <FileText className="w-3.5 h-3.5" />
+                                Description
+                              </div>
+                              <p className="text-sm text-sovereign-stone leading-relaxed">
+                                {rfpDetail.description}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Eligibility */}
+                          {rfpDetail.eligibilityCriteria && (() => {
+                            try {
+                              const elig = JSON.parse(rfpDetail.eligibilityCriteria);
+                              const hasContent =
+                                elig.minCapitalization ||
+                                (elig.businessCategories && elig.businessCategories.length > 0) ||
+                                elig.minTrustTier !== "T0" ||
+                                (elig.certifications && elig.certifications.length > 0) ||
+                                elig.geoRestrictions;
+                              if (!hasContent) return null;
+                              return (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-1.5 text-xs font-semibold text-sovereign-charcoal uppercase tracking-wider">
+                                    <Shield className="w-3.5 h-3.5" />
+                                    Eligibility
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                    {elig.minCapitalization && (
+                                      <div className="neu-inset rounded-xl p-3">
+                                        <span className="text-[11px] text-sovereign-stone block">Min Capitalization</span>
+                                        <span className="font-semibold text-sovereign-charcoal mono-data">
+                                          SAR {Number(elig.minCapitalization).toLocaleString()}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {elig.minTrustTier && elig.minTrustTier !== "T0" && (
+                                      <div className="neu-inset rounded-xl p-3">
+                                        <span className="text-[11px] text-sovereign-stone block">Min Trust Tier</span>
+                                        <span className="font-semibold text-sovereign-charcoal">{elig.minTrustTier}</span>
+                                      </div>
+                                    )}
+                                    {elig.geoRestrictions && (
+                                      <div className="neu-inset rounded-xl p-3">
+                                        <span className="text-[11px] text-sovereign-stone block">Geographic</span>
+                                        <span className="font-semibold text-sovereign-charcoal">{elig.geoRestrictions}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {elig.businessCategories && elig.businessCategories.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                      {elig.businessCategories.map((cat: string) => (
+                                        <Badge key={cat} variant="neu" className="text-[11px]">{cat}</Badge>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {elig.certifications && elig.certifications.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                      {elig.certifications.map((cert: string) => (
+                                        <Badge key={cert} variant="neu-gold" className="text-[11px]">{cert}</Badge>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            } catch {
+                              return null;
+                            }
+                          })()}
+
+                          {/* Scoring Rubric */}
+                          {rfpDetail.scoringRubric && (() => {
+                            try {
+                              const dims: ScoringDimension[] = JSON.parse(rfpDetail.scoringRubric);
+                              if (!dims.length) return null;
+                              return (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-1.5 text-xs font-semibold text-sovereign-charcoal uppercase tracking-wider">
+                                    <BarChart3 className="w-3.5 h-3.5" />
+                                    Scoring Rubric
+                                  </div>
+                                  <div className="space-y-2">
+                                    {dims.map((dim) => (
+                                      <div key={dim.name} className="neu-inset rounded-xl p-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="text-sm font-medium text-sovereign-charcoal">{dim.name}</span>
+                                          <span className="text-xs mono-data text-sovereign-stone">{dim.weight}%</span>
+                                        </div>
+                                        <p className="text-xs text-sovereign-stone leading-relaxed">{dim.criteria}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            } catch {
+                              return null;
+                            }
+                          })()}
+
+                          {/* Evidence Requirements */}
+                          {rfpDetail.evidenceRequirements && (() => {
+                            try {
+                              const evList: string[] = JSON.parse(rfpDetail.evidenceRequirements);
+                              if (!evList.length) return null;
+                              return (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-1.5 text-xs font-semibold text-sovereign-charcoal uppercase tracking-wider">
+                                    <FileCheck className="w-3.5 h-3.5" />
+                                    Evidence Requirements
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {evList.map((ev) => (
+                                      <Badge key={ev} variant="neu" className="text-[11px]">{ev}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            } catch {
+                              return null;
+                            }
+                          })()}
+
+                          {/* Questionnaire Questions */}
+                          {rfpDetail.questionnaireQuestions && rfpDetail.questionnaireQuestions.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-sovereign-charcoal uppercase tracking-wider">
+                                <ClipboardList className="w-3.5 h-3.5" />
+                                Questionnaire ({rfpDetail.questionnaireQuestions.length} questions)
+                              </div>
+                              <div className="space-y-2">
+                                {rfpDetail.questionnaireQuestions.map((q, qi) => (
+                                  <div key={q.id} className="neu-inset rounded-xl p-3">
+                                    <div className="flex items-start gap-2">
+                                      <span className="text-[11px] mono-data text-sovereign-stone shrink-0 mt-0.5">
+                                        Q{qi + 1}
+                                      </span>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-sovereign-charcoal leading-snug">{q.questionText}</p>
+                                        <div className="flex items-center gap-2 mt-1.5">
+                                          <span className="text-[10px] text-sovereign-stone uppercase tracking-wider">
+                                            {q.questionType.replace(/_/g, " ")}
+                                          </span>
+                                          {q.isRequired && (
+                                            <span className="text-[10px] font-semibold" style={{ color: "#9c4a4a" }}>
+                                              Required
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Applications */}
+                          {rfpDetail.applications && rfpDetail.applications.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-sovereign-charcoal uppercase tracking-wider">
+                                <Building2 className="w-3.5 h-3.5" />
+                                Applications ({rfpDetail.applications.length})
+                              </div>
+                              <div className="space-y-2">
+                                {rfpDetail.applications.map((app) => (
+                                  <div key={app.id} className="neu-inset rounded-xl p-3 flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-medium text-sovereign-charcoal truncate">
+                                        {app.organization?.name ?? "Unknown"}
+                                      </p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[11px] text-sovereign-stone">
+                                          {app.organization?.type ?? ""}
+                                        </span>
+                                        {app.organization?.trustTier && (
+                                          <span className="text-[10px] mono-data text-sovereign-stone">
+                                            {app.organization.trustTier}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {app.decisionPacket?.compositeScore != null && (
+                                        <span
+                                          className="text-sm font-bold mono-data"
+                                          style={{
+                                            color:
+                                              app.decisionPacket.compositeScore >= 75
+                                                ? "#5CA03E"
+                                                : app.decisionPacket.compositeScore >= 50
+                                                ? "#b87a3f"
+                                                : "#9c4a4a",
+                                          }}
+                                        >
+                                          {Math.round(app.decisionPacket.compositeScore)}
+                                        </span>
+                                      )}
+                                      <Badge
+                                        variant={
+                                          app.status === "SUBMITTED"
+                                            ? "neu-gold"
+                                            : app.status === "SHORTLISTED"
+                                            ? "neu-gold"
+                                            : "neu"
+                                        }
+                                        className="text-[10px]"
+                                      >
+                                        {app.status}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-sovereign-stone text-center py-4">
+                          Could not load details.
+                        </p>
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>
+              </DynamicShadowCard>
             );
           })}
         </div>
       )}
 
-      {/* Floating Action Button — gold gradient */}
+      {/* Create RFP Dialog — controlled by dialogOpen state, triggered from header button */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger asChild>
-          <button
-            className="fixed right-6 bottom-[100px] md:bottom-8 z-50 w-14 h-14 rounded-full text-sovereign-charcoal flex items-center justify-center cursor-pointer transition-all"
-            style={{
-              background: "linear-gradient(135deg, #b8943f, #d4b665)",
-              boxShadow: "4px 4px 12px rgba(156,148,130,0.5), -4px -4px 12px rgba(255,250,240,0.6), 0 0 16px rgba(184,148,63,0.2)",
-            }}
-            aria-label="Create RFP"
-          >
-            <Plus className="w-6 h-6" strokeWidth={2.5} />
-          </button>
-        </DialogTrigger>
-
         {/* ===== CREATE DIALOG ===== */}
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-neu-base">
           <DialogHeader>
