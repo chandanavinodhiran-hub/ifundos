@@ -259,6 +259,7 @@ const STATUS_COLORS = [
   "175, 148, 63",  // Caution (amber)
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PipelineCanvas() {
   const caustics = useRef(
     Array.from({ length: 20 }, () => ({
