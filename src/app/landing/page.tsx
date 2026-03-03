@@ -19,46 +19,7 @@ const C = {
 
 const NAV_ITEMS = ["Overview", "Technology", "About", "Contact"];
 
-const NAV_MESSAGE = "Your application scored 91. This matches the profile of your last 4 approved grants.".split(" ");
-
-const PARTICLES = [
-  { radius: 70, speed: 10, start: 0, opacity: 0.3 },
-  { radius: 120, speed: 12, start: 36, opacity: 0.5 },
-  { radius: 90, speed: 9, start: 72, opacity: 0.25 },
-  { radius: 155, speed: 15, start: 108, opacity: 0.4 },
-  { radius: 65, speed: 11, start: 144, opacity: 0.35 },
-  { radius: 175, speed: 14, start: 180, opacity: 0.45 },
-  { radius: 100, speed: 8, start: 216, opacity: 0.3 },
-  { radius: 140, speed: 16, start: 252, opacity: 0.55 },
-  { radius: 80, speed: 13, start: 288, opacity: 0.25 },
-  { radius: 160, speed: 10, start: 324, opacity: 0.4 },
-];
-
-const PIPELINE_DOTS = [
-  { left: 6,  top: 40, status: "active",      delay: 0   },
-  { left: 11, top: 55, status: "active",      delay: 0.5 },
-  { left: 20, top: 42, status: "active",      delay: 0.3 },
-  { left: 25, top: 52, status: "active",      delay: 0.8 },
-  { left: 28, top: 48, status: "caution",     delay: 0.6 },
-  { left: 40, top: 48, status: "caution",     delay: 0.2 },
-  { left: 44, top: 46, status: "active",      delay: 0.7 },
-  { left: 47, top: 55, status: "rejected",    delay: 0.4 },
-  { left: 60, top: 45, status: "recommended", delay: 0.1 },
-  { left: 66, top: 52, status: "caution",     delay: 0.9 },
-  { left: 77, top: 47, status: "recommended", delay: 0.5 },
-  { left: 83, top: 50, status: "recommended", delay: 0.3 },
-  { left: 93, top: 48, status: "recommended", delay: 0.7 },
-];
-
-const FLOW_LINES = [
-  { top: 30, delay: 0 },
-  { top: 40, delay: 1.2 },
-  { top: 50, delay: 2.4 },
-  { top: 60, delay: 3.6 },
-  { top: 70, delay: 4.8 },
-];
-
-const PIPELINE_STAGES = ["PUBLISHED", "APPLICATIONS", "AI SCORED", "SHORTLISTED", "INTERVIEW", "AWARDED"];
+const NAV_MESSAGE = "Your application scored 91. This matches the profile of your last 4 approved grants.";
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * UTILITY: Canvas base hook — handles sizing, DPR, resize, animation loop
@@ -598,137 +559,11 @@ function useParallax() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 4 — Scroll-driven Three-Act Showcase
- *   300 vh tall section with a sticky inner viewport.
- *   Scroll progress (0-1) maps to acts 0 / 1 / 2.
- *   No timers, no wheel hijacking — native browser scroll only.
- * ═══════════════════════════════════════════════════════════════════════════ */
-function useActScroll(sectionRef: React.RefObject<HTMLElement | null>, actCount = 3) {
-  const [activeAct, setActiveAct] = useState(0);
-  const actRef = useRef(0);
-
-  const goToAct = useCallback((index: number) => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const sectionTop = section.offsetTop;
-    const scrollableHeight = section.offsetHeight - window.innerHeight;
-    const targetScroll = sectionTop + (index / (actCount - 1)) * scrollableHeight;
-    window.scrollTo({ top: targetScroll, behavior: "smooth" });
-  }, [sectionRef, actCount]);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    /* Visibility toggle via IntersectionObserver */
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) section.classList.add("s4-visible");
-      },
-      { threshold: 0.05 },
-    );
-    obs.observe(section);
-
-    /* Scroll → act mapping */
-    const onScroll = () => {
-      const rect = section.getBoundingClientRect();
-      const sectionHeight = section.offsetHeight;
-      const scrollableHeight = sectionHeight - window.innerHeight;
-      if (scrollableHeight <= 0) return;
-
-      // How far through the section have we scrolled? (0 at top, 1 at bottom)
-      const progress = Math.min(1, Math.max(0, -rect.top / scrollableHeight));
-
-      // Map progress to act index
-      const raw = progress * actCount;
-      const act = Math.min(actCount - 1, Math.floor(raw));
-
-      if (act !== actRef.current) {
-        actRef.current = act;
-        setActiveAct(act);
-      }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // set initial act on mount
-
-    return () => {
-      obs.disconnect();
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [sectionRef, actCount]);
-
-  return { activeAct, goToAct };
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
  * MAIN PAGE
  * ═══════════════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
   const [navOnLight, setNavOnLight] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const s4Ref = useRef<HTMLElement>(null);
-  const { activeAct, goToAct } = useActScroll(s4Ref);
-
-  /* Act 1 — word-by-word reveal */
-  const [revealedWords, setRevealedWords] = useState(0);
-  const wordTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  /* Act 2 — pipeline entrance phase (0=hidden, 1=river, 2=stages, 3=particles, 4=message, 5=label) */
-  const [pipelinePhase, setPipelinePhase] = useState(0);
-  const pipelineTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  /* Act 3 — role card stagger + label */
-  const [revealedCards, setRevealedCards] = useState(0);
-  const [rolesLabelShow, setRolesLabelShow] = useState(false);
-  const roleTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  useEffect(() => {
-    wordTimers.current.forEach(clearTimeout);
-    wordTimers.current = [];
-    if (activeAct === 0) {
-      setRevealedWords(0);
-      NAV_MESSAGE.forEach((_, i) => {
-        wordTimers.current.push(setTimeout(() => setRevealedWords(i + 1), 800 + i * 120));
-      });
-    } else {
-      setRevealedWords(0);
-    }
-    return () => wordTimers.current.forEach(clearTimeout);
-  }, [activeAct]);
-
-  useEffect(() => {
-    pipelineTimers.current.forEach(clearTimeout);
-    pipelineTimers.current = [];
-    if (activeAct === 1) {
-      setPipelinePhase(0);
-      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(1), 100));   // river
-      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(2), 300));   // stages
-      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(3), 600));   // particles
-      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(4), 1200));  // message
-      pipelineTimers.current.push(setTimeout(() => setPipelinePhase(5), 1600));  // label
-    } else {
-      setPipelinePhase(0);
-    }
-    return () => pipelineTimers.current.forEach(clearTimeout);
-  }, [activeAct]);
-
-  useEffect(() => {
-    roleTimers.current.forEach(clearTimeout);
-    roleTimers.current = [];
-    if (activeAct === 2) {
-      setRevealedCards(0);
-      setRolesLabelShow(false);
-      [0, 1, 2].forEach((_, i) => {
-        roleTimers.current.push(setTimeout(() => setRevealedCards(i + 1), 300 + i * 200));
-      });
-      roleTimers.current.push(setTimeout(() => setRolesLabelShow(true), 1200));
-    } else {
-      setRevealedCards(0);
-      setRolesLabelShow(false);
-    }
-    return () => roleTimers.current.forEach(clearTimeout);
-  }, [activeAct]);
 
   useScrollReveal();
   useParallax();
@@ -826,172 +661,86 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 4 — THREE-ACT SHOWCASE
+       * SECTION 4 — NAVIGATOR AI
        * ═══════════════════════════════════════════════════════════ */}
-      <section className="s4-section" ref={s4Ref} data-theme="dark">
-        <div className="s4-sticky">
-        {/* Act 1: Navigator AI */}
-        <div className={`act ${activeAct === 0 ? "act-active" : ""}`}>
-          <div className="act-content">
-            <div className="navigator-glow" />
-            <div className="navigator-particles">
-              {PARTICLES.map((p, i) => (
-                <div key={i} className="navigator-particle"
-                  style={{ opacity: p.opacity, animation: `orbit${i} ${p.speed}s linear infinite` }} />
-              ))}
-            </div>
-            <div className="navigator-sapling">
-              <svg width="100" height="200" viewBox="0 0 60 120">
-                <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M30 75 Q20 65 15 50" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                <path d="M30 65 Q40 55 45 42" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                <ellipse cx="15" cy="45" rx="10" ry="14" fill="rgba(74,140,106,0.35)" />
-                <ellipse cx="30" cy="35" rx="12" ry="16" fill="rgba(60,130,90,0.4)" />
-                <ellipse cx="45" cy="38" rx="10" ry="13" fill="rgba(74,140,106,0.3)" />
-                <ellipse cx="22" cy="28" rx="9" ry="12" fill="rgba(50,120,75,0.3)" />
-                <ellipse cx="38" cy="25" rx="9" ry="12" fill="rgba(60,130,90,0.35)" />
-                <ellipse cx="30" cy="18" rx="8" ry="11" fill="rgba(74,140,106,0.3)" />
-              </svg>
-            </div>
-            <div className="navigator-message">
-              <p className="navigator-message-text">
-                {NAV_MESSAGE.map((word, i) => (
-                  <span key={i} className={`word ${i < revealedWords ? "revealed" : ""}`}>{word} </span>
-                ))}
-              </p>
-            </div>
-            <div className="navigator-label">NAVIGATOR AI</div>
+      <section className="cin-section section-navigator" data-theme="dark">
+        <div className="navigator-center">
+          <div className="navigator-glow s-el" style={{ transitionDelay: "0s" }} />
+          <div className="navigator-sapling s-el" style={{ transitionDelay: "0.2s" }}>
+            <svg width="100" height="200" viewBox="0 0 60 120">
+              <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M30 75 Q20 65 15 50" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+              <path d="M30 65 Q40 55 45 42" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+              <ellipse cx="15" cy="45" rx="10" ry="14" fill="rgba(74,140,106,0.35)" />
+              <ellipse cx="30" cy="35" rx="12" ry="16" fill="rgba(60,130,90,0.4)" />
+              <ellipse cx="45" cy="38" rx="10" ry="13" fill="rgba(74,140,106,0.3)" />
+              <ellipse cx="22" cy="28" rx="9" ry="12" fill="rgba(50,120,75,0.3)" />
+              <ellipse cx="38" cy="25" rx="9" ry="12" fill="rgba(60,130,90,0.35)" />
+              <ellipse cx="30" cy="18" rx="8" ry="11" fill="rgba(74,140,106,0.3)" />
+            </svg>
           </div>
-        </div>
-
-        {/* Act 2: Spatial Pipeline */}
-        <div className={`act ${activeAct === 1 ? "act-active" : ""}`}>
-          <div className="act-content">
-            {/* Stage labels */}
-            <div className="pipeline-stages">
-              {PIPELINE_STAGES.map((s, i) => (
-                <span key={s} className={`pipeline-stage ${pipelinePhase >= 2 ? "pipeline-stage-show" : ""}`}
-                  style={{ transitionDelay: `${i * 0.1}s` }}>{s}</span>
-              ))}
-            </div>
-
-            {/* River container */}
-            <div className={`pipeline-river-container ${pipelinePhase >= 1 ? "pipeline-river-show" : ""}`}>
-              <svg className="pipeline-river" viewBox="0 0 1200 200" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="riverGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="rgba(75,165,195,0.3)" />
-                    <stop offset="40%" stopColor="rgba(75,165,195,0.5)" />
-                    <stop offset="50%" stopColor="rgba(75,165,195,0.6)" />
-                    <stop offset="60%" stopColor="rgba(75,165,195,0.45)" />
-                    <stop offset="100%" stopColor="rgba(75,165,195,0.25)" />
-                  </linearGradient>
-                  <filter id="caustic">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="1">
-                      <animate attributeName="seed" from="1" to="10" dur="8s" repeatCount="indefinite" />
-                    </feTurbulence>
-                    <feDisplacementMap in="SourceGraphic" scale="6" />
-                  </filter>
-                </defs>
-                <path d="M0,40 C100,40 150,40 200,45 C300,50 350,55 400,70 C450,80 480,90 500,92 C520,94 530,95 550,95 C570,95 580,94 600,92 C620,90 650,80 700,70 C750,55 800,50 900,45 C1000,40 1100,40 1200,40 L1200,160 C1100,160 1000,160 900,155 C800,150 750,145 700,130 C650,120 620,110 600,108 C580,106 570,105 550,105 C530,105 520,106 500,108 C480,110 450,120 400,130 C350,145 300,150 200,155 C150,160 100,160 0,160 Z"
-                  fill="url(#riverGrad)" filter="url(#caustic)" />
-              </svg>
-
-              {/* Flow lines */}
-              <div className="pipeline-flow-lines">
-                {FLOW_LINES.map((fl, i) => (
-                  <div key={i} className="flow-line" style={{ top: `${fl.top}%`, animationDelay: `${fl.delay}s` }} />
-                ))}
-              </div>
-
-              {/* Application particles */}
-              <div className="pipeline-particles">
-                {PIPELINE_DOTS.map((d, i) => (
-                  <div key={i}
-                    className={`pipeline-dot particle-${d.status} ${pipelinePhase >= 3 ? "pipeline-dot-show" : ""}`}
-                    style={{ left: `${d.left}%`, top: `${d.top}%`, animationDelay: `${d.delay}s`,
-                      transitionDelay: `${i * 0.08}s` }} />
-                ))}
-              </div>
-            </div>
-
-            {/* Message card */}
-            <div className={`pipeline-message ${pipelinePhase >= 4 ? "pipeline-message-show" : ""}`}>
-              <p className="pipeline-message-text">13 applications across 6 stages. 3 recommended. 2 cautioned. 1 rejected.</p>
-            </div>
-
-            {/* Label */}
-            <div className={`pipeline-label ${pipelinePhase >= 5 ? "pipeline-label-show" : ""}`}>SPATIAL PIPELINE</div>
+          <div className="navigator-message s-el" style={{ transitionDelay: "0.5s" }}>
+            <p className="navigator-message-text">{NAV_MESSAGE}</p>
           </div>
+          <div className="navigator-label s-el" style={{ transitionDelay: "0.8s" }}>NAVIGATOR AI</div>
         </div>
-
-        {/* Act 3: Three Roles */}
-        <div className={`act ${activeAct === 2 ? "act-active" : ""}`}>
-          <div className="act-content">
-            <div className="roles-container">
-              {/* Fund Manager */}
-              <div className={`role-card ${revealedCards >= 1 ? "role-revealed" : ""}`}>
-                <div className="role-icon">
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <rect x="6" y="6" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <rect x="26" y="6" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <rect x="6" y="26" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <rect x="26" y="26" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                  </svg>
-                </div>
-                <h3 className="role-title">Fund Manager</h3>
-                <p className="role-description">Fatimah sees the full pipeline, makes billion-SAR decisions with AI-backed confidence.</p>
-              </div>
-
-              {/* Contractor */}
-              <div className={`role-card ${revealedCards >= 2 ? "role-revealed" : ""}`}>
-                <div className="role-icon">
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <rect x="8" y="4" width="24" height="32" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <line x1="14" y1="12" x2="26" y2="12" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <line x1="14" y1="18" x2="26" y2="18" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <line x1="14" y1="24" x2="22" y2="24" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <circle cx="33" cy="33" r="7" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
-                    <line x1="38" y1="38" x2="43" y2="43" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <h3 className="role-title">Contractor</h3>
-                <p className="role-description">Omar tracks his application, gets matched to opportunities, sees his AI score in real time.</p>
-              </div>
-
-              {/* Auditor */}
-              <div className={`role-card ${revealedCards >= 3 ? "role-revealed" : ""}`}>
-                <div className="role-icon">
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <path d="M24 4L40 12V26C40 36 32 44 24 44C16 44 8 36 8 26V12L24 4Z" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" fill="none" />
-                    <path d="M16 24L22 30L34 18" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  </svg>
-                </div>
-                <h3 className="role-title">Auditor</h3>
-                <p className="role-description">Ibrahim monitors every decision, flags divergence from AI, ensures full accountability.</p>
-              </div>
-            </div>
-
-            <div className={`roles-label ${rolesLabelShow ? "roles-label-show" : ""}`}>THREE PERSPECTIVES, ONE PLATFORM</div>
-          </div>
-        </div>
-
-        {/* Dot Navigation */}
-        <div className="act-dots">
-          {[0, 1, 2].map((i) => (
-            <button
-              key={i}
-              className={`act-dot ${activeAct === i ? "act-dot-active" : ""}`}
-              onClick={() => goToAct(i)}
-              aria-label={`Go to act ${i + 1}`}
-            />
-          ))}
-        </div>
-        </div>{/* end .s4-sticky */}
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 5 — THE VISION
+       * SECTION 5 — THREE ROLES
+       * ═══════════════════════════════════════════════════════════ */}
+      <section className="cin-section section-roles" data-theme="dark">
+        <div className="roles-center">
+          <div className="roles-container">
+            {/* Fund Manager */}
+            <div className="role-card s-el" style={{ transitionDelay: "0s" }}>
+              <div className="role-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(230,232,240,0.5)" strokeWidth="1.5">
+                  <rect x="4" y="4" width="14" height="14" rx="2" />
+                  <rect x="22" y="4" width="14" height="14" rx="2" />
+                  <rect x="4" y="22" width="14" height="14" rx="2" />
+                  <rect x="22" y="22" width="14" height="14" rx="2" />
+                </svg>
+              </div>
+              <h3 className="role-title">Fund Manager</h3>
+              <p className="role-description">See the full pipeline. Make billion-SAR decisions with AI-backed confidence.</p>
+            </div>
+
+            {/* Contractor */}
+            <div className="role-card s-el" style={{ transitionDelay: "0.2s" }}>
+              <div className="role-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(230,232,240,0.5)" strokeWidth="1.5">
+                  <rect x="6" y="4" width="20" height="28" rx="2" />
+                  <line x1="11" y1="12" x2="21" y2="12" />
+                  <line x1="11" y1="17" x2="21" y2="17" />
+                  <line x1="11" y1="22" x2="17" y2="22" />
+                  <circle cx="28" cy="28" r="7" />
+                  <line x1="33" y1="33" x2="37" y2="37" />
+                </svg>
+              </div>
+              <h3 className="role-title">Contractor</h3>
+              <p className="role-description">Track applications, get matched to opportunities, see your AI score in real time.</p>
+            </div>
+
+            {/* Auditor */}
+            <div className="role-card s-el" style={{ transitionDelay: "0.4s" }}>
+              <div className="role-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(230,232,240,0.5)" strokeWidth="1.5">
+                  <path d="M20 4 L34 10 L34 22 C34 30 27 36 20 38 C13 36 6 30 6 22 L6 10 Z" />
+                  <polyline points="14,20 18,24 26,16" />
+                </svg>
+              </div>
+              <h3 className="role-title">Auditor</h3>
+              <p className="role-description">Monitor every decision, flag divergence from AI, ensure full accountability.</p>
+            </div>
+          </div>
+
+          <div className="roles-label s-el" style={{ transitionDelay: "0.8s" }}>THREE PERSPECTIVES, ONE PLATFORM</div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+       * SECTION 6 — THE VISION
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="about" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
@@ -1015,7 +764,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 6 — REQUEST ACCESS
+       * SECTION 7 — REQUEST ACCESS
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="access" data-theme="dark">
         <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
@@ -1333,91 +1082,22 @@ export default function LandingPage() {
         .s3-section { background: #0A0E1A; }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 4 — THREE-ACT SHOWCASE
+         * SECTION 4 — NAVIGATOR AI
          * ════════════════════════════════════════════════════════════ */
-        .s4-section {
-          position: relative;
-          width: 100%;
-          height: 300vh;
+        .section-navigator {
           background: #0A0E1A;
-          margin: 0;
-          padding: 0;
-          opacity: 0;
-          transition: opacity 0.8s ${C.easeContent};
         }
-        .s4-section.s4-visible {
-          opacity: 1;
-        }
-
-        /* Sticky inner viewport — stays fixed while user scrolls through 300 vh */
-        .s4-sticky {
-          position: sticky;
-          top: 0;
-          width: 100%;
-          height: 100vh;
-          overflow: hidden;
-        }
-
-        /* ── Act layers ── */
-        .act {
-          position: absolute;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          visibility: hidden;
-          transition: opacity 1.5s ${C.easeContent}, visibility 1.5s ${C.easeContent};
-          z-index: 1;
-        }
-        .act-active {
-          opacity: 1;
-          visibility: visible;
-          z-index: 2;
-        }
-        .act-content {
+        .navigator-center {
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 100%;
-          padding: 48px;
+          position: relative;
+          z-index: 2;
         }
-
-        /* ── Dot navigation ── */
-        .act-dots {
-          position: absolute;
-          bottom: 48px;
-          left: 50%;
-          transform: translateX(-50%);
-          display: flex;
-          gap: 14px;
-          z-index: 10;
-        }
-        .act-dot {
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          border: 1px solid rgba(230, 232, 240, 0.3);
-          background: transparent;
-          cursor: pointer;
-          padding: 0;
-          transition: all 0.5s ${C.easeContent};
-        }
-        .act-dot-active {
-          background: rgba(230, 232, 240, 0.7);
-          border-color: rgba(230, 232, 240, 0.7);
-        }
-        .act-dot:hover {
-          border-color: rgba(230, 232, 240, 0.6);
-        }
-
-        /* ── Act 1: Navigator AI ── */
         .navigator-glow {
           position: absolute;
           top: 50%; left: 50%;
-          transform: translate(-50%, -55%);
+          transform: translate(-50%, -45%);
           width: 320px; height: 320px;
           background: radial-gradient(circle, rgba(75,165,130,0.1) 0%, rgba(75,165,130,0.04) 40%, transparent 70%);
           border-radius: 50%;
@@ -1426,40 +1106,20 @@ export default function LandingPage() {
           animation: glowPulse 5s ease-in-out infinite;
         }
         @keyframes glowPulse {
-          0%, 100% { opacity: 0.5; transform: translate(-50%, -55%) scale(1.0); }
-          50% { opacity: 1.0; transform: translate(-50%, -55%) scale(1.1); }
+          0%, 100% { opacity: 0.5; transform: translate(-50%, -45%) scale(1.0); }
+          50% { opacity: 1.0; transform: translate(-50%, -45%) scale(1.1); }
         }
-
-        .navigator-particles {
-          position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -55%);
-          width: 0; height: 0;
-          z-index: 2;
-        }
-        .navigator-particle {
-          position: absolute;
-          width: 3px; height: 3px;
-          background: rgba(75,165,130,0.5);
-          border-radius: 50%;
-          box-shadow: 0 0 4px rgba(75,165,130,0.3);
-        }
-        ${PARTICLES.map((p, i) => `
-        @keyframes orbit${i} {
-          0%   { transform: rotate(${p.start}deg) translateX(${p.radius}px) rotate(-${p.start}deg); }
-          100% { transform: rotate(${p.start + 360}deg) translateX(${p.radius}px) rotate(-${p.start + 360}deg); }
-        }`).join("")}
-
         .navigator-sapling {
+          width: 100px; height: auto;
           position: relative;
           z-index: 3;
+          margin-bottom: 36px;
           animation: saplingBreathe 4s ease-in-out infinite;
         }
         @keyframes saplingBreathe {
           0%, 100% { transform: scale(1.0); filter: brightness(1.0); }
           50% { transform: scale(1.04); filter: brightness(1.2); }
         }
-
         .navigator-message {
           background: rgba(230,232,240,0.03);
           border: 1px solid rgba(230,232,240,0.06);
@@ -1469,7 +1129,6 @@ export default function LandingPage() {
           text-align: center;
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
-          margin-top: 36px;
           position: relative;
           z-index: 3;
         }
@@ -1481,15 +1140,6 @@ export default function LandingPage() {
           color: rgba(230,232,240,0.6);
           margin: 0;
         }
-        .navigator-message-text .word {
-          opacity: 0;
-          display: inline;
-          transition: opacity 0.3s ${C.easeContent};
-        }
-        .navigator-message-text .word.revealed {
-          opacity: 1;
-        }
-
         .navigator-label {
           font-family: 'DM Sans', sans-serif;
           font-size: 10px;
@@ -1502,132 +1152,19 @@ export default function LandingPage() {
           z-index: 3;
         }
 
-        /* ── Act 2: Spatial Pipeline ── */
-        .pipeline-stages {
+        /* ════════════════════════════════════════════════════════════
+         * SECTION 5 — THREE ROLES
+         * ════════════════════════════════════════════════════════════ */
+        .section-roles {
+          background: #0A0E1A;
+        }
+        .roles-center {
           display: flex;
-          justify-content: space-between;
-          width: 100%;
-          max-width: 1100px;
-          padding: 0 48px;
-          margin-bottom: 24px;
-        }
-        .pipeline-stage {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 2.5px;
-          text-transform: uppercase;
-          color: rgba(230,232,240,0.3);
-          opacity: 0;
-          transform: translateY(10px);
-          transition: opacity 0.6s ${C.easeContent}, transform 0.6s ${C.easeContent};
-        }
-        .pipeline-stage-show { opacity: 1; transform: translateY(0); }
-
-        .pipeline-river-container {
+          flex-direction: column;
+          align-items: center;
+          z-index: 2;
           position: relative;
-          width: 100%;
-          max-width: 1100px;
-          height: 220px;
-          margin: 0 auto;
-          opacity: 0;
-          transition: opacity 1s ${C.easeContent};
         }
-        .pipeline-river-show { opacity: 1; }
-        .pipeline-river { width: 100%; height: 100%; }
-
-        .pipeline-flow-lines {
-          position: absolute; top: 0; left: 0;
-          width: 100%; height: 100%;
-          pointer-events: none; overflow: hidden;
-        }
-        .flow-line {
-          position: absolute;
-          height: 1px; width: 150px;
-          background: linear-gradient(to right, transparent, rgba(230,232,240,0.08), transparent);
-          animation: flowDrift 6s linear infinite;
-        }
-        @keyframes flowDrift {
-          0%   { transform: translateX(-200px); }
-          100% { transform: translateX(1300px); }
-        }
-
-        .pipeline-particles {
-          position: absolute; top: 0; left: 0;
-          width: 100%; height: 100%;
-          pointer-events: none;
-        }
-        .pipeline-dot {
-          position: absolute;
-          width: 10px; height: 10px;
-          border-radius: 50%;
-          animation: particleFloat 3s ease-in-out infinite;
-          opacity: 0;
-          transition: opacity 0.5s ${C.easeContent};
-          transform: translate(-50%, -50%);
-        }
-        .pipeline-dot-show { opacity: 1; }
-
-        .particle-recommended {
-          background: rgba(74,140,106,0.85);
-          box-shadow: 0 0 8px rgba(74,140,106,0.4);
-        }
-        .particle-caution {
-          background: rgba(175,148,63,0.85);
-          box-shadow: 0 0 8px rgba(175,148,63,0.4);
-        }
-        .particle-active {
-          background: rgba(75,130,180,0.85);
-          box-shadow: 0 0 8px rgba(75,130,180,0.4);
-        }
-        .particle-rejected {
-          background: rgba(150,90,90,0.5);
-          box-shadow: 0 0 6px rgba(150,90,90,0.2);
-        }
-        @keyframes particleFloat {
-          0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-          50% { transform: translate(-50%, -50%) translateY(-4px); }
-        }
-
-        .pipeline-message {
-          background: rgba(230,232,240,0.03);
-          border: 1px solid rgba(230,232,240,0.06);
-          border-radius: 16px;
-          padding: 24px 36px;
-          max-width: 580px;
-          text-align: center;
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          margin-top: 32px;
-          opacity: 0;
-          transform: translateY(15px);
-          transition: opacity 0.8s ${C.easeContent}, transform 0.8s ${C.easeContent};
-        }
-        .pipeline-message-show { opacity: 1; transform: translateY(0); }
-        .pipeline-message-text {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px;
-          font-weight: 300;
-          line-height: 1.7;
-          color: rgba(230,232,240,0.5);
-          margin: 0;
-        }
-
-        .pipeline-label {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          color: rgba(230,232,240,0.2);
-          margin-top: 20px;
-          text-align: center;
-          opacity: 0;
-          transition: opacity 0.6s ${C.easeContent};
-        }
-        .pipeline-label-show { opacity: 1; }
-
-        /* ── Act 3: Three Roles ── */
         .roles-container {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -1636,7 +1173,6 @@ export default function LandingPage() {
           width: 100%;
           padding: 0 48px;
         }
-
         .role-card {
           background: rgba(230,232,240,0.03);
           border: 1px solid rgba(230,232,240,0.06);
@@ -1645,26 +1181,17 @@ export default function LandingPage() {
           text-align: center;
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
-          opacity: 0;
-          transform: translateY(30px);
+          transition: all 0.5s ${C.easeContent};
         }
-        .role-card.role-revealed {
-          opacity: 1;
-          transform: translateY(0);
-          transition: opacity 0.8s ${C.easeContent}, transform 0.8s ${C.easeContent};
-        }
-        .role-card.role-revealed:hover {
+        .role-card:hover {
           background: rgba(230,232,240,0.05);
           border-color: rgba(230,232,240,0.1);
           transform: translateY(-4px);
         }
-
         .role-icon {
-          width: 48px; height: 48px;
           margin: 0 auto 24px;
-          opacity: 0.5;
+          opacity: 0.6;
         }
-
         .role-title {
           font-family: 'DM Sans', sans-serif;
           font-size: 18px;
@@ -1681,7 +1208,6 @@ export default function LandingPage() {
           color: rgba(230,232,240,0.4);
           margin: 0;
         }
-
         .roles-label {
           font-family: 'DM Sans', sans-serif;
           font-size: 10px;
@@ -1691,13 +1217,10 @@ export default function LandingPage() {
           color: rgba(230,232,240,0.2);
           margin-top: 48px;
           text-align: center;
-          opacity: 0;
-          transition: opacity 0.8s ${C.easeContent};
         }
-        .roles-label-show { opacity: 1; }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 5 — VISION
+         * SECTION 6 — VISION
          * ════════════════════════════════════════════════════════════ */
         .vision-layout {
           display: flex;
@@ -1726,7 +1249,7 @@ export default function LandingPage() {
         }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 6 — REQUEST ACCESS
+         * SECTION 7 — REQUEST ACCESS
          * ════════════════════════════════════════════════════════════ */
         .access-center {
           display: flex;
@@ -1793,18 +1316,11 @@ export default function LandingPage() {
           .cin-headline { font-size:clamp(24px, 6vw, 28px); }
           .text-bl { left:32px; right:32px; bottom:64px; }
           .vision-emblem { width:120px; height:120px; }
-          .act-content { padding:32px 24px; }
-          .pipeline-stages { padding:0 16px; }
-          .pipeline-stage { font-size:8px; letter-spacing:1.5px; }
-          .pipeline-river-container { height:160px; }
-          .pipeline-dot { width:7px; height:7px; }
-          .pipeline-message { max-width:90vw; padding:20px 24px; }
-          .pipeline-message-text { font-size:13px; }
           .navigator-glow { width:240px; height:240px; }
           .navigator-sapling svg { width:80px; height:160px; }
           .navigator-message { max-width:90vw; padding:24px 28px; }
           .navigator-message-text { font-size:14px; }
-          .roles-container { grid-template-columns:1fr; gap:16px; padding:0 24px; }
+          .roles-container { grid-template-columns:1fr; gap:16px; padding:0 24px; max-width:400px; }
           .role-card { padding:28px 24px; }
           .access-form { max-width:320px; padding:0 24px; }
         }
