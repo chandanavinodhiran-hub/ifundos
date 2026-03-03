@@ -683,7 +683,7 @@ export default function LandingPage() {
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="about">
         <video className="section-video" autoPlay muted loop playsInline>
-          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/chandanahiran_httpss.mj.runhOBf6xjCJS4_Gentle_wave_movement.__04694462-9f3f-41a0-95bd-0b85121a77ba_3-zfpbihfBE02lSV1WA4mq3I7jk6vja1.mp4" type="video/mp4" />
+          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/Video%20Project%2018-A72Wz1OGhadVv0kLR9FXpGiS7WJ0zq.mp4" type="video/mp4" />
         </video>
         <div className="s2-overlay" />
         <div className="s-text vision-layout">
