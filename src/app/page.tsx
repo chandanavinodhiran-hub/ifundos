@@ -706,7 +706,8 @@ export default function LandingPage() {
        * SECTION 6 — REQUEST ACCESS
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="access">
-        <div className="section-overlay" style={{ background: "#0A0E1A" }} />
+        <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
+        <div className="s2-overlay" />
         <div className="s-text access-center">
           <h2 className="s-el cin-headline" style={{ transitionDelay: "0s", textAlign: "center" }}>
             Request Access
