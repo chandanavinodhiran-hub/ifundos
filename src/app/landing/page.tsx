@@ -618,7 +618,7 @@ export default function LandingPage() {
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="technology">
         <video className="section-video" autoPlay muted loop playsInline>
-          <source src="/section2-bg.mp4" type="video/mp4" />
+          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/section2-bg-FbqnZOjGcfzRhRtBrHnd2ZqLwrP2C6.mp4" type="video/mp4" />
         </video>
         <div className="s2-overlay" />
         <div className="s-text text-bl">
