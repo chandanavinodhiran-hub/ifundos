@@ -19,7 +19,6 @@ const C = {
 
 const NAV_ITEMS = ["Overview", "Technology", "About", "Contact"];
 
-const NAV_MESSAGE_WORDS = "Your application scored 91. This matches the profile of your last 4 approved grants.".split(" ");
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * UTILITY: Canvas base hook — handles sizing, DPR, resize, animation loop
@@ -661,52 +660,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 4 — NAVIGATOR AI
-       * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section section-navigator" data-theme="dark">
-        {/* Floating ambient motes */}
-        <div className="nav-motes">
-          {[...Array(12)].map((_, i) => (
-            <div key={i} className="nav-mote" style={{
-              left: `${8 + (i * 7.5) % 84}%`,
-              animationDelay: `${i * 1.3}s`,
-              animationDuration: `${8 + (i % 4) * 2}s`,
-              width: `${2 + (i % 3)}px`,
-              height: `${2 + (i % 3)}px`,
-              opacity: 0.15 + (i % 3) * 0.08,
-            }} />
-          ))}
-        </div>
-        <div className="navigator-center">
-          <div className="navigator-glow s-el" style={{ transitionDelay: "0s" }} />
-          <div className="navigator-sapling s-el" style={{ transitionDelay: "0.2s" }}>
-            <svg width="100" height="200" viewBox="0 0 60 120">
-              <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M30 75 Q20 65 15 50" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              <path d="M30 65 Q40 55 45 42" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              <ellipse cx="15" cy="45" rx="10" ry="14" fill="rgba(74,140,106,0.35)" />
-              <ellipse cx="30" cy="35" rx="12" ry="16" fill="rgba(60,130,90,0.4)" />
-              <ellipse cx="45" cy="38" rx="10" ry="13" fill="rgba(74,140,106,0.3)" />
-              <ellipse cx="22" cy="28" rx="9" ry="12" fill="rgba(50,120,75,0.3)" />
-              <ellipse cx="38" cy="25" rx="9" ry="12" fill="rgba(60,130,90,0.35)" />
-              <ellipse cx="30" cy="18" rx="8" ry="11" fill="rgba(74,140,106,0.3)" />
-            </svg>
-          </div>
-          <div className="navigator-message s-el" style={{ transitionDelay: "0.5s" }}>
-            <p className="navigator-message-text">
-              {NAV_MESSAGE_WORDS.map((word, i) => (
-                <span key={i} className="nav-word" style={{ animationDelay: `${0.8 + i * 0.12}s` }}>
-                  {word}{" "}
-                </span>
-              ))}
-            </p>
-          </div>
-          <div className="navigator-label s-el" style={{ transitionDelay: "0.8s" }}>NAVIGATOR AI</div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-       * SECTION 5 — THE VISION
+       * SECTION 4 — THE VISION
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="about" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
@@ -721,7 +675,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 6 — REQUEST ACCESS
+       * SECTION 5 — REQUEST ACCESS
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="access" data-theme="dark">
         <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
@@ -1050,114 +1004,7 @@ export default function LandingPage() {
         .s3-section { background: #0A0E1A; }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 4 — NAVIGATOR AI
-         * ════════════════════════════════════════════════════════════ */
-        .section-navigator {
-          background: #0A0E1A;
-        }
-        .navigator-center {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          position: relative;
-          z-index: 2;
-        }
-        .navigator-glow {
-          position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -45%);
-          width: 320px; height: 320px;
-          background: radial-gradient(circle, rgba(75,165,130,0.1) 0%, rgba(75,165,130,0.04) 40%, transparent 70%);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 1;
-          animation: glowPulse 5s ease-in-out infinite;
-        }
-        @keyframes glowPulse {
-          0%, 100% { opacity: 0.5; transform: translate(-50%, -45%) scale(1.0); }
-          50% { opacity: 1.0; transform: translate(-50%, -45%) scale(1.1); }
-        }
-        .navigator-sapling {
-          width: 100px; height: auto;
-          position: relative;
-          z-index: 3;
-          margin-bottom: 36px;
-          animation: saplingBreathe 4s ease-in-out infinite;
-        }
-        @keyframes saplingBreathe {
-          0%, 100% { transform: scale(1.0); filter: brightness(1.0); }
-          50% { transform: scale(1.04); filter: brightness(1.2); }
-        }
-        .navigator-message {
-          background: rgba(230,232,240,0.03);
-          border: 1px solid rgba(230,232,240,0.06);
-          border-radius: 16px;
-          padding: 32px 40px;
-          max-width: 520px;
-          text-align: center;
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          position: relative;
-          z-index: 3;
-        }
-        .navigator-message-text {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 16px;
-          font-weight: 300;
-          line-height: 1.7;
-          color: rgba(230,232,240,0.6);
-          margin: 0;
-        }
-        .navigator-label {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          color: rgba(230,232,240,0.2);
-          margin-top: 24px;
-          position: relative;
-          z-index: 3;
-        }
-
-        /* Word-by-word reveal */
-        .nav-word {
-          display: inline-block;
-          margin-right: 0.3em;
-          opacity: 0;
-          filter: blur(4px);
-          animation: wordReveal 0.5s ${C.easeContent} forwards;
-        }
-        .s-visible .nav-word {
-          animation: wordReveal 0.5s ${C.easeContent} forwards;
-        }
-        @keyframes wordReveal {
-          to { opacity: 1; filter: blur(0); }
-        }
-
-        /* Floating ambient motes */
-        .nav-motes {
-          position: absolute; inset: 0;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 1;
-        }
-        .nav-mote {
-          position: absolute;
-          bottom: -10px;
-          border-radius: 50%;
-          background: rgba(75,165,130,0.4);
-          animation: moteFloat linear infinite;
-        }
-        @keyframes moteFloat {
-          0%   { transform: translateY(0) translateX(0); opacity: 0; }
-          10%  { opacity: 1; }
-          90%  { opacity: 1; }
-          100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
-        }
-
-        /* ════════════════════════════════════════════════════════════
-         * SECTION 5 — VISION
+         * SECTION 4 — VISION
          * ════════════════════════════════════════════════════════════ */
         .vision-gradient {
           position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -1166,7 +1013,7 @@ export default function LandingPage() {
         }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 6 — REQUEST ACCESS (Rolls Royce enquiry style)
+         * SECTION 5 — REQUEST ACCESS (Rolls Royce enquiry style)
          * ════════════════════════════════════════════════════════════ */
         .access-overlay {
           position: absolute; inset: 0;
@@ -1267,10 +1114,6 @@ export default function LandingPage() {
           .scroll-indicator { display:none; }
           .cin-headline { font-size:clamp(24px, 6vw, 28px); }
           .text-bl { left:32px; right:32px; bottom:64px; }
-          .navigator-glow { width:240px; height:240px; }
-          .navigator-sapling svg { width:80px; height:160px; }
-          .navigator-message { max-width:90vw; padding:24px 28px; }
-          .navigator-message-text { font-size:14px; }
           .access-title { font-size:32px; margin-bottom:36px; }
           .access-form { padding:0 20px; }
         }
