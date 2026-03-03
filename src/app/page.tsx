@@ -773,8 +773,9 @@ export default function LandingPage() {
         .nav-left:hover .nav-menu-label { color: rgba(230, 232, 240, 0.95); }
         .nav-center { justify-self: center; }
         .nav-logo {
-          height: 34px; width: auto;
+          height: 36px; width: auto;
           opacity: 0.85;
+          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
           transition: opacity 0.4s ${C.easeContent};
         }
         .nav-logo:hover { opacity: 1; }
@@ -927,7 +928,8 @@ export default function LandingPage() {
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
           z-index: 10;
-          padding-top: 5vh;
+          padding-top: 0;
+          margin-top: -6vh;
         }
 
         .hero-title {
@@ -947,10 +949,10 @@ export default function LandingPage() {
           background: rgba(235, 232, 225, 0.92);
           color: rgba(20, 24, 36, 0.85);
           font-family: 'DM Sans', sans-serif;
-          font-size: 12px; font-weight: 500;
+          font-size: 11px; font-weight: 500;
           letter-spacing: 4px; text-transform: uppercase;
-          padding: 16px 48px;
-          border-radius: 40px; border: none;
+          padding: 14px 44px;
+          border-radius: 36px; border: none;
           cursor: pointer; text-decoration: none;
           transition: all 0.5s ${C.easeContent};
           opacity: 0; transform: translateY(20px);
@@ -967,16 +969,16 @@ export default function LandingPage() {
           position: absolute; bottom: 36px; left: 50%;
           transform: translateX(-50%); z-index: 10;
           opacity: 0;
-          animation: fadeIn 0.8s ${C.easeContent} 1.8s forwards;
+          animation: fadeIn 0.8s ${C.easeContent} 2s forwards;
         }
         .scroll-line {
-          width: 1px; height: 40px;
-          background: linear-gradient(to bottom, rgba(230,232,240,0.3), rgba(230,232,240,0));
+          width: 1px; height: 48px;
+          background: linear-gradient(to bottom, rgba(230,232,240,0.4), rgba(230,232,240,0));
           animation: scrollPulse 2.5s ease-in-out infinite;
         }
         @keyframes scrollPulse {
-          0%, 100% { opacity: 0.2; transform: scaleY(0.8); }
-          50% { opacity: 0.5; transform: scaleY(1.0); }
+          0%, 100% { opacity: 0.15; transform: scaleY(0.7); }
+          50% { opacity: 0.4; transform: scaleY(1.0); }
         }
         @keyframes fadeIn { to { opacity: 1; } }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
