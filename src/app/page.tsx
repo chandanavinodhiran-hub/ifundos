@@ -679,16 +679,6 @@ export default function LandingPage() {
         </div>
         <div className="navigator-center">
           <div className="navigator-glow s-el" style={{ transitionDelay: "0s" }} />
-          {/* Orbit particles */}
-          <div className="orbit-ring orbit-ring-1 s-el" style={{ transitionDelay: "0.3s" }}>
-            <div className="orbit-dot" />
-          </div>
-          <div className="orbit-ring orbit-ring-2 s-el" style={{ transitionDelay: "0.5s" }}>
-            <div className="orbit-dot" />
-          </div>
-          <div className="orbit-ring orbit-ring-3 s-el" style={{ transitionDelay: "0.7s" }}>
-            <div className="orbit-dot" />
-          </div>
           <div className="navigator-sapling s-el" style={{ transitionDelay: "0.2s" }}>
             <svg width="100" height="200" viewBox="0 0 60 120">
               <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
@@ -1119,57 +1109,10 @@ export default function LandingPage() {
           z-index: 3;
         }
 
-        /* Orbit particles */
-        .orbit-ring {
-          position: absolute;
-          top: 50%; left: 50%;
-          border-radius: 50%;
-          border: 1px solid rgba(75,165,130,0.06);
-          pointer-events: none;
-          z-index: 2;
-        }
-        .orbit-ring-1 {
-          width: 200px; height: 200px;
-          margin-top: -130px; margin-left: -100px;
-          animation: orbitSpin 12s linear infinite;
-        }
-        .orbit-ring-2 {
-          width: 300px; height: 300px;
-          margin-top: -180px; margin-left: -150px;
-          animation: orbitSpin 20s linear infinite reverse;
-        }
-        .orbit-ring-3 {
-          width: 400px; height: 400px;
-          margin-top: -230px; margin-left: -200px;
-          animation: orbitSpin 28s linear infinite;
-        }
-        .orbit-dot {
-          position: absolute;
-          top: -3px; left: 50%;
-          width: 5px; height: 5px;
-          margin-left: -2.5px;
-          border-radius: 50%;
-          background: rgba(75,165,130,0.5);
-          box-shadow: 0 0 8px rgba(75,165,130,0.3);
-        }
-        .orbit-ring-2 .orbit-dot {
-          width: 4px; height: 4px; margin-left: -2px;
-          background: rgba(75,165,130,0.35);
-          box-shadow: 0 0 6px rgba(75,165,130,0.2);
-        }
-        .orbit-ring-3 .orbit-dot {
-          width: 3px; height: 3px; margin-left: -1.5px;
-          background: rgba(75,165,130,0.25);
-          box-shadow: 0 0 5px rgba(75,165,130,0.15);
-        }
-        @keyframes orbitSpin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
         /* Word-by-word reveal */
         .nav-word {
           display: inline-block;
+          margin-right: 0.3em;
           opacity: 0;
           filter: blur(4px);
           animation: wordReveal 0.5s ${C.easeContent} forwards;
