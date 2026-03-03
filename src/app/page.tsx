@@ -427,6 +427,7 @@ function PipelineCanvas() {
 /* ═══════════════════════════════════════════════════════════════════════════
  * CANVAS 5: Emblem Glow + Star Field — The Vision background
  * ═══════════════════════════════════════════════════════════════════════════ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function VisionCanvas() {
   const stars = useRef(
     Array.from({ length: 35 }, () => ({
@@ -681,8 +682,10 @@ export default function LandingPage() {
        * SECTION 5 — THE VISION
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="about">
-        <VisionCanvas />
-        <div className="section-overlay" />
+        <video className="section-video" autoPlay muted loop playsInline>
+          <source src="https://cv7awhbpmhvcepfs.public.blob.vercel-storage.com/chandanahiran_httpss.mj.runhOBf6xjCJS4_Gentle_wave_movement.__04694462-9f3f-41a0-95bd-0b85121a77ba_3-zfpbihfBE02lSV1WA4mq3I7jk6vja1.mp4" type="video/mp4" />
+        </video>
+        <div className="s2-overlay" />
         <div className="s-text vision-layout">
           <img src="/emblem_white_transparent.png" alt="" className="vision-emblem s-el" style={{ transitionDelay: "0s" }} />
           <div className="vision-bottom">
