@@ -747,7 +747,6 @@ export default function LandingPage() {
             </div>
             <button type="submit" className="access-submit s-el" style={{ transitionDelay: "0.55s" }}>Request Access</button>
           </form>
-          <p className="access-footer s-el" style={{ transitionDelay: "0.65s" }}>Sovereign institutions and qualified contractors only.</p>
         </div>
       </section>
 
@@ -1210,7 +1209,7 @@ export default function LandingPage() {
           font-weight: 400;
           letter-spacing: 3px;
           text-transform: uppercase;
-          color: rgba(230,232,240,0.5);
+          color: rgba(230,232,240,0.8);
         }
         .access-input {
           background: transparent;
@@ -1254,13 +1253,6 @@ export default function LandingPage() {
           background: rgba(230,232,240,0.05);
           border-color: rgba(230,232,240,0.6);
           color: rgba(230,232,240,0.95);
-        }
-        .access-footer {
-          margin: 24px 0 0;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 11px;
-          color: rgba(230,232,240,0.35);
-          text-align: center;
         }
 
         /* ── Responsive ── */
