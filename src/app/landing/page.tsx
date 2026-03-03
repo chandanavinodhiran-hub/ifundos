@@ -821,12 +821,15 @@ export default function LandingPage() {
          * GLOBAL SECTION PATTERN
          * ════════════════════════════════════════════════════════════ */
         .cin-section {
+          width: 100%;
           height: 100vh;
           position: relative;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
+          margin: 0;
+          padding: 0;
         }
 
         .section-canvas, .section-video {
@@ -835,6 +838,8 @@ export default function LandingPage() {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center center;
+          display: block;
           will-change: transform;
         }
         .section-canvas {
