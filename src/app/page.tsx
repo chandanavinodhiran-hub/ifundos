@@ -687,60 +687,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 5 — THREE ROLES
-       * ═══════════════════════════════════════════════════════════ */}
-      <section className="cin-section section-roles" data-theme="dark">
-        <div className="roles-center">
-          <div className="roles-container">
-            {/* Fund Manager */}
-            <div className="role-card s-el" style={{ transitionDelay: "0s" }}>
-              <div className="role-icon">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(230,232,240,0.5)" strokeWidth="1.5">
-                  <rect x="4" y="4" width="14" height="14" rx="2" />
-                  <rect x="22" y="4" width="14" height="14" rx="2" />
-                  <rect x="4" y="22" width="14" height="14" rx="2" />
-                  <rect x="22" y="22" width="14" height="14" rx="2" />
-                </svg>
-              </div>
-              <h3 className="role-title">Fund Manager</h3>
-              <p className="role-description">See the full pipeline. Make billion-SAR decisions with AI-backed confidence.</p>
-            </div>
-
-            {/* Contractor */}
-            <div className="role-card s-el" style={{ transitionDelay: "0.2s" }}>
-              <div className="role-icon">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(230,232,240,0.5)" strokeWidth="1.5">
-                  <rect x="6" y="4" width="20" height="28" rx="2" />
-                  <line x1="11" y1="12" x2="21" y2="12" />
-                  <line x1="11" y1="17" x2="21" y2="17" />
-                  <line x1="11" y1="22" x2="17" y2="22" />
-                  <circle cx="28" cy="28" r="7" />
-                  <line x1="33" y1="33" x2="37" y2="37" />
-                </svg>
-              </div>
-              <h3 className="role-title">Contractor</h3>
-              <p className="role-description">Track applications, get matched to opportunities, see your AI score in real time.</p>
-            </div>
-
-            {/* Auditor */}
-            <div className="role-card s-el" style={{ transitionDelay: "0.4s" }}>
-              <div className="role-icon">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(230,232,240,0.5)" strokeWidth="1.5">
-                  <path d="M20 4 L34 10 L34 22 C34 30 27 36 20 38 C13 36 6 30 6 22 L6 10 Z" />
-                  <polyline points="14,20 18,24 26,16" />
-                </svg>
-              </div>
-              <h3 className="role-title">Auditor</h3>
-              <p className="role-description">Monitor every decision, flag divergence from AI, ensure full accountability.</p>
-            </div>
-          </div>
-
-          <div className="roles-label s-el" style={{ transitionDelay: "0.8s" }}>THREE PERSPECTIVES, ONE PLATFORM</div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-       * SECTION 6 — THE VISION
+       * SECTION 5 — THE VISION
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="about" data-theme="dark">
         <video className="section-video" autoPlay muted loop playsInline>
@@ -764,7 +711,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-       * SECTION 7 — REQUEST ACCESS
+       * SECTION 6 — REQUEST ACCESS
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="access" data-theme="dark">
         <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
@@ -1153,74 +1100,7 @@ export default function LandingPage() {
         }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 5 — THREE ROLES
-         * ════════════════════════════════════════════════════════════ */
-        .section-roles {
-          background: #0A0E1A;
-        }
-        .roles-center {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          z-index: 2;
-          position: relative;
-        }
-        .roles-container {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 24px;
-          max-width: 960px;
-          width: 100%;
-          padding: 0 48px;
-        }
-        .role-card {
-          background: rgba(230,232,240,0.03);
-          border: 1px solid rgba(230,232,240,0.06);
-          border-radius: 20px;
-          padding: 40px 32px;
-          text-align: center;
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          transition: all 0.5s ${C.easeContent};
-        }
-        .role-card:hover {
-          background: rgba(230,232,240,0.05);
-          border-color: rgba(230,232,240,0.1);
-          transform: translateY(-4px);
-        }
-        .role-icon {
-          margin: 0 auto 24px;
-          opacity: 0.6;
-        }
-        .role-title {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 18px;
-          font-weight: 300;
-          letter-spacing: 1px;
-          color: rgba(230,232,240,0.85);
-          margin: 0 0 16px;
-        }
-        .role-description {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 300;
-          line-height: 1.7;
-          color: rgba(230,232,240,0.4);
-          margin: 0;
-        }
-        .roles-label {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          color: rgba(230,232,240,0.2);
-          margin-top: 48px;
-          text-align: center;
-        }
-
-        /* ════════════════════════════════════════════════════════════
-         * SECTION 6 — VISION
+         * SECTION 5 — VISION
          * ════════════════════════════════════════════════════════════ */
         .vision-layout {
           display: flex;
@@ -1249,7 +1129,7 @@ export default function LandingPage() {
         }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 7 — REQUEST ACCESS
+         * SECTION 6 — REQUEST ACCESS
          * ════════════════════════════════════════════════════════════ */
         .access-center {
           display: flex;
@@ -1320,8 +1200,6 @@ export default function LandingPage() {
           .navigator-sapling svg { width:80px; height:160px; }
           .navigator-message { max-width:90vw; padding:24px 28px; }
           .navigator-message-text { font-size:14px; }
-          .roles-container { grid-template-columns:1fr; gap:16px; padding:0 24px; max-width:400px; }
-          .role-card { padding:28px 24px; }
           .access-form { max-width:320px; padding:0 24px; }
         }
       `}</style>
