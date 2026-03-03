@@ -805,7 +805,7 @@ export default function LandingPage() {
         .nav-left:hover .nav-menu-label { color: rgba(230, 232, 240, 0.95); }
         .nav-center { justify-self: center; }
         .nav-logo {
-          height: 36px; width: auto;
+          height: 47px; width: auto;
           opacity: 0.85;
           filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
           transition: opacity 0.4s ${C.easeContent};
@@ -1279,7 +1279,7 @@ export default function LandingPage() {
           .landing-nav { padding:16px 24px; }
           .nav-menu-label { display:none; }
           .nav-cta { display:none; }
-          .nav-logo { height:28px; }
+          .nav-logo { height:36px; }
           .nav-dropdown { left:24px; top:64px; }
           .hero-title { font-size:clamp(36px, 10vw, 42px); letter-spacing:clamp(10px, 3vw, 14px); }
           .hero-cta { padding:14px 36px; font-size:11px; }
