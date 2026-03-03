@@ -586,7 +586,7 @@ export default function LandingPage() {
           <span className="nav-menu-label">Menu</span>
         </div>
         <div className="nav-center">
-          <img src="/emblem.png" alt="iFundOS" className="nav-logo" />
+          <img src="/emblem_white.png" alt="iFundOS" className="nav-logo" />
         </div>
         <div className="nav-right">
           <a href="#access" className="nav-cta">Request Access</a>
@@ -684,7 +684,7 @@ export default function LandingPage() {
         <VisionCanvas />
         <div className="section-overlay" />
         <div className="s-text vision-layout">
-          <img src="/emblem.png" alt="" className="vision-emblem s-el" style={{ transitionDelay: "0s" }} />
+          <img src="/emblem_white.png" alt="" className="vision-emblem s-el" style={{ transitionDelay: "0s" }} />
           <div className="vision-bottom">
             <h2 className="s-el cin-headline" style={{ transitionDelay: "0.15s", textAlign: "center" }}>
               Built for the Saudi Green Initiative.
@@ -771,7 +771,6 @@ export default function LandingPage() {
         .nav-logo {
           height: 34px; width: auto;
           opacity: 0.85;
-          filter: brightness(0) invert(1);
           transition: opacity 0.4s ${C.easeContent};
         }
         .nav-logo:hover { opacity: 1; }
