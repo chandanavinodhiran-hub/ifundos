@@ -19,6 +19,21 @@ const C = {
 
 const NAV_ITEMS = ["Overview", "Technology", "About", "Contact"];
 
+const NAV_MESSAGE = "Your application scored 91. This matches the profile of your last 4 approved grants.".split(" ");
+
+const PARTICLES = [
+  { radius: 70, speed: 10, start: 0, opacity: 0.3 },
+  { radius: 120, speed: 12, start: 36, opacity: 0.5 },
+  { radius: 90, speed: 9, start: 72, opacity: 0.25 },
+  { radius: 155, speed: 15, start: 108, opacity: 0.4 },
+  { radius: 65, speed: 11, start: 144, opacity: 0.35 },
+  { radius: 175, speed: 14, start: 180, opacity: 0.45 },
+  { radius: 100, speed: 8, start: 216, opacity: 0.3 },
+  { radius: 140, speed: 16, start: 252, opacity: 0.55 },
+  { radius: 80, speed: 13, start: 288, opacity: 0.25 },
+  { radius: 160, speed: 10, start: 324, opacity: 0.4 },
+];
+
 /* ═══════════════════════════════════════════════════════════════════════════
  * UTILITY: Canvas base hook — handles sizing, DPR, resize, animation loop
  * ═══════════════════════════════════════════════════════════════════════════ */
@@ -615,6 +630,46 @@ export default function LandingPage() {
   const s4Ref = useRef<HTMLElement>(null);
   const { activeAct, goToAct } = useActCycle(s4Ref);
 
+  /* Act 1 — word-by-word reveal */
+  const [revealedWords, setRevealedWords] = useState(0);
+  const wordTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  /* Act 3 — role card stagger + label */
+  const [revealedCards, setRevealedCards] = useState(0);
+  const [rolesLabelShow, setRolesLabelShow] = useState(false);
+  const roleTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    wordTimers.current.forEach(clearTimeout);
+    wordTimers.current = [];
+    if (activeAct === 0) {
+      setRevealedWords(0);
+      NAV_MESSAGE.forEach((_, i) => {
+        wordTimers.current.push(setTimeout(() => setRevealedWords(i + 1), 800 + i * 120));
+      });
+    } else {
+      setRevealedWords(0);
+    }
+    return () => wordTimers.current.forEach(clearTimeout);
+  }, [activeAct]);
+
+  useEffect(() => {
+    roleTimers.current.forEach(clearTimeout);
+    roleTimers.current = [];
+    if (activeAct === 2) {
+      setRevealedCards(0);
+      setRolesLabelShow(false);
+      [0, 1, 2].forEach((_, i) => {
+        roleTimers.current.push(setTimeout(() => setRevealedCards(i + 1), 300 + i * 200));
+      });
+      roleTimers.current.push(setTimeout(() => setRolesLabelShow(true), 1200));
+    } else {
+      setRevealedCards(0);
+      setRolesLabelShow(false);
+    }
+    return () => roleTimers.current.forEach(clearTimeout);
+  }, [activeAct]);
+
   useScrollReveal();
   useParallax();
 
@@ -714,10 +769,37 @@ export default function LandingPage() {
        * SECTION 4 — THREE-ACT SHOWCASE
        * ═══════════════════════════════════════════════════════════ */}
       <section className="s4-section" ref={s4Ref} data-theme="dark">
-        {/* Act 1 */}
+        {/* Act 1: Navigator AI */}
         <div className={`act ${activeAct === 0 ? "act-active" : ""}`}>
           <div className="act-content">
-            <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 1 — Navigator AI placeholder</p>
+            <div className="navigator-glow" />
+            <div className="navigator-particles">
+              {PARTICLES.map((p, i) => (
+                <div key={i} className="navigator-particle"
+                  style={{ opacity: p.opacity, animation: `orbit${i} ${p.speed}s linear infinite` }} />
+              ))}
+            </div>
+            <div className="navigator-sapling">
+              <svg width="100" height="200" viewBox="0 0 60 120">
+                <path d="M30 120 L30 55" stroke="rgba(74,140,106,0.6)" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M30 75 Q20 65 15 50" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                <path d="M30 65 Q40 55 45 42" stroke="rgba(74,140,106,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                <ellipse cx="15" cy="45" rx="10" ry="14" fill="rgba(74,140,106,0.35)" />
+                <ellipse cx="30" cy="35" rx="12" ry="16" fill="rgba(60,130,90,0.4)" />
+                <ellipse cx="45" cy="38" rx="10" ry="13" fill="rgba(74,140,106,0.3)" />
+                <ellipse cx="22" cy="28" rx="9" ry="12" fill="rgba(50,120,75,0.3)" />
+                <ellipse cx="38" cy="25" rx="9" ry="12" fill="rgba(60,130,90,0.35)" />
+                <ellipse cx="30" cy="18" rx="8" ry="11" fill="rgba(74,140,106,0.3)" />
+              </svg>
+            </div>
+            <div className="navigator-message">
+              <p className="navigator-message-text">
+                {NAV_MESSAGE.map((word, i) => (
+                  <span key={i} className={`word ${i < revealedWords ? "revealed" : ""}`}>{word} </span>
+                ))}
+              </p>
+            </div>
+            <div className="navigator-label">NAVIGATOR AI</div>
           </div>
         </div>
         {/* Act 2 */}
@@ -726,10 +808,54 @@ export default function LandingPage() {
             <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 2 — Spatial Pipeline placeholder</p>
           </div>
         </div>
-        {/* Act 3 */}
+        {/* Act 3: Three Roles */}
         <div className={`act ${activeAct === 2 ? "act-active" : ""}`}>
           <div className="act-content">
-            <p style={{ color: "rgba(230,232,240,0.5)" }}>ACT 3 — Three Roles placeholder</p>
+            <div className="roles-container">
+              {/* Fund Manager */}
+              <div className={`role-card ${revealedCards >= 1 ? "role-revealed" : ""}`}>
+                <div className="role-icon">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <rect x="6" y="6" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <rect x="26" y="6" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <rect x="6" y="26" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <rect x="26" y="26" width="16" height="16" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                  </svg>
+                </div>
+                <h3 className="role-title">Fund Manager</h3>
+                <p className="role-description">Fatimah sees the full pipeline, makes billion-SAR decisions with AI-backed confidence.</p>
+              </div>
+
+              {/* Contractor */}
+              <div className={`role-card ${revealedCards >= 2 ? "role-revealed" : ""}`}>
+                <div className="role-icon">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <rect x="8" y="4" width="24" height="32" rx="3" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <line x1="14" y1="12" x2="26" y2="12" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <line x1="14" y1="18" x2="26" y2="18" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <line x1="14" y1="24" x2="22" y2="24" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <circle cx="33" cy="33" r="7" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" />
+                    <line x1="38" y1="38" x2="43" y2="43" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <h3 className="role-title">Contractor</h3>
+                <p className="role-description">Omar tracks his application, gets matched to opportunities, sees his AI score in real time.</p>
+              </div>
+
+              {/* Auditor */}
+              <div className={`role-card ${revealedCards >= 3 ? "role-revealed" : ""}`}>
+                <div className="role-icon">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <path d="M24 4L40 12V26C40 36 32 44 24 44C16 44 8 36 8 26V12L24 4Z" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" fill="none" />
+                    <path d="M16 24L22 30L34 18" stroke="rgba(230,232,240,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                </div>
+                <h3 className="role-title">Auditor</h3>
+                <p className="role-description">Ibrahim monitors every decision, flags divergence from AI, ensures full accountability.</p>
+              </div>
+            </div>
+
+            <div className={`roles-label ${rolesLabelShow ? "roles-label-show" : ""}`}>THREE PERSPECTIVES, ONE PLATFORM</div>
           </div>
         </div>
         {/* Dot navigation */}
@@ -1154,6 +1280,164 @@ export default function LandingPage() {
           border-color: rgba(230,232,240,0.7);
         }
 
+        /* ── Act 1: Navigator AI ── */
+        .navigator-glow {
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -55%);
+          width: 320px; height: 320px;
+          background: radial-gradient(circle, rgba(75,165,130,0.1) 0%, rgba(75,165,130,0.04) 40%, transparent 70%);
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 1;
+          animation: glowPulse 5s ease-in-out infinite;
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.5; transform: translate(-50%, -55%) scale(1.0); }
+          50% { opacity: 1.0; transform: translate(-50%, -55%) scale(1.1); }
+        }
+
+        .navigator-particles {
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -55%);
+          width: 0; height: 0;
+          z-index: 2;
+        }
+        .navigator-particle {
+          position: absolute;
+          width: 3px; height: 3px;
+          background: rgba(75,165,130,0.5);
+          border-radius: 50%;
+          box-shadow: 0 0 4px rgba(75,165,130,0.3);
+        }
+        ${PARTICLES.map((p, i) => `
+        @keyframes orbit${i} {
+          0%   { transform: rotate(${p.start}deg) translateX(${p.radius}px) rotate(-${p.start}deg); }
+          100% { transform: rotate(${p.start + 360}deg) translateX(${p.radius}px) rotate(-${p.start + 360}deg); }
+        }`).join("")}
+
+        .navigator-sapling {
+          position: relative;
+          z-index: 3;
+          animation: saplingBreathe 4s ease-in-out infinite;
+        }
+        @keyframes saplingBreathe {
+          0%, 100% { transform: scale(1.0); filter: brightness(1.0); }
+          50% { transform: scale(1.04); filter: brightness(1.2); }
+        }
+
+        .navigator-message {
+          background: rgba(230,232,240,0.03);
+          border: 1px solid rgba(230,232,240,0.06);
+          border-radius: 16px;
+          padding: 32px 40px;
+          max-width: 520px;
+          text-align: center;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          margin-top: 36px;
+          position: relative;
+          z-index: 3;
+        }
+        .navigator-message-text {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 16px;
+          font-weight: 300;
+          line-height: 1.7;
+          color: rgba(230,232,240,0.6);
+          margin: 0;
+        }
+        .navigator-message-text .word {
+          opacity: 0;
+          display: inline;
+          transition: opacity 0.3s ${C.easeContent};
+        }
+        .navigator-message-text .word.revealed {
+          opacity: 1;
+        }
+
+        .navigator-label {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          color: rgba(230,232,240,0.2);
+          margin-top: 24px;
+          position: relative;
+          z-index: 3;
+        }
+
+        /* ── Act 3: Three Roles ── */
+        .roles-container {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+          max-width: 960px;
+          width: 100%;
+          padding: 0 48px;
+        }
+
+        .role-card {
+          background: rgba(230,232,240,0.03);
+          border: 1px solid rgba(230,232,240,0.06);
+          border-radius: 20px;
+          padding: 40px 32px;
+          text-align: center;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        .role-card.role-revealed {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 0.8s ${C.easeContent}, transform 0.8s ${C.easeContent};
+        }
+        .role-card.role-revealed:hover {
+          background: rgba(230,232,240,0.05);
+          border-color: rgba(230,232,240,0.1);
+          transform: translateY(-4px);
+        }
+
+        .role-icon {
+          width: 48px; height: 48px;
+          margin: 0 auto 24px;
+          opacity: 0.5;
+        }
+
+        .role-title {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 18px;
+          font-weight: 300;
+          letter-spacing: 1px;
+          color: rgba(230,232,240,0.85);
+          margin: 0 0 16px;
+        }
+        .role-description {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 300;
+          line-height: 1.7;
+          color: rgba(230,232,240,0.4);
+          margin: 0;
+        }
+
+        .roles-label {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          color: rgba(230,232,240,0.2);
+          margin-top: 48px;
+          text-align: center;
+          opacity: 0;
+          transition: opacity 0.8s ${C.easeContent};
+        }
+        .roles-label-show { opacity: 1; }
+
         /* ════════════════════════════════════════════════════════════
          * SECTION 5 — VISION
          * ════════════════════════════════════════════════════════════ */
@@ -1251,7 +1535,13 @@ export default function LandingPage() {
           .cin-headline { font-size:clamp(24px, 6vw, 28px); }
           .text-bl { left:32px; right:32px; bottom:64px; }
           .vision-emblem { width:120px; height:120px; }
-          .nav4-typewriter { font-size:15px; max-width:320px; padding:0 24px; }
+          .act-content { padding:32px 24px; }
+          .navigator-glow { width:240px; height:240px; }
+          .navigator-sapling svg { width:80px; height:160px; }
+          .navigator-message { max-width:90vw; padding:24px 28px; }
+          .navigator-message-text { font-size:14px; }
+          .roles-container { grid-template-columns:1fr; gap:16px; padding:0 24px; }
+          .role-card { padding:28px 24px; }
           .access-form { max-width:320px; padding:0 24px; }
         }
       `}</style>
