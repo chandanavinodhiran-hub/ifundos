@@ -177,8 +177,7 @@ function LoginForm() {
               alt="iFundOS"
               width={76}
               height={76}
-              className="w-[56px] h-[56px] sm:w-[76px] sm:h-[76px]"
-              className="emblem-breathe"
+              className="w-[56px] h-[56px] sm:w-[76px] sm:h-[76px] emblem-breathe"
               style={{
                 display: "block",
                 margin: "0 auto 12px",
