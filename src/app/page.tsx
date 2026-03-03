@@ -1172,10 +1172,10 @@ export default function LandingPage() {
         .access-overlay {
           position: absolute; inset: 0;
           background: linear-gradient(to bottom,
-            rgba(10,14,26,0.5) 0%,
-            rgba(10,14,26,0.7) 40%,
-            rgba(10,14,26,0.85) 100%);
-          pointer-events: none; z-index: 2;
+            rgba(10,14,26,0.55) 0%,
+            rgba(10,14,26,0.75) 50%,
+            rgba(10,14,26,0.88) 100%);
+          pointer-events: none; z-index: 1;
         }
         .access-center {
           display: flex;
@@ -1183,7 +1183,7 @@ export default function LandingPage() {
           align-items: center;
           justify-content: center;
           height: 100%;
-          position: relative; z-index: 3;
+          position: relative; z-index: 2;
         }
         .access-title {
           font-family: 'DM Sans', sans-serif;
