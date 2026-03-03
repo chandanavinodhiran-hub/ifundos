@@ -725,17 +725,31 @@ export default function LandingPage() {
        * ═══════════════════════════════════════════════════════════ */}
       <section className="cin-section" id="access" data-theme="dark">
         <img src="/section6-bg.png" alt="" className="section-video" style={{ objectFit: "cover" }} />
-        <div className="s2-overlay" />
+        <div className="access-overlay" />
         <div className="s-text access-center">
-          <h2 className="s-el cin-headline" style={{ transitionDelay: "0s", textAlign: "center" }}>
-            Request Access
-          </h2>
-          <form className="access-form s-el" style={{ transitionDelay: "0.15s" }} onSubmit={(e) => e.preventDefault()}>
-            <input type="text" placeholder="Full Name" className="access-input" />
-            <input type="text" placeholder="Organization" className="access-input" />
-            <input type="email" placeholder="Email Address" className="access-input" />
-            <button type="submit" className="access-submit">Submit</button>
-          </form>
+          <div className="access-card s-el" style={{ transitionDelay: "0s" }}>
+            <h2 className="access-title">Request Access</h2>
+            <form className="access-form" onSubmit={(e) => e.preventDefault()}>
+              <div className="access-field">
+                <label className="access-label">Full Name</label>
+                <input type="text" placeholder="Your full name" className="access-input" />
+              </div>
+              <div className="access-field">
+                <label className="access-label">Email Address</label>
+                <input type="email" placeholder="you@organization.sa" className="access-input" />
+              </div>
+              <div className="access-field">
+                <label className="access-label">Organization</label>
+                <input type="text" placeholder="Your organization" className="access-input" />
+              </div>
+              <div className="access-field">
+                <label className="access-label">Role</label>
+                <input type="text" placeholder="Fund Manager, Contractor, or Auditor" className="access-input" />
+              </div>
+              <button type="submit" className="access-submit">Request Access →</button>
+            </form>
+            <p className="access-footer">Sovereign institutions and qualified contractors only.</p>
+          </div>
         </div>
       </section>
 
@@ -1155,58 +1169,109 @@ export default function LandingPage() {
         }
 
         /* ════════════════════════════════════════════════════════════
-         * SECTION 6 — REQUEST ACCESS
+         * SECTION 6 — REQUEST ACCESS (glassmorphic card)
          * ════════════════════════════════════════════════════════════ */
+        .access-overlay {
+          position: absolute; inset: 0;
+          background: rgba(0,0,0,0.45);
+          pointer-events: none; z-index: 2;
+        }
         .access-center {
           display: flex;
-          flex-direction: column;
           align-items: center;
+          justify-content: center;
+          height: 100%;
         }
-
+        .access-card {
+          position: relative; z-index: 3;
+          background: rgba(10, 15, 26, 0.75);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 22px;
+          padding: 48px 52px;
+          max-width: 480px;
+          width: 100%;
+          box-shadow: 0 24px 48px rgba(0,0,0,0.3);
+        }
+        .access-title {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 34px;
+          font-weight: 300;
+          color: rgba(255,255,255,0.92);
+          text-align: center;
+          margin: 0 0 32px;
+          letter-spacing: 0.5px;
+        }
         .access-form {
           display: flex;
           flex-direction: column;
-          gap: 0;
-          width: 100%;
-          max-width: 400px;
-          margin-top: 40px;
+          gap: 20px;
         }
-
+        .access-field { display: flex; flex-direction: column; gap: 6px; }
+        .access-label {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 2.5px;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.45);
+        }
         .access-input {
-          background: transparent;
-          border: none;
-          border-bottom: 1px solid rgba(230, 232, 240, 0.12);
-          padding: 14px 0;
-          color: rgba(230, 232, 240, 0.7);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 11px;
+          padding: 15px 16px;
+          color: rgba(255,255,255,0.85);
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
           font-weight: 300;
           outline: none;
-          transition: border-color 0.4s ${C.easeHover};
           width: 100%;
+          box-sizing: border-box;
+          transition: border-color 0.3s ${C.easeHover}, background 0.3s ${C.easeHover};
         }
-        .access-input::placeholder { color: rgba(230, 232, 240, 0.2); }
-        .access-input:focus { border-bottom-color: rgba(230, 232, 240, 0.4); }
-
+        .access-input::placeholder { color: rgba(255,255,255,0.25); }
+        .access-input:focus {
+          border-color: rgba(130, 90, 220, 0.35);
+          background: rgba(255,255,255,0.06);
+        }
         .access-submit {
-          margin-top: 32px;
-          border: 1px solid rgba(230, 232, 240, 0.2);
-          background: transparent;
-          padding: 14px 48px;
-          color: rgba(230, 232, 240, 0.5);
+          margin-top: 8px;
+          width: 100%;
+          padding: 16px;
+          border-radius: 11px;
           font-family: 'DM Sans', sans-serif;
-          font-size: 11px;
-          font-weight: 400;
-          text-transform: uppercase;
-          letter-spacing: 3px;
+          font-size: 14px;
+          font-weight: 500;
+          letter-spacing: 1px;
           cursor: pointer;
-          transition: all 0.4s ${C.easeHover};
-          align-self: flex-start;
+          background: linear-gradient(135deg,
+            rgba(130, 90, 220, 0.35),
+            rgba(90, 140, 210, 0.30),
+            rgba(75, 185, 195, 0.35));
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          color: rgba(225, 218, 255, 0.95);
+          border: 1px solid rgba(160, 130, 240, 0.20);
+          box-shadow: 0 0 30px rgba(120, 90, 220, 0.10);
+          transition: all 0.3s ${C.easeHover};
         }
         .access-submit:hover {
-          background: rgba(230, 232, 240, 0.05);
-          border-color: rgba(230, 232, 240, 0.4);
-          color: rgba(230, 232, 240, 0.8);
+          transform: translateY(-1px);
+          background: linear-gradient(135deg,
+            rgba(130, 90, 220, 0.45),
+            rgba(90, 140, 210, 0.40),
+            rgba(75, 185, 195, 0.45));
+          border-color: rgba(180, 150, 255, 0.30);
+          box-shadow: 0 0 40px rgba(120, 90, 220, 0.15);
+        }
+        .access-footer {
+          margin: 20px 0 0;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px;
+          color: rgba(255,255,255,0.25);
+          text-align: center;
         }
 
         /* ── Responsive ── */
@@ -1225,7 +1290,8 @@ export default function LandingPage() {
           .navigator-sapling svg { width:80px; height:160px; }
           .navigator-message { max-width:90vw; padding:24px 28px; }
           .navigator-message-text { font-size:14px; }
-          .access-form { max-width:320px; padding:0 24px; }
+          .access-card { margin:0 20px; padding:36px 28px; }
+          .access-title { font-size:28px; margin-bottom:24px; }
         }
       `}</style>
     </div>
