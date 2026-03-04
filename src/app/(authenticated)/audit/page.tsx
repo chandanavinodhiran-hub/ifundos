@@ -92,82 +92,128 @@ export default function AuditorHome() {
   const hasAnomaly = stats.anomaly !== null;
 
   return (
-    <div className="desktop:flex desktop:gap-8">
-      {/* ── Primary Zone ─────────────────────────────────────── */}
-      <div className="flex-1 min-w-0 space-y-5 desktop:max-w-[720px] pb-[100px] desktop:pb-0">
-        {/* Greeting + Vision 2030 watermark */}
-        <div className="relative mb-8 animate-in-1">
-          <p className="greeting-date">
+    <div className="desktop:grid desktop:gap-6" style={{ gridTemplateColumns: "1fr 360px" }}>
+      {/* ══════════ LEFT COLUMN ══════════ */}
+      <div className="min-w-0 space-y-5 auditor-home-scroll">
+        {/* Greeting */}
+        <div className="relative animate-in-1">
+          <p
+            className="hidden sm:block"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: 2.5,
+              color: "rgba(30, 34, 53, 0.4)",
+              marginBottom: 8,
+            }}
+          >
             {dayName}, {dateStr}
           </p>
-          <div className="mt-1">
-            <span className="greeting-prefix">{greeting},</span>{" "}
-            <span className="greeting-name greeting-underline">{firstName}</span>
+          <div
+            className="greeting-title"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 32,
+              fontWeight: 300,
+              color: "rgba(30, 34, 53, 0.85)",
+            }}
+          >
+            {greeting}, <span style={{ fontWeight: 400 }}>{firstName}</span>
           </div>
-          <p className="text-[13px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
+          <p
+            style={{
+              fontSize: 13,
+              color: "rgba(30, 34, 53, 0.5)",
+              marginTop: 2,
+            }}
+          >
             Internal Auditor · Saudi Green Initiative
           </p>
-          {/* Audit scope pill */}
+
+          {/* Monitoring pill — Fix #4: subtle background tint */}
           <div
-            className="inline-block mt-2 px-3 py-1.5 rounded-full text-[10px] font-medium"
+            className="inline-block mt-3"
             style={{
-              color: "var(--text-secondary)",
-              background: "var(--bg-dark)",
-              boxShadow: "var(--press)",
+              background: "rgba(92, 111, 181, 0.08)",
+              border: "1px solid rgba(92, 111, 181, 0.15)",
+              borderRadius: 20,
+              padding: "6px 14px",
+              fontSize: 12,
+              fontWeight: 500,
+              color: "rgba(30, 34, 53, 0.6)",
             }}
           >
             Monitoring {programCount} program · 1 fund manager
           </div>
         </div>
 
-        {/* Flags Strip — 3 standalone inset wells */}
+        {/* Stat Cards — Fix #3: inset neumorphism, left-aligned, full width */}
         <div className="grid grid-cols-3 gap-4 animate-in-2">
           {[
             {
               label: "ACTIVE FLAGS",
               value: stats.concordance.flagged,
-              color: stats.concordance.flagged > 0 ? "#9c4a4a" : "var(--text-primary)",
+              color: stats.concordance.flagged > 0 ? "#9c4a4a" : "rgba(30, 34, 53, 0.75)",
             },
             {
               label: "PENDING REVIEWS",
               value: stats.concordance.divergent,
-              color: stats.concordance.divergent > 0 ? "var(--accent)" : "var(--text-primary)",
+              color: stats.concordance.divergent > 0 ? "#5C6FB5" : "rgba(30, 34, 53, 0.75)",
             },
             {
               label: "DECISIONS",
               value: stats.decisionsThisWeek,
-              color: "var(--text-primary)",
+              color: "rgba(30, 34, 53, 0.75)",
             },
           ].map((well) => (
             <div
               key={well.label}
-              className="p-5 text-center rounded-[18px]"
               style={{
-                background: "rgba(228,231,238,0.5)",
-                boxShadow: "inset 8px 8px 20px rgba(155,161,180,0.35), inset -8px -8px 20px rgba(255,255,255,0.7)",
+                padding: "16px 12px",
+                borderRadius: 18,
+                background: "rgba(228, 231, 238, 0.5)",
+                boxShadow:
+                  "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+                textAlign: "center",
               }}
             >
               <AnimatedCounter
                 end={well.value}
                 duration={1000}
-                className="font-display font-light text-[36px] leading-none tabular-nums"
-                style={{ color: well.color }}
+                style={{
+                  display: "block",
+                  fontSize: 36,
+                  fontWeight: 300,
+                  lineHeight: 1,
+                  color: well.color,
+                }}
               />
-              <p className="text-eyebrow mt-1">
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: 2.5,
+                  color: "rgba(30, 34, 53, 0.5)",
+                  lineHeight: 1,
+                  marginTop: 8,
+                }}
+              >
                 {well.label}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Anomaly Card — with corner seal */}
+        {/* Anomaly Card — Fix #1: inset neumorphism when no anomaly */}
         {hasAnomaly ? (
           <DynamicShadowCard onClick={() => router.push("/audit/decisions")} intensity={2} className="animate-in-3">
             <div
-              className="relative rounded-[18px] p-4 accent-left-amber cursor-pointer overflow-hidden"
+              className="relative rounded-[18px] p-4 cursor-pointer overflow-hidden"
               style={{
                 background: "var(--bg-light)",
                 boxShadow: "var(--raise)",
+                borderLeft: "3px solid rgba(184, 122, 63, 0.4)",
               }}
               onClick={() => router.push("/audit/decisions")}
             >
@@ -175,8 +221,8 @@ export default function AuditorHome() {
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{
-                    background: "var(--bg-dark)",
-                    boxShadow: "var(--press)",
+                    background: "rgba(228, 231, 238, 0.5)",
+                    boxShadow: "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
                   }}
                 >
                   <Diamond className="w-5 h-5" style={{ color: "#b87a3f" }} />
@@ -200,45 +246,47 @@ export default function AuditorHome() {
             </div>
           </DynamicShadowCard>
         ) : (
-          <DynamicShadowCard intensity={1} className="animate-in-3">
-            <div
-              className="relative rounded-[18px] p-4 accent-left-green"
-              style={{
-                background: "var(--bg-light)",
-                boxShadow: "var(--raise)",
-              }}
-            >
-              <div className="flex gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{
-                    background: "var(--bg-dark)",
-                    boxShadow: "var(--press)",
-                  }}
-                >
-                  <CheckCircle className="w-5 h-5" style={{ color: "#5CA03E" }} />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>
-                    No anomalies detected
-                  </h3>
-                  <p className="text-[13px] mt-1 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    All {stats.decisionsThisWeek} decisions this week aligned with AI recommendations.
-                  </p>
-                </div>
+          <div
+            className="animate-in-3"
+            style={{
+              borderRadius: 18,
+              padding: 16,
+              background: "rgba(228, 231, 238, 0.5)",
+              boxShadow:
+                "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+              borderLeft: "3px solid rgba(92, 160, 62, 0.3)",
+            }}
+          >
+            <div className="flex gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{
+                  background: "rgba(92, 160, 62, 0.08)",
+                  borderRadius: 12,
+                }}
+              >
+                <CheckCircle className="w-5 h-5" style={{ color: "#5CA03E" }} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                  No anomalies detected
+                </h3>
+                <p style={{ fontSize: 13, marginTop: 4, lineHeight: 1.6, color: "var(--text-secondary)" }}>
+                  All {stats.decisionsThisWeek} decisions this week aligned with AI recommendations.
+                </p>
               </div>
             </div>
-          </DynamicShadowCard>
+          </div>
         )}
 
         {/* Activity Stream — mobile/tablet only */}
-        <div className="desktop:hidden activity-zone">
+        <div className="desktop:hidden">
           <ActivityStream actions={stats.platformActions} router={router} />
         </div>
       </div>
 
-      {/* ── Side Zone (desktop only) ─────────────────────────── */}
-      <div className="hidden desktop:block desktop:w-[340px] desktop:shrink-0 desktop:sticky desktop:top-0 desktop:self-start space-y-5 pt-1 activity-zone">
+      {/* ══════════ RIGHT COLUMN — Activity Stream (desktop only) ══════════ */}
+      <div className="hidden desktop:block desktop:self-start desktop:sticky desktop:top-0">
         <ActivityStream actions={stats.platformActions} router={router} />
       </div>
     </div>
@@ -246,23 +294,46 @@ export default function AuditorHome() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Activity Stream subcomponent                                        */
+/* Activity Stream subcomponent — Fix #5 possessive, Fix #6 polish    */
 /* ------------------------------------------------------------------ */
 function ActivityStream({ actions, router }: { actions: PlatformAction[]; router: ReturnType<typeof useRouter> }) {
   return (
-    <div className="activity-stream-card">
-      <h2 className="activity-zone-title mb-4">
-        Activity Stream
+    <div
+      style={{
+        borderRadius: 20,
+        padding: 20,
+        background: "rgba(255, 255, 255, 0.45)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: "1px solid rgba(255, 255, 255, 0.6)",
+        boxShadow: "0 4px 16px rgba(30, 34, 53, 0.06)",
+      }}
+    >
+      <h2
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: 2.5,
+          color: "rgba(30, 34, 53, 0.55)",
+          marginBottom: 14,
+        }}
+      >
+        ACTIVITY STREAM
       </h2>
-      <div className="activity-stream-scroll relative">
-        <div className="activity-stream-list">
+      <div className="relative" style={{ maxHeight: 420, overflowY: "auto" }}>
+        <div>
           {actions.slice(0, 20).map((pa, idx) => (
             <button
               key={pa.id}
               className="w-full flex items-start gap-3 cursor-pointer text-left"
               style={{
-                padding: "13px 0",
+                padding: "10px 0",
                 borderBottom: idx < Math.min(actions.length, 20) - 1 ? "1px solid rgba(30,34,53,0.06)" : "none",
+                background: "none",
+                border: idx < Math.min(actions.length, 20) - 1 ? undefined : "none",
+                borderTop: "none",
+                borderLeft: "none",
+                borderRight: "none",
               }}
               onClick={() => {
                 if (pa.action.includes("Scored") || pa.action.includes("Shortlisted") || pa.action.includes("Rejected") || pa.action.includes("Reviewing")) {
@@ -273,25 +344,58 @@ function ActivityStream({ actions, router }: { actions: PlatformAction[]; router
               }}
             >
               <span
-                className="w-2 h-2 rounded-full shrink-0 mt-1.5"
-                style={{ background: actionDotColor(pa.actorRole) }}
+                className="shrink-0"
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: actionDotColor(pa.actorRole),
+                  marginTop: 5,
+                }}
               />
-              <span className="flex-1 min-w-0 activity-zone-event leading-snug">
+              <span
+                className="flex-1 min-w-0"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 400,
+                  lineHeight: 1.5,
+                  color: "rgba(30, 34, 53, 0.75)",
+                }}
+              >
                 {pa.actor} — {pa.action}
               </span>
-              <span className="activity-zone-time shrink-0 whitespace-nowrap">
+              <span
+                className="shrink-0 whitespace-nowrap"
+                style={{
+                  fontSize: 12,
+                  fontWeight: 400,
+                  color: "rgba(30, 34, 53, 0.35)",
+                }}
+              >
                 {relativeTime(pa.timestamp)}
               </span>
             </button>
           ))}
           {(!actions || actions.length === 0) && (
-            <p className="text-[13px] py-6 text-center" style={{ color: "var(--text-tertiary)" }}>
+            <p style={{ fontSize: 13, padding: "24px 0", textAlign: "center", color: "var(--text-tertiary)" }}>
               No recent activity
             </p>
           )}
         </div>
-        {/* Bottom fade gradient for overflow */}
-        <div className="activity-stream-fade" />
+        {/* Bottom fade gradient for scroll hint */}
+        {actions.length > 8 && (
+          <div
+            style={{
+              position: "sticky",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 32,
+              background: "linear-gradient(transparent, rgba(255, 255, 255, 0.85))",
+              pointerEvents: "none",
+            }}
+          />
+        )}
       </div>
     </div>
   );

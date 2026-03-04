@@ -500,7 +500,7 @@ export async function GET() {
           id: `${app.id}-review`,
           actor: fmName,
           actorRole: "FUND_MANAGER",
-          action: `Reviewing ${app.organization.name}'s application`,
+          action: `Reviewing application from ${app.organization.name}`,
           timestamp: app.updatedAt.toISOString(),
         });
       }

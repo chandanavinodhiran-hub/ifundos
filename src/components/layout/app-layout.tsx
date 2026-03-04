@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { TabBar, FM_TABS, CONTRACTOR_TABS, AUDITOR_TABS, ADMIN_TABS } from "./tab-bar";
@@ -15,11 +16,21 @@ import { AmbientCaustics } from "@/components/ambient-caustics";
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const mainRef = useRef<HTMLElement>(null);
   const isFundManager = session?.user?.role === "FUND_MANAGER";
   const isContractor = session?.user?.role === "CONTRACTOR";
   const isAuditor = session?.user?.role === "AUDITOR";
   const isAdmin = session?.user?.role === "ADMIN";
   const useTabBarNav = isFundManager || isContractor || isAuditor || isAdmin;
+
+  /* Scroll main container to top on route change — mobile only */
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1200;
+    if (isMobile && mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [pathname]);
 
   return (
     <NavigatorProvider>
@@ -31,7 +42,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} disableMobileDrawer={useTabBarNav} />
         <div className="flex flex-col flex-1 overflow-hidden min-w-0">
           <Topbar onMenuToggle={() => setSidebarOpen(true)} />
-          <main className={cn(
+          <main ref={mainRef} className={cn(
             "flex-1 overflow-y-auto p-4 md:p-6 desktop:px-8 desktop:pt-6 desktop:pb-10 relative main-vignette",
             useTabBarNav && "pb-safe desktop:pb-10"
           )}>

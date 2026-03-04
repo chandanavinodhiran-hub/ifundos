@@ -3210,6 +3210,11 @@ body { padding-top: env(safe-area-inset-top); }
     margin-bottom: 20px !important;
   }
 
+  /* ── Auditor pages — tab bar clearance (mobile only) ── */
+  .auditor-home-scroll {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+  }
+
   /* ── Navigator Bottom Sheet — frosted top edge (mobile) ── */
   .navigator-bottom-sheet {
     border-top: 1px solid rgba(92, 111, 181, 0.15) !important;
