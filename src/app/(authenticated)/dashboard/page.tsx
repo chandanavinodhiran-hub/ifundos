@@ -691,7 +691,7 @@ export default function FundManagerDashboard() {
       </div>
 
       {/* ── Stat Cards — show skeleton or real data independently ── */}
-      <div className="grid grid-cols-2 desktop:grid-cols-4 gap-[14px] mb-6 animate-in-4">
+      <div className="grid grid-cols-2 desktop:grid-cols-4 gap-[14px] mt-5 mb-6 animate-in-4">
         {stats === null ? (
           /* Skeleton placeholders */
           <>
