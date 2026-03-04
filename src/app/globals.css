@@ -2987,17 +2987,17 @@ body { padding-top: env(safe-area-inset-top); }
    MOBILE RESPONSIVE — iPhone 14/15 (390px) & Pro Max (430px)
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  /* ── Login bottom-sheet layout ── */
+  /* ── Login card centered on mobile ── */
   .login-card-wrapper {
-    align-items: flex-end !important;
-    justify-content: stretch !important;
-    padding: 0 16px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
   }
   .login-card-wrapper .forest-card-in {
     width: 100% !important;
     max-width: 100% !important;
-    border-radius: 24px 24px 0 0 !important;
-    padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 24px !important;
+    padding: 24px !important;
   }
   /* Tighten emblem-to-title gap */
   .login-card-wrapper .forest-card-in .forest-fade-in:first-child {
