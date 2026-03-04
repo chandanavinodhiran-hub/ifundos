@@ -272,9 +272,9 @@ export default function ContractorHome() {
         }}
       />
 
-      <div className="relative contractor-home-scroll" style={{ zIndex: 1, paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px) + 16px)" }}>
-        {/* Full-width greeting row — 20px gap to next section */}
-        <div className="animate-in-1" style={{ marginBottom: 20 }}>
+      <div className="relative contractor-home-scroll pb-0 desktop:pb-0" style={{ zIndex: 1 }}>
+        {/* Full-width greeting row */}
+        <div className="animate-in-1 mb-6">
           <p
             className="hidden sm:block"
             style={{
@@ -340,21 +340,21 @@ export default function ContractorHome() {
         <div className="desktop:flex desktop:gap-6">
 
           {/* ══════════ LEFT COLUMN (50%) ══════════ */}
-          <div className="desktop:w-1/2">
+          <div className="desktop:w-1/2 desktop:space-y-5">
 
             {/* ── Mobile order: App Status → Stats → Navigator Insight ── */}
             {/* ── Desktop order: Navigator Insight → Stats (left col), App Status → Activity (right col) ── */}
 
-            {/* Application Status Tracker — MOBILE FIRST (hidden desktop, shown in right col instead) */}
-            <div className="desktop:hidden" style={{ marginBottom: 16 }}>
+            {/* Application Status Tracker — MOBILE FIRST (hidden on desktop, shown in right col instead) */}
+            <div className="desktop:hidden contractor-mobile-app-status">
               <ApplicationTracker
                 applications={stats.applications}
                 onNavigate={(href) => router.push(href)}
               />
             </div>
 
-            {/* Stat cards — inset neumorphism — 16px gap after app status, 20px gap before navigator */}
-            <div className="grid grid-cols-3 gap-3 animate-in-3 contractor-stat-grid" style={{ marginBottom: 20 }}>
+            {/* Stat cards — inset neumorphism */}
+            <div className="grid grid-cols-3 gap-3 animate-in-3 contractor-stat-grid">
               {[
                 { label: "ACTIVE", value: activeApps, isMoney: false },
                 { label: "CONTRACTS", value: stats.activeContracts, isMoney: false },

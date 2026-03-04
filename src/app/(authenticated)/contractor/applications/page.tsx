@@ -167,7 +167,7 @@ export default function ContractorApplicationsPage() {
   }
 
   return (
-    <div className="space-y-5 contractor-page-scroll" style={{ paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px) + 16px)" }}>
+    <div className="space-y-5 contractor-page-scroll">
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>

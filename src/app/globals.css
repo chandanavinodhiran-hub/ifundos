@@ -3191,12 +3191,23 @@ body { padding-top: env(safe-area-inset-top); }
     color: #5C6FB5 !important;
   }
 
-  /* ── Contractor pages — desktop resets (undo mobile padding) ── */
+  /* ── Contractor pages — tab bar clearance (mobile only) ── */
   .contractor-home-scroll {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important;
   }
   .contractor-page-scroll {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+  }
+
+  /* ── Contractor mobile spacing rhythm ── */
+  .contractor-home-scroll > .animate-in-1 {
+    margin-bottom: 20px !important;
+  }
+  .contractor-mobile-app-status {
+    margin-bottom: 16px !important;
+  }
+  .contractor-stat-grid {
+    margin-bottom: 20px !important;
   }
 
   /* ── Navigator Bottom Sheet — frosted top edge (mobile) ── */
@@ -3204,15 +3215,5 @@ body { padding-top: env(safe-area-inset-top); }
     border-top: 1px solid rgba(92, 111, 181, 0.15) !important;
     max-height: 85vh !important;
     border-radius: 20px 20px 0 0 !important;
-  }
-}
-
-/* ── Desktop resets — remove mobile padding overrides ── */
-@media (min-width: 1200px) {
-  .contractor-home-scroll {
-    padding-bottom: 0 !important;
-  }
-  .contractor-page-scroll {
-    padding-bottom: 0 !important;
   }
 }
