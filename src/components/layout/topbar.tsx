@@ -75,8 +75,8 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               <Menu className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
             </button>
           )}
-          {/* Logo: emblem + iFundOS text — all viewports */}
-          <div className="flex items-center gap-2">
+          {/* Logo: emblem + iFundOS text — mobile/tablet only (desktop has sidebar) */}
+          <div className="flex items-center gap-2 desktop:hidden">
             <Image
               src="/emblem.png"
               alt="iFundOS"
