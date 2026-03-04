@@ -94,17 +94,29 @@ export function NavigatorChat() {
 
       <div
         className={cn(
-          "fixed flex flex-col transition-transform duration-300 ease-out",
+          "fixed flex flex-col transition-transform duration-300 ease-out navigator-bottom-sheet",
           /* Desktop: side panel */
-          "md:top-0 md:right-0 md:w-[420px] md:h-full md:border-l md:border-sovereign-ink md:bg-sovereign-charcoal md:shadow-2xl md:shadow-black/40",
-          /* Mobile: full-screen dark charcoal */
-          "top-0 left-0 right-0 bottom-0 md:left-auto",
+          "md:top-0 md:right-0 md:w-[420px] md:h-full md:border-l md:border-sovereign-ink md:bg-sovereign-charcoal md:shadow-2xl md:shadow-black/40 md:rounded-none md:max-h-full",
+          /* Mobile: bottom sheet — anchored to bottom, 85vh max */
+          "left-0 right-0 bottom-0 md:left-auto",
           isOpen
-            ? "translate-x-0 md:translate-x-0 translate-y-0"
-            : "translate-x-full md:translate-x-full translate-y-full md:translate-y-0"
+            ? "translate-y-0 md:translate-x-0"
+            : "translate-y-full md:translate-y-0 md:translate-x-full"
         )}
-        style={{ background: "#1E2235", zIndex: 500 }}
+        style={{
+          background: "#1E2235",
+          zIndex: 500,
+          maxHeight: "85vh",
+          borderRadius: "20px 20px 0 0",
+        }}
       >
+        {/* Mobile drag handle */}
+        <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
+          <div
+            className="w-10 h-1 rounded-full"
+            style={{ background: "rgba(156, 160, 176, 0.4)" }}
+          />
+        </div>
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4 shrink-0"

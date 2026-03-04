@@ -2983,6 +2983,26 @@ body { padding-top: env(safe-area-inset-top); }
   }
 }
 
+/* ── Tab Bar Sapling — gentle breathing pulse ── */
+.tab-sapling-breathe {
+  animation: tabSaplingBreathe 3s ease-in-out infinite;
+}
+
+@keyframes tabSaplingBreathe {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    box-shadow: 0 -4px 12px rgba(155,161,180,0.2),
+                4px 4px 10px rgba(155,161,180,0.3),
+                -4px -4px 10px rgba(255,255,255,0.7);
+  }
+  50% {
+    transform: scale(1.04) translateY(-1px);
+    box-shadow: 0 -4px 16px rgba(155,161,180,0.25),
+                4px 4px 12px rgba(155,161,180,0.35),
+                -4px -4px 12px rgba(255,255,255,0.8);
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    MOBILE RESPONSIVE — iPhone 14/15 (390px) & Pro Max (430px)
    ═══════════════════════════════════════════════════════════════════ */
@@ -3019,7 +3039,7 @@ body { padding-top: env(safe-area-inset-top); }
 
   /* ── Briefing leaf icon — smaller on mobile ── */
   .briefing-leaf-caller {
-    transform: scale(0.7) !important;
+    transform: scale(0.8) !important;
     transform-origin: top right !important;
   }
   /* Hide "Daily Briefing" tooltip on mobile */
@@ -3079,5 +3099,12 @@ body { padding-top: env(safe-area-inset-top); }
   .stepper-mobile > div > div:first-child > p {
     font-size: 9px !important;
     margin-top: 4px !important;
+  }
+
+  /* ── Navigator Bottom Sheet — frosted top edge (mobile) ── */
+  .navigator-bottom-sheet {
+    border-top: 1px solid rgba(92, 111, 181, 0.15) !important;
+    max-height: 85vh !important;
+    border-radius: 20px 20px 0 0 !important;
   }
 }

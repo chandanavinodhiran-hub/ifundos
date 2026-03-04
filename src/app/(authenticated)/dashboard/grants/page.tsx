@@ -25,6 +25,7 @@ import {
   Camera,
   Plane,
   BarChart3,
+  TreePine,
 } from "lucide-react";
 import DynamicShadowCard from "@/components/DynamicShadowCard";
 
@@ -191,6 +192,28 @@ function ActiveGrantsInner() {
       .then((data) => setContracts(data.contracts || []))
       .catch(() => setError("Failed to load grants"))
       .finally(() => setLoading(false));
+  }, []);
+
+  /* Impact summary data (mobile Grants page) */
+  const [impactData, setImpactData] = useState<{
+    treesPlanted: number;
+    activeGrants: number;
+    completedGrants: number;
+    avgAiScore: number;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/impact")
+      .then((r) => r.json())
+      .then((data) => {
+        setImpactData({
+          treesPlanted: data.summary?.totalTreesPlanted ?? 0,
+          activeGrants: data.summary?.activeContracts ?? 0,
+          completedGrants: data.summary?.completedContracts ?? 0,
+          avgAiScore: data.applicationStats?.avgScore ?? 0,
+        });
+      })
+      .catch(() => { /* silent — impact section just won't show */ });
   }, []);
 
   /* Fetch evidence when a contract is selected */
@@ -415,6 +438,82 @@ function ActiveGrantsInner() {
               </DynamicShadowCard>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Impact Summary (mobile-only — embedded in Grants) ── */}
+      {impactData && (
+        <div className="mt-6 desktop:hidden animate-in-4">
+          {/* Divider */}
+          <div style={{ height: 1, background: "rgba(30, 34, 53, 0.08)", marginBottom: 16 }} />
+
+          {/* Section header */}
+          <p
+            className="mb-3"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: 2.5,
+              textTransform: "uppercase" as const,
+              color: "rgba(30, 34, 53, 0.5)",
+            }}
+          >
+            IMPACT SUMMARY
+          </p>
+
+          {/* Compact stat row */}
+          <div className="grid grid-cols-3 gap-2">
+            <DynamicShadowCard inset intensity={1} className="p-3 flex flex-col items-center justify-center">
+              <TreePine className="w-4 h-4 mb-1" style={{ color: "var(--accent-light, #7B8DC8)" }} />
+              <span style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(20px, 5vw, 28px)",
+                fontWeight: 300,
+                color: "#2C3044",
+              }}>
+                <AnimatedCounter end={impactData.treesPlanted} duration={1000} />
+              </span>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase" as const, color: "rgba(30,34,53,0.45)", marginTop: 2 }}>Trees Planted</span>
+            </DynamicShadowCard>
+
+            <DynamicShadowCard inset intensity={1} className="p-3 flex flex-col items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 mb-1" style={{ color: "var(--accent-light, #7B8DC8)" }} />
+              <span style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(20px, 5vw, 28px)",
+                fontWeight: 300,
+                color: "#2C3044",
+              }}>
+                <AnimatedCounter end={impactData.activeGrants} duration={1000} />
+              </span>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase" as const, color: "rgba(30,34,53,0.45)", marginTop: 2 }}>
+                Active ({impactData.completedGrants} done)
+              </span>
+            </DynamicShadowCard>
+
+            <DynamicShadowCard inset intensity={1} className="p-3 flex flex-col items-center justify-center">
+              <BarChart3 className="w-4 h-4 mb-1" style={{ color: "var(--accent-light, #7B8DC8)" }} />
+              <span style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(20px, 5vw, 28px)",
+                fontWeight: 300,
+                color: "#2C3044",
+              }}>
+                <AnimatedCounter end={impactData.avgAiScore} duration={1000} />
+              </span>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase" as const, color: "rgba(30,34,53,0.45)", marginTop: 2 }}>Avg AI Score</span>
+            </DynamicShadowCard>
+          </div>
+
+          {/* Full impact link */}
+          <button
+            onClick={() => router.push("/dashboard/impact")}
+            className="mt-3 w-full text-center text-xs font-semibold cursor-pointer transition-colors"
+            style={{ color: "var(--accent)", padding: "8px 0" }}
+          >
+            View full impact <ArrowRight className="w-3 h-3 inline ml-1" style={{ verticalAlign: "middle" }} />
+          </button>
         </div>
       )}
 

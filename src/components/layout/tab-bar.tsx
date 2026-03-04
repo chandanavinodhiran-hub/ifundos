@@ -103,32 +103,43 @@ export function TabBar({ tabs = FM_TABS, pendingCount = 0 }: TabBarProps) {
           const active = !tab.isOrb && isActive(tab.href);
           const Icon = tab.icon;
 
-          /* ── Navigator Orb (center tab) ── */
+          /* ── Navigator Sapling (center tab) ── */
           if (tab.isOrb) {
             return (
               <button
-                key="navigator-orb"
+                key="navigator-sapling"
                 onClick={() => handleTabClick(tab)}
                 className="relative flex flex-col items-center cursor-pointer"
-                style={{ marginTop: "-8px" }}
+                style={{ marginTop: "-14px" }}
               >
-                {/* Orbital ring wrapper */}
-                <div className="navigator-orb-wrapper">
-                  {/* The orb sphere */}
-                  <div className="navigator-orb">
-                    {/* Inner gradient core */}
-                    <div
-                      className="w-[10px] h-[10px] rounded-full relative z-[1]"
-                      style={{
-                        background: "radial-gradient(circle at 35% 35%, #A8B5DB, #7B8DC8)",
-                        boxShadow: "0 0 8px rgba(92,111,181,0.45)",
-                      }}
-                    />
-                  </div>
+                {/* Raised sapling container */}
+                <div
+                  className="tab-sapling-breathe w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: "var(--bg-light, #E4E7EE)",
+                    boxShadow:
+                      "0 -4px 12px rgba(155,161,180,0.2), 4px 4px 10px rgba(155,161,180,0.3), -4px -4px 10px rgba(255,255,255,0.7)",
+                    border: "1px solid rgba(255,255,255,0.5)",
+                  }}
+                >
+                  {/* Inline sapling SVG */}
+                  <svg width="28" height="32" viewBox="0 0 28 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Seed body */}
+                    <ellipse cx="14" cy="26" rx="5" ry="3.5" fill="rgba(95, 170, 100, 0.85)" />
+                    {/* Stem */}
+                    <path d="M14 22.5 C13.5 18 14.5 14 14 11" stroke="rgba(75, 145, 80, 0.80)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                    {/* Left leaf */}
+                    <path d="M14 12.5 C11 10.5 8 8.5 9 5.5 C10 3.5 13 4.5 14 7.5" fill="rgba(80, 160, 90, 0.85)" />
+                    {/* Right leaf */}
+                    <path d="M14 12.5 C17 10.5 20 9 19 6.5 C18 4.5 15 5 14 7.5" fill="rgba(80, 160, 90, 0.85)" />
+                    {/* Left leaf vein */}
+                    <path d="M14 8.5 C12 7.5 10.5 6 9.5 5.5" stroke="rgba(60, 130, 65, 0.4)" strokeWidth="0.5" fill="none" />
+                    {/* Right leaf vein */}
+                    <path d="M14 8.5 C16 7.5 17.5 6.5 18.5 6" stroke="rgba(60, 130, 65, 0.4)" strokeWidth="0.5" fill="none" />
+                  </svg>
                 </div>
                 <span
-                  key={pathname}
-                  className="text-[10px] font-semibold mt-1 orb-label-pulse"
+                  className="text-[10px] font-semibold mt-1"
                   style={{ color: "var(--accent)" }}
                 >
                   {tab.label}

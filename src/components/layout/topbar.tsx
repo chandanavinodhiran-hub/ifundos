@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
 import { roleLabels } from "@/lib/navigation";
-import { LogOut, Building2, Menu, Hexagon, Settings, Bell, ChevronRight } from "lucide-react";
+import { LogOut, Building2, Menu, Settings, Bell, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface TopbarProps {
@@ -74,14 +75,15 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               <Menu className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
             </button>
           )}
-          {/* Mobile + Tablet: show iFundOS logo */}
-          <div className="flex items-center gap-2 desktop:hidden">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "var(--accent)", boxShadow: "var(--raise-sm)" }}
-            >
-              <Hexagon className="w-4 h-4 text-white" />
-            </div>
+          {/* Logo: emblem + iFundOS text — all viewports */}
+          <div className="flex items-center gap-2">
+            <Image
+              src="/emblem.png"
+              alt="iFundOS"
+              width={28}
+              height={28}
+              style={{ width: 28, height: "auto", objectFit: "contain" }}
+            />
             <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>iFundOS</span>
           </div>
           {/* Desktop: show org name — DM Sans 11px subtle */}

@@ -517,7 +517,7 @@ export default function FundManagerDashboard() {
     <>
     <div className="max-w-[1200px] mx-auto stagger-children page-enter">
       {/* ── Greeting — renders instantly, no data needed ────────── */}
-      <div className="relative animate-in-1" style={{ paddingTop: 8, marginBottom: 24 }}>
+      <div className="relative animate-in-1" style={{ paddingTop: 8, marginBottom: 20 }}>
         <div className="flex items-start justify-between">
           <div
             className="greeting-title"
@@ -602,7 +602,7 @@ export default function FundManagerDashboard() {
       </div>
 
       {/* ── Decision CTA cards — show skeleton while loading ───── */}
-      <div className="space-y-3 mb-5 animate-in-2">
+      <div className="space-y-3 animate-in-2" style={{ marginBottom: 24 }}>
         {stats === null ? (
           /* Show 1 skeleton CTA placeholder while loading */
           <CTASkeleton />
@@ -691,7 +691,7 @@ export default function FundManagerDashboard() {
       </div>
 
       {/* ── Stat Cards — show skeleton or real data independently ── */}
-      <div className="grid grid-cols-2 desktop:grid-cols-4 gap-3 mb-6 mt-5 animate-in-4">
+      <div className="grid grid-cols-2 desktop:grid-cols-4 gap-[14px] mb-6 animate-in-4">
         {stats === null ? (
           /* Skeleton placeholders */
           <>
@@ -1188,7 +1188,7 @@ function MicroRiverChannel({ variant = "empty", fillPercent = 0, intense = false
         pointerEvents: "none",
       }}
     >
-      <canvas ref={canvasRef} style={{ display: "block" }} />
+      <canvas ref={canvasRef} style={{ display: "block", borderRadius: "0 0 18px 18px" }} />
     </div>
   );
 }
