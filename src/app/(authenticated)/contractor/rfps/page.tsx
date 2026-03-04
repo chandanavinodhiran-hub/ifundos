@@ -168,7 +168,7 @@ export default function BrowseRFPsPage() {
   }
 
   return (
-    <div className="space-y-5 pb-[100px] md:pb-0">
+    <div className="space-y-5 contractor-page-scroll" style={{ paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px) + 16px)" }}>
       {/* Header */}
       <div>
         <p

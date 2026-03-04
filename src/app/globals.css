@@ -3092,7 +3092,7 @@ body { padding-top: env(safe-area-inset-top); }
     width: 100% !important;
   }
 
-  /* ── Contractor stepper compact ── */
+  /* ── Contractor stepper compact (LEGACY — replaced by app-status overrides) ── */
   .stepper-mobile > div > div:first-child > div:first-child {
     transform: scale(0.75);
   }
@@ -3101,10 +3101,118 @@ body { padding-top: env(safe-area-inset-top); }
     margin-top: 4px !important;
   }
 
+  /* ═══════════════════════════════════════════════════════════════════
+     CONTRACTOR MOBILE — App Status, Stat Cards, Navigator Insight
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── Application Status card — compact mobile ── */
+  .app-status-card {
+    padding: 16px !important;
+  }
+  .app-status-label {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 10px !important;
+  }
+  .app-status-title {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Stepper dots — 20px uniform on mobile */
+  .app-stepper-dot {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .app-stepper-dot svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .app-stepper-dot > div {
+    width: 6px !important;
+    height: 6px !important;
+  }
+  .app-stepper-line {
+    top: 10px !important;
+  }
+  .app-stepper-label {
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    margin-top: 6px !important;
+  }
+
+  /* AI Score ring — 56px on mobile */
+  .app-score-ring {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .app-score-number {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+
+  /* ── Stat cards — equal height, tighter padding ── */
+  .contractor-stat-card {
+    padding: 12px 8px !important;
+  }
+  .contractor-stat-label {
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 6px !important;
+  }
+  .contractor-stat-number {
+    font-size: 28px !important;
+    font-weight: 300 !important;
+  }
+
+  /* ── Navigator Insight — compact below fold ── */
+  .contractor-insight-card {
+    padding: 14px !important;
+  }
+  .contractor-insight-card .contractor-insight-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .contractor-insight-label {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: 2px !important;
+  }
+  .contractor-insight-body {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+  }
+  .contractor-insight-cta {
+    font-size: 13px !important;
+    color: #5C6FB5 !important;
+  }
+
+  /* ── Contractor pages — desktop resets (undo mobile padding) ── */
+  .contractor-home-scroll {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+  }
+  .contractor-page-scroll {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+  }
+
   /* ── Navigator Bottom Sheet — frosted top edge (mobile) ── */
   .navigator-bottom-sheet {
     border-top: 1px solid rgba(92, 111, 181, 0.15) !important;
     max-height: 85vh !important;
     border-radius: 20px 20px 0 0 !important;
+  }
+}
+
+/* ── Desktop resets — remove mobile padding overrides ── */
+@media (min-width: 1200px) {
+  .contractor-home-scroll {
+    padding-bottom: 0 !important;
+  }
+  .contractor-page-scroll {
+    padding-bottom: 0 !important;
   }
 }

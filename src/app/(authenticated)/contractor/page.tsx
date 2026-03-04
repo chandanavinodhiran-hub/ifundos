@@ -272,9 +272,9 @@ export default function ContractorHome() {
         }}
       />
 
-      <div className="relative pb-[100px] desktop:pb-0" style={{ zIndex: 1 }}>
-        {/* Full-width greeting row */}
-        <div className="animate-in-1 mb-6">
+      <div className="relative contractor-home-scroll" style={{ zIndex: 1, paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px) + 16px)" }}>
+        {/* Full-width greeting row — 20px gap to next section */}
+        <div className="animate-in-1" style={{ marginBottom: 20 }}>
           <p
             className="hidden sm:block"
             style={{
@@ -303,7 +303,7 @@ export default function ContractorHome() {
             style={{
               fontSize: 14,
               fontWeight: 400,
-              color: "rgba(30, 34, 53, 0.4)",
+              color: "rgba(30, 34, 53, 0.5)",
               marginTop: 4,
             }}
           >
@@ -340,19 +340,81 @@ export default function ContractorHome() {
         <div className="desktop:flex desktop:gap-6">
 
           {/* ══════════ LEFT COLUMN (50%) ══════════ */}
-          <div className="desktop:w-1/2 space-y-5">
+          <div className="desktop:w-1/2">
 
-            {/* Navigator Insight / Pulse */}
+            {/* ── Mobile order: App Status → Stats → Navigator Insight ── */}
+            {/* ── Desktop order: Navigator Insight → Stats (left col), App Status → Activity (right col) ── */}
+
+            {/* Application Status Tracker — MOBILE FIRST (hidden desktop, shown in right col instead) */}
+            <div className="desktop:hidden" style={{ marginBottom: 16 }}>
+              <ApplicationTracker
+                applications={stats.applications}
+                onNavigate={(href) => router.push(href)}
+              />
+            </div>
+
+            {/* Stat cards — inset neumorphism — 16px gap after app status, 20px gap before navigator */}
+            <div className="grid grid-cols-3 gap-3 animate-in-3 contractor-stat-grid" style={{ marginBottom: 20 }}>
+              {[
+                { label: "ACTIVE", value: activeApps, isMoney: false },
+                { label: "CONTRACTS", value: stats.activeContracts, isMoney: false },
+                { label: "PENDING", value: stats.totalReceived, isMoney: true },
+              ].map((well) => (
+                <div
+                  key={well.label}
+                  className="contractor-stat-card"
+                  style={{
+                    padding: "16px 12px",
+                    borderRadius: 18,
+                    background: "rgba(228, 231, 238, 0.5)",
+                    boxShadow:
+                      "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+                    textAlign: "center",
+                  }}
+                >
+                  <p
+                    className="contractor-stat-label"
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      letterSpacing: 2.5,
+                      color: "rgba(30, 34, 53, 0.5)",
+                      lineHeight: 1,
+                      marginBottom: 8,
+                    }}
+                  >
+                    {well.label}
+                  </p>
+                  <p
+                    className="contractor-stat-number"
+                    style={{
+                      fontSize: "clamp(22px, 5.5vw, 32px)",
+                      fontWeight: 300,
+                      color: "rgba(30, 34, 53, 0.75)",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {well.isMoney ? formatSAR(well.value) : <AnimatedCounter end={well.value} duration={800} />}
+                  </p>
+                  {/* SAR subtitle — desktop only */}
+                  {well.isMoney && (
+                    <p className="hidden desktop:block" style={{ fontSize: 11, color: "rgba(30, 34, 53, 0.4)", marginTop: 4 }}>SAR</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Navigator Insight / Pulse — now BELOW stats on mobile */}
             {pulse ? (
-              <DynamicShadowCard onClick={() => router.push(pulse.href)} intensity={2} className="animate-in-2">
+              <DynamicShadowCard onClick={() => router.push(pulse.href)} intensity={2} className="animate-in-2 contractor-insight-card">
                 <Card
                   variant="neu-raised"
-                  className={`p-5 cursor-pointer action-card ${pulse.accent} relative overflow-hidden`}
+                  className={`p-5 cursor-pointer action-card ${pulse.accent} relative overflow-hidden contractor-insight-inner`}
                   onClick={() => router.push(pulse.href)}
                 >
                   <div className="flex items-start gap-3 relative z-[1]">
                     <div className="shrink-0 mt-0.5">
-                      <pulse.icon className="w-5 h-5" style={{ color: pulse.iconColor }} />
+                      <pulse.icon className="w-5 h-5 contractor-insight-icon" style={{ color: pulse.iconColor }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-bold leading-snug" style={{ color: "var(--text-primary)" }}>
@@ -368,7 +430,7 @@ export default function ContractorHome() {
               </DynamicShadowCard>
             ) : (
               <div
-                className="animate-in-2"
+                className="animate-in-2 contractor-insight-card"
                 style={{
                   padding: 24,
                   borderRadius: 20,
@@ -396,12 +458,14 @@ export default function ContractorHome() {
                     <div className="sapling-stem-flex">
                       <canvas
                         ref={saplingCanvasRef}
+                        className="contractor-insight-icon"
                         style={{ display: "block", pointerEvents: "none", width: 28, height: 28 }}
                       />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
+                      className="contractor-insight-label"
                       style={{
                         fontSize: 10,
                         fontWeight: 600,
@@ -414,6 +478,7 @@ export default function ContractorHome() {
                       Navigator Insight
                     </p>
                     <p
+                      className="contractor-insight-body"
                       style={{
                         fontSize: 14,
                         fontWeight: 400,
@@ -438,23 +503,23 @@ export default function ContractorHome() {
                     {stats.openRfps > 0 && (
                       <button
                         onClick={() => router.push("/contractor/rfps")}
-                        className="cursor-pointer inline-flex items-center gap-1"
+                        className="cursor-pointer inline-flex items-center gap-1 contractor-insight-cta"
                         style={{
                           fontSize: 13,
                           fontWeight: 500,
-                          color: "rgba(74, 140, 106, 0.7)",
+                          color: "#5C6FB5",
                           background: "none",
                           border: "none",
                           padding: 0,
                           transition: "color 0.2s",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.color = "rgba(74, 140, 106, 0.9)";
+                          e.currentTarget.style.color = "rgba(92, 111, 181, 0.9)";
                           const arrow = e.currentTarget.querySelector(".insight-arrow") as HTMLElement;
                           if (arrow) arrow.style.transform = "translateX(2px)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.color = "rgba(74, 140, 106, 0.7)";
+                          e.currentTarget.style.color = "#5C6FB5";
                           const arrow = e.currentTarget.querySelector(".insight-arrow") as HTMLElement;
                           if (arrow) arrow.style.transform = "translateX(0)";
                         }}
@@ -473,76 +538,18 @@ export default function ContractorHome() {
               </div>
             )}
 
-            {/* Stat cards — inset neumorphism */}
-            <div className="grid grid-cols-3 gap-3 animate-in-3">
-              {[
-                { label: "ACTIVE", value: activeApps, isMoney: false },
-                { label: "CONTRACTS", value: stats.activeContracts, isMoney: false },
-                { label: "PENDING", value: stats.totalReceived, isMoney: true },
-              ].map((well) => (
-                <div
-                  key={well.label}
-                  style={{
-                    padding: "16px 12px",
-                    borderRadius: 18,
-                    background: "rgba(228, 231, 238, 0.5)",
-                    boxShadow:
-                      "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
-                    textAlign: "center",
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      letterSpacing: 2.5,
-                      color: "rgba(30, 34, 53, 0.5)",
-                      lineHeight: 1,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {well.label}
-                  </p>
-                  {well.isMoney ? (
-                    <>
-                      <p
-                        style={{
-                          fontSize: "clamp(22px, 5.5vw, 32px)",
-                          fontWeight: 300,
-                          color: "rgba(30, 34, 53, 0.75)",
-                          lineHeight: 1,
-                        }}
-                      >
-                        {formatSAR(well.value)}
-                      </p>
-                      <p style={{ fontSize: 11, color: "rgba(30, 34, 53, 0.4)", marginTop: 4 }}>SAR</p>
-                    </>
-                  ) : (
-                    <p
-                      style={{
-                        fontSize: "clamp(22px, 5.5vw, 32px)",
-                        fontWeight: 300,
-                        color: "rgba(30, 34, 53, 0.75)",
-                        lineHeight: 1,
-                      }}
-                    >
-                      <AnimatedCounter end={well.value} duration={800} />
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-
           </div>
 
           {/* ══════════ RIGHT COLUMN (50%) ══════════ */}
           <div className="desktop:w-1/2 space-y-5 mt-5 desktop:mt-0">
 
-            {/* Application Status Tracker */}
-            <ApplicationTracker
-              applications={stats.applications}
-              onNavigate={(href) => router.push(href)}
-            />
+            {/* Application Status Tracker — DESKTOP only (mobile shows in left col above) */}
+            <div className="hidden desktop:block">
+              <ApplicationTracker
+                applications={stats.applications}
+                onNavigate={(href) => router.push(href)}
+              />
+            </div>
 
             {/* Recent Activity */}
             {timeline.length > 0 && (
@@ -641,7 +648,7 @@ function ApplicationTracker({
 
   return (
     <div
-      className="animate-in-2 cursor-pointer"
+      className="animate-in-2 cursor-pointer app-status-card"
       onClick={() => onNavigate("/contractor/applications")}
       style={{
         padding: 20,
@@ -667,6 +674,7 @@ function ApplicationTracker({
     >
       {/* Header */}
       <p
+        className="app-status-label"
         style={{
           fontSize: 10,
           fontWeight: 600,
@@ -681,6 +689,7 @@ function ApplicationTracker({
 
       {/* Project title */}
       <p
+        className="app-status-title"
         style={{
           fontSize: 14,
           fontWeight: 500,
@@ -693,18 +702,18 @@ function ApplicationTracker({
       </p>
 
       {/* Progress tracker — horizontal steps */}
-      <div className="flex items-start gap-0 stepper-mobile" style={{ marginBottom: 20 }}>
+      <div className="flex items-start gap-0 app-status-stepper" style={{ marginBottom: 20 }}>
         {TRACKER_STEPS.map((step, i) => {
           const isCompleted = i < currentStep;
           const isCurrent = i === currentStep;
           const isFuture = i > currentStep;
-          const dotSize = isCompleted ? 30 : isCurrent ? 34 : 24;
 
           return (
             <div key={step} className="flex-1 flex flex-col items-center" style={{ position: "relative" }}>
               {/* Connector line (before dot, except first) */}
               {i > 0 && (
                 <div
+                  className="app-stepper-line"
                   style={{
                     position: "absolute",
                     top: 15,
@@ -720,12 +729,12 @@ function ApplicationTracker({
                 />
               )}
 
-              {/* Dot */}
+              {/* Dot — 20px on mobile, larger on desktop */}
               <div
-                className={isCurrent ? "tracker-dot-pulse" : undefined}
+                className={`app-stepper-dot ${isCurrent ? "tracker-dot-pulse" : ""} ${isCompleted ? "is-completed" : ""} ${isFuture ? "is-future" : ""}`}
                 style={{
-                  width: dotSize,
-                  height: dotSize,
+                  width: isCompleted ? 30 : isCurrent ? 34 : 24,
+                  height: isCompleted ? 30 : isCurrent ? 34 : 24,
                   borderRadius: "50%",
                   position: "relative",
                   zIndex: 1,
@@ -746,15 +755,15 @@ function ApplicationTracker({
                 }}
               >
                 {isCompleted && (
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8.5L6.5 12L13 4" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
                 {isCurrent && (
                   <div
                     style={{
-                      width: 10,
-                      height: 10,
+                      width: 8,
+                      height: 8,
                       borderRadius: "50%",
                       background: "rgba(75, 165, 195, 0.8)",
                     }}
@@ -763,8 +772,8 @@ function ApplicationTracker({
                 {isFuture && (
                   <div
                     style={{
-                      width: 8,
-                      height: 8,
+                      width: 6,
+                      height: 6,
                       borderRadius: "50%",
                       background: "rgba(30, 34, 53, 0.12)",
                     }}
@@ -774,6 +783,7 @@ function ApplicationTracker({
 
               {/* Label */}
               <p
+                className="app-stepper-label"
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
@@ -797,8 +807,9 @@ function ApplicationTracker({
 
       {/* AI Score — teal circle outline */}
       {aiScore !== null && (
-        <div className="flex items-center gap-3" style={{ padding: "8px 0" }}>
+        <div className="flex items-center gap-3 app-score-row" style={{ padding: "8px 0" }}>
           <div
+            className="app-score-ring"
             style={{
               width: 52,
               height: 52,
@@ -812,6 +823,7 @@ function ApplicationTracker({
             }}
           >
             <span
+              className="app-score-number"
               style={{
                 fontSize: 28,
                 fontWeight: 500,
