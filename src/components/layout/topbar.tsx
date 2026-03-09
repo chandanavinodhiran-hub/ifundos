@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
 import { roleLabels } from "@/lib/navigation";
-import { LogOut, Building2, Menu, Settings, Bell, ChevronRight } from "lucide-react";
+import { LogOut, Building2, Menu, Settings, Bell, ChevronRight, UserCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface TopbarProps {
@@ -111,6 +112,20 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               {roleLabel}
             </span>
           </div>
+
+          {/* Mobile profile icon — contractor only, navigates to /contractor/profile */}
+          {isContractor && (
+            <Link
+              href="/contractor/profile"
+              className="desktop:hidden w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-shadow"
+              style={{
+                background: "var(--surface-light)",
+                boxShadow: "var(--raise-sm)",
+              }}
+            >
+              <UserCircle className="w-4 h-4" style={{ color: "var(--accent)" }} />
+            </Link>
+          )}
 
           {/* Avatar circle — raised */}
           <button

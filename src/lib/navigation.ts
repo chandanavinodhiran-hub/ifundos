@@ -11,6 +11,7 @@ import {
   Scale,
   Wallet,
   Landmark,
+  UserCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -34,6 +35,7 @@ export const roleNavigation: Record<string, NavItem[]> = {
     { label: "Opportunities", href: "/contractor/rfps", icon: Search },
     { label: "Applications", href: "/contractor/applications", icon: FileText },
     { label: "Contracts", href: "/contractor/contracts", icon: FolderKanban },
+    { label: "Profile", href: "/contractor/profile", icon: UserCircle },
   ],
   AUDITOR: [
     { label: "Home", href: "/audit", icon: LayoutDashboard },
