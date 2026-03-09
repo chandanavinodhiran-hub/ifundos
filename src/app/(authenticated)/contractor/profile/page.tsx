@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import {
   Shield,
@@ -47,13 +47,13 @@ function generateScramble(len: number): string {
   return s;
 }
 
-/* Visual variants so each ALIN field looks unique */
+/* Visual variants — each ALIN field shows a different texture region */
 const FIELD_VARIANTS = [
-  { shimmerDur: "6s",   sweepDur: "5s",   sweepDelay: "0s",   angle: "135deg" },
-  { shimmerDur: "7s",   sweepDur: "5.5s", sweepDelay: "1.2s", angle: "150deg" },
-  { shimmerDur: "5.5s", sweepDur: "4.8s", sweepDelay: "0.6s", angle: "125deg" },
-  { shimmerDur: "6.5s", sweepDur: "5.2s", sweepDelay: "1.8s", angle: "160deg" },
-  { shimmerDur: "5.8s", sweepDur: "4.5s", sweepDelay: "0.3s", angle: "140deg" },
+  { sweepDur: "4s",   sweepDelay: "0s",   hueAngle: "135deg", bgPos: "0% 20%" },
+  { sweepDur: "4.5s", sweepDelay: "0.8s", hueAngle: "160deg", bgPos: "25% 40%" },
+  { sweepDur: "3.8s", sweepDelay: "1.5s", hueAngle: "110deg", bgPos: "50% 60%" },
+  { sweepDur: "5s",   sweepDelay: "0.3s", hueAngle: "180deg", bgPos: "75% 30%" },
+  { sweepDur: "4.2s", sweepDelay: "2s",   hueAngle: "145deg", bgPos: "100% 50%" },
 ];
 
 type FieldPhase = "idle" | "blur" | "scramble" | "dissolve" | "done";
@@ -80,6 +80,9 @@ export default function ContractorProfilePage() {
   const scrambleRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  /* Canvas-generated ALIN texture data URL */
+  const [textureUrl, setTextureUrl] = useState<string | null>(null);
+
   /* Check localStorage for pre-encoded state (demo) */
   useEffect(() => {
     try {
@@ -88,6 +91,96 @@ export default function ContractorProfilePage() {
       /* SSR guard */
     }
   }, []);
+
+  /* ── Canvas texture generator — iridescent crumpled metal ────── */
+  const generateTexture = useCallback(() => {
+    const W = 800, H = 800;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    /* Dark base gradient */
+    const base = ctx.createLinearGradient(0, 0, W, H);
+    base.addColorStop(0, "#0d1117");
+    base.addColorStop(0.25, "#161b22");
+    base.addColorStop(0.5, "#0f1923");
+    base.addColorStop(0.75, "#1a2332");
+    base.addColorStop(1, "#0d1117");
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, W, H);
+
+    /* Iridescent color palette for wrinkle shapes */
+    const iridColors = [
+      "rgba(60, 180, 180, 0.08)",   // teal
+      "rgba(120, 80, 160, 0.07)",   // purple
+      "rgba(160, 120, 60, 0.06)",   // bronze
+      "rgba(40, 160, 120, 0.08)",   // sea green
+      "rgba(80, 120, 200, 0.07)",   // blue
+      "rgba(180, 60, 120, 0.05)",   // magenta
+      "rgba(60, 200, 160, 0.06)",   // mint
+      "rgba(100, 80, 180, 0.07)",   // indigo
+    ];
+
+    /* Layer 1: 120 random radial "wrinkle" blobs */
+    for (let i = 0; i < 120; i++) {
+      const cx = Math.random() * W;
+      const cy = Math.random() * H;
+      const rx = 30 + Math.random() * 120;
+      const ry = 20 + Math.random() * 80;
+      const color = iridColors[Math.floor(Math.random() * iridColors.length)];
+
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, "transparent");
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, Math.random() * Math.PI, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /* Layer 2: Specular highlight strokes — crumpled metal ridges */
+    ctx.globalCompositeOperation = "screen";
+    for (let i = 0; i < 60; i++) {
+      const x1 = Math.random() * W;
+      const y1 = Math.random() * H;
+      const x2 = x1 + (Math.random() - 0.5) * 200;
+      const y2 = y1 + (Math.random() - 0.5) * 200;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(
+        x1 + (Math.random() - 0.5) * 100,
+        y1 + (Math.random() - 0.5) * 100,
+        x2, y2
+      );
+      ctx.strokeStyle = `rgba(${180 + Math.random() * 75}, ${200 + Math.random() * 55}, ${220 + Math.random() * 35}, ${0.02 + Math.random() * 0.04})`;
+      ctx.lineWidth = 0.5 + Math.random() * 1.5;
+      ctx.stroke();
+    }
+    ctx.globalCompositeOperation = "source-over";
+
+    /* Layer 3: Subtle noise grain */
+    const imageData = ctx.getImageData(0, 0, W, H);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 8;
+      data[i] += noise;
+      data[i + 1] += noise;
+      data[i + 2] += noise;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    setTextureUrl(canvas.toDataURL("image/jpeg", 0.85));
+  }, []);
+
+  useEffect(() => {
+    generateTexture();
+  }, [generateTexture]);
 
   /* ── Encoding animation orchestrator ────────────────────────── */
   useEffect(() => {
@@ -238,9 +331,11 @@ export default function ContractorProfilePage() {
   function alinFieldVars(variantIndex: number): React.CSSProperties {
     const v = FIELD_VARIANTS[variantIndex];
     return {
-      ["--shimmer-dur" as string]: v.shimmerDur,
+      ["--alin-texture" as string]: textureUrl ? `url(${textureUrl})` : "none",
+      ["--bg-pos" as string]: v.bgPos,
       ["--sweep-dur" as string]: v.sweepDur,
       ["--sweep-delay" as string]: v.sweepDelay,
+      ["--hue-angle" as string]: v.hueAngle,
     };
   }
 

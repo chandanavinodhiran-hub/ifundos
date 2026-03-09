@@ -3273,32 +3273,17 @@ body { padding-top: env(safe-area-inset-top); }
   to   { opacity: 1; max-height: 800px; transform: translateY(0); }
 }
 
-/* ── ALIN Encoded Field — Rich Iridescent Dark Effect ────────────── */
+/* ── ALIN Encoded Field — Texture-Based Iridescent Effect ────────── */
 .alin-field {
-  height: 48px;
+  height: 52px;
   border-radius: 12px;
   position: relative;
   overflow: hidden;
 
-  /* Multi-layered iridescent background */
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(15, 52, 96, 0.8) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 50%, rgba(45, 64, 89, 0.8) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 0%, rgba(75, 165, 195, 0.15) 0%, transparent 40%),
-    radial-gradient(ellipse at 30% 100%, rgba(120, 80, 160, 0.1) 0%, transparent 40%),
-    linear-gradient(
-      135deg,
-      #0d1117 0%,
-      #161b22 15%,
-      #0f1923 30%,
-      #1a2332 45%,
-      #0d1117 55%,
-      #141d28 70%,
-      #0f1923 85%,
-      #0d1117 100%
-    );
-  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%, 200% 200%;
-  animation: alinShimmer var(--shimmer-dur, 6s) ease infinite;
+  /* Texture image applied via inline style --alin-texture */
+  background-image: var(--alin-texture);
+  background-size: 200% 200%;
+  background-position: var(--bg-pos, 50% 50%);
 
   /* Teal-tinted border */
   border: 1px solid rgba(75, 165, 195, 0.12);
@@ -3310,7 +3295,7 @@ body { padding-top: env(safe-area-inset-top); }
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* Traveling light sweep — the key "alive" indicator */
+/* Traveling light sweep — animated glint across the texture */
 .alin-field::before {
   content: '';
   position: absolute;
@@ -3322,16 +3307,17 @@ body { padding-top: env(safe-area-inset-top); }
     90deg,
     transparent 0%,
     rgba(75, 165, 195, 0.03) 20%,
-    rgba(75, 165, 195, 0.08) 40%,
-    rgba(120, 160, 200, 0.12) 50%,
-    rgba(75, 165, 195, 0.08) 60%,
+    rgba(75, 165, 195, 0.10) 40%,
+    rgba(120, 200, 220, 0.15) 50%,
+    rgba(75, 165, 195, 0.10) 60%,
     rgba(75, 165, 195, 0.03) 80%,
     transparent 100%
   );
-  animation: alinSweep var(--sweep-dur, 5s) ease-in-out var(--sweep-delay, 0s) infinite;
+  animation: alinSweep var(--sweep-dur, 4s) ease-in-out var(--sweep-delay, 0s) infinite;
+  z-index: 1;
 }
 
-/* Secondary shimmer with purple/teal iridescence */
+/* Color-breathing hue-shift overlay */
 .alin-field::after {
   content: '';
   position: absolute;
@@ -3340,24 +3326,17 @@ body { padding-top: env(safe-area-inset-top); }
   right: 0;
   bottom: 0;
   background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(100, 120, 180, 0.04) 45%,
-    rgba(75, 165, 195, 0.06) 50%,
-    rgba(140, 100, 180, 0.04) 55%,
-    transparent 70%
+    var(--hue-angle, 135deg),
+    rgba(60, 180, 180, 0.12) 0%,
+    rgba(100, 60, 160, 0.10) 50%,
+    rgba(60, 180, 180, 0.12) 100%
   );
-  background-size: 300% 300%;
-  animation: alinIridescence 8s ease infinite;
+  mix-blend-mode: overlay;
+  opacity: 0.15;
+  animation: alinHueShift 8s ease infinite;
 }
 
 /* ── Keyframes ──────────────────────────────────────────────────── */
-
-@keyframes alinShimmer {
-  0%   { background-position: 0% 50%, 100% 50%, 0% 0%, 0% 0%, 0% 50%; }
-  50%  { background-position: 100% 50%, 0% 50%, 0% 0%, 0% 0%, 100% 50%; }
-  100% { background-position: 0% 50%, 100% 50%, 0% 0%, 0% 0%, 0% 50%; }
-}
 
 @keyframes alinSweep {
   0%   { left: -150%; }
@@ -3365,10 +3344,10 @@ body { padding-top: env(safe-area-inset-top); }
   100% { left: 150%; }
 }
 
-@keyframes alinIridescence {
-  0%   { background-position: 0% 0%; }
-  50%  { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
+@keyframes alinHueShift {
+  0%   { opacity: 0.15; filter: hue-rotate(0deg); }
+  50%  { opacity: 0.22; filter: hue-rotate(30deg); }
+  100% { opacity: 0.15; filter: hue-rotate(0deg); }
 }
 
 /* Phase 2 completion flash ripple */
