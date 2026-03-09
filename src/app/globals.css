@@ -3273,26 +3273,24 @@ body { padding-top: env(safe-area-inset-top); }
   to   { opacity: 1; max-height: 800px; transform: translateY(0); }
 }
 
-/* ── ALIN Encoded Field — Texture-Based Iridescent Effect ────────── */
+/* ── ALIN Encoded Field — Real Texture Image ─────────────────────── */
 .alin-field {
   height: 52px;
   border-radius: 12px;
   position: relative;
   overflow: hidden;
 
-  /* Texture image applied via inline style --alin-texture */
-  background-image: var(--alin-texture);
-  background-size: 200% 200%;
-  background-position: var(--bg-pos, 50% 50%);
+  /* THE ACTUAL TEXTURE */
+  background-image: url('/alin-texture.png');
+  background-size: cover;
 
   /* Teal-tinted border */
-  border: 1px solid rgba(75, 165, 195, 0.12);
+  border: 1px solid rgba(75, 165, 195, 0.15);
 
-  /* Subtle outer glow */
+  /* Outer glow */
   box-shadow:
-    0 0 15px rgba(75, 165, 195, 0.04),
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 0 20px rgba(75, 165, 195, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Traveling light sweep — animated glint across the texture */
