@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,9 +17,17 @@ import {
   Check,
   ClipboardList,
   ExternalLink,
+  Sprout,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  ChevronDown,
+  ChevronUp,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigator } from "@/components/navigator/navigator-context";
+
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -125,7 +133,6 @@ function getRelativeTime(dateStr: string): string {
 
 export default function ContractorApplicationsPage() {
   const router = useRouter();
-  const { setMode } = useNavigator();
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -221,7 +228,6 @@ export default function ContractorApplicationsPage() {
               isExpanded={expandedId === app.id}
               onToggle={() => setExpandedId(expandedId === app.id ? null : app.id)}
               onNavigate={(href) => router.push(href)}
-              onChat={() => setMode("chat")}
             />
           ))}
         </div>
@@ -239,13 +245,11 @@ function ApplicationCard({
   isExpanded,
   onToggle,
   onNavigate,
-  onChat,
 }: {
   app: ApplicationData;
   isExpanded: boolean;
   onToggle: () => void;
   onNavigate: (href: string) => void;
-  onChat: () => void;
 }) {
   const nodeStates = getNodeStates(app.status);
   const statusBadge = getStatusBadge(app.status);
@@ -254,6 +258,96 @@ function ApplicationCard({
   const strengths = safeJSON<string[]>(app.decisionPacket?.strengths, []);
   const risks = safeJSON<string[]>(app.decisionPacket?.risks, []);
   const isDecided = ["APPROVED", "REJECTED"].includes(app.status);
+
+  /* ── Navigator Video State ── */
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [hasEnded, setHasEnded] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryGlow, setSummaryGlow] = useState(false);
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cueTriggered = useRef<Set<number>>(new Set());
+
+  /* Cuepoint timestamps — adjust after watching the actual HeyGen video */
+  const cuepoints = useMemo(() => [
+    { time: 5, target: "impact-bar" },
+    { time: 10, target: "procurement-bar" },
+    { time: 16, target: "vision-bar" },
+    { time: 24, target: "viability-bar" },
+  ], []);
+
+  const highlightElement = useCallback((targetId: string) => {
+    const el = document.querySelector(`[data-cue="${targetId}"]`);
+    if (el) {
+      el.classList.add("cue-highlight");
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      setTimeout(() => el.classList.remove("cue-highlight"), 1500);
+    }
+  }, []);
+
+  const handleTimeUpdate = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const t = video.currentTime;
+    setCurrentTime(t);
+    setProgress(video.duration > 0 ? (t / video.duration) * 100 : 0);
+    cuepoints.forEach((cue) => {
+      if (t >= cue.time && t < cue.time + 0.5 && !cueTriggered.current.has(cue.time)) {
+        cueTriggered.current.add(cue.time);
+        highlightElement(cue.target);
+      }
+    });
+  }, [cuepoints, highlightElement]);
+
+  const handlePlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (hasEnded) {
+      video.currentTime = 0;
+      cueTriggered.current.clear();
+      setHasEnded(false);
+    }
+    video.play();
+    setIsPlaying(true);
+    setHasStarted(true);
+  }, [hasEnded]);
+
+  const handlePause = useCallback(() => {
+    videoRef.current?.pause();
+    setIsPlaying(false);
+  }, []);
+
+  const handleVideoEnd = useCallback(() => {
+    setIsPlaying(false);
+    setHasEnded(true);
+    setSummaryGlow(true);
+    setTimeout(() => setSummaryGlow(false), 1500);
+  }, []);
+
+  const handleVideoAreaTap = useCallback(() => {
+    setShowControls(true);
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
+  }, []);
+
+  const formatTime = (t: number) => {
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  /* Score bar color helper */
+  const scoreBarVariant = (val: number): "gold" | "amber" | "critical" => {
+    if (val >= 85) return "gold";
+    if (val >= 70) return "amber";
+    return "critical";
+  };
 
   return (
     <Card
@@ -396,85 +490,240 @@ function ApplicationCard({
 
       {/* ── Expanded content ── */}
       <div
-        className={cn("overflow-hidden transition-all ease-out", isExpanded ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0")}
+        className={cn("overflow-hidden transition-all ease-out", isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0")}
         style={{ transitionDuration: "0.35s" }}
       >
         <div className="border-t border-neu-dark/30 mx-4" />
         <div className="px-4 pb-5 pt-4 space-y-4">
 
-          {/* AI Feedback Panel — dark recessed screen */}
-          {(app.decisionPacket?.executiveSummary || app.decisionPacket?.narrative) && (
-            <div className="ai-brief-panel">
-              <div className="flex items-center justify-between mb-2">
+          {/* ════════ NAVIGATOR VIDEO BRIEFING CARD ════════ */}
+          {app.compositeScore != null && (
+            <div
+              style={{
+                background: "rgba(255, 255, 255, 0.55)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                borderTop: "1.5px solid rgba(255, 255, 255, 0.8)",
+                borderLeft: "1.5px solid rgba(255, 255, 255, 0.7)",
+                borderBottom: "1.5px solid rgba(255, 255, 255, 0.15)",
+                borderRight: "1.5px solid rgba(255, 255, 255, 0.15)",
+                boxShadow: "10px 10px 25px rgba(155, 161, 180, 0.4), -10px -10px 25px rgba(255, 255, 255, 0.8)",
+                borderRadius: 20,
+                padding: 20,
+              }}
+            >
+              {/* Card Header */}
+              <div className="flex items-center justify-between mb-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full animate-ember" style={{ background: "rgba(74, 140, 106, 0.7)" }} />
-                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "rgba(75, 165, 195, 0.7)", textTransform: "uppercase" }}>
-                    AI Feedback
+                  <Sprout className="w-[18px] h-[18px]" style={{ color: "rgba(74, 140, 106, 0.7)" }} />
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2.5, color: "rgba(30, 34, 53, 0.55)", textTransform: "uppercase" as const }}>
+                    Navigator Video Briefing
                   </span>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onChat(); }}
-                  className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer"
-                  style={{ background: "rgba(30, 34, 53, 0.12)", boxShadow: "2px 2px 6px rgba(155,161,180,0.3), -2px -2px 6px rgba(255,255,255,0.5)" }}
-                >
-                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, rgba(92, 111, 181, 0.7), rgba(75, 100, 160, 0.9))", boxShadow: "0 0 8px rgba(92, 111, 181, 0.3)" }} />
-                </button>
+                {duration > 0 && (
+                  <span
+                    style={{
+                      background: "rgba(75, 165, 195, 0.08)",
+                      border: "1px solid rgba(75, 165, 195, 0.12)",
+                      borderRadius: 12,
+                      padding: "4px 10px",
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: "rgba(75, 165, 195, 0.7)",
+                    }}
+                  >
+                    {formatTime(duration)}
+                  </span>
+                )}
               </div>
-              <p style={{ fontSize: "16px", fontWeight: 700, color: "rgba(30, 34, 53, 0.8)", marginBottom: "8px" }}>
-                {contractorFeedbackTitle(app.decisionPacket?.recommendation, app.compositeScore)}
-              </p>
-              <p style={{ fontSize: "13px", fontWeight: 400, color: "rgba(30, 34, 53, 0.55)", lineHeight: 1.8 }}>
-                {contractorFeedbackBody(app.decisionPacket?.executiveSummary, app.decisionPacket?.narrative, app.compositeScore)}
-              </p>
+
+              {/* Video Area */}
+              <div
+                className="relative w-full overflow-hidden"
+                style={{ aspectRatio: "16 / 9", borderRadius: 14, background: "#0d1117" }}
+                onClick={(e) => { e.stopPropagation(); handleVideoAreaTap(); }}
+              >
+                <video
+                  ref={videoRef}
+                  src="/videos/navigator-omar-feedback.mp4"
+                  preload="metadata"
+                  playsInline
+                  className="w-full h-full object-cover"
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={() => {
+                    if (videoRef.current) setDuration(videoRef.current.duration);
+                  }}
+                  onEnded={handleVideoEnd}
+                  onSeeked={() => cueTriggered.current.clear()}
+                />
+
+                {/* Play Button Overlay — poster / replay state */}
+                {(!hasStarted || hasEnded) && (
+                  <div
+                    className="absolute inset-0 flex flex-col items-center justify-center z-10"
+                    style={{ background: "rgba(0, 0, 0, 0.35)" }}
+                  >
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handlePlay(); }}
+                      className="cursor-pointer"
+                      style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: "50%",
+                        background: "rgba(255, 255, 255, 0.9)",
+                        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "none",
+                        animation: "playPulse 2.5s ease infinite",
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <polygon points="0,0 0,20 16,10" fill="rgba(75, 165, 195, 0.9)" />
+                      </svg>
+                    </button>
+                    <span
+                      style={{
+                        marginTop: 12,
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: "white",
+                        textShadow: "0 1px 4px rgba(0, 0, 0, 0.3)",
+                      }}
+                    >
+                      {hasEnded ? "Replay briefing" : "Watch your AI briefing"}
+                    </span>
+                  </div>
+                )}
+
+                {/* Custom Controls Bar */}
+                {hasStarted && !hasEnded && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-3"
+                    style={{
+                      background: "linear-gradient(transparent, rgba(0, 0, 0, 0.5))",
+                      padding: "12px 16px",
+                      opacity: showControls || !isPlaying ? 1 : 0,
+                      transition: "opacity 200ms ease",
+                    }}
+                  >
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (isPlaying) { handlePause(); } else { handlePlay(); } }}
+                      className="cursor-pointer"
+                      style={{ background: "none", border: "none", padding: 0 }}
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-5 h-5" style={{ color: "white" }} />
+                      ) : (
+                        <Play className="w-5 h-5" style={{ color: "white" }} />
+                      )}
+                    </button>
+
+                    {/* Progress bar */}
+                    <div
+                      className="flex-1 relative cursor-pointer"
+                      style={{ height: 4, background: "rgba(255, 255, 255, 0.2)", borderRadius: 2 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const pct = (e.clientX - rect.left) / rect.width;
+                        if (videoRef.current) videoRef.current.currentTime = pct * videoRef.current.duration;
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${progress}%`,
+                          height: "100%",
+                          background: "rgba(75, 165, 195, 0.9)",
+                          borderRadius: 2,
+                          transition: "width 100ms linear",
+                        }}
+                      />
+                    </div>
+
+                    <span style={{ fontSize: 11, color: "rgba(255, 255, 255, 0.6)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </span>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (videoRef.current) videoRef.current.muted = !isMuted;
+                        setIsMuted(!isMuted);
+                      }}
+                      className="cursor-pointer"
+                      style={{ background: "none", border: "none", padding: 0 }}
+                    >
+                      {isMuted ? (
+                        <VolumeX className="w-5 h-5" style={{ color: "white" }} />
+                      ) : (
+                        <Volume2 className="w-5 h-5" style={{ color: "white" }} />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Written Summary Toggle */}
+              <div className="mt-3">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSummaryOpen(!summaryOpen); }}
+                  className={cn("w-full flex items-center justify-between cursor-pointer", summaryGlow && "summary-glow")}
+                  style={{
+                    background: "rgba(228, 231, 238, 0.4)",
+                    borderRadius: 10,
+                    padding: "12px 16px",
+                    border: "none",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "rgba(30, 34, 53, 0.5)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Read written summary
+                  </span>
+                  {summaryOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {summaryOpen && (
+                  <div style={{ padding: 16, fontSize: 13, fontWeight: 400, color: "rgba(30, 34, 53, 0.65)", lineHeight: 1.6 }}>
+                    <p style={{ marginBottom: 12 }}>
+                      Your overall score is 87 out of 100 — Recommend tier. Your Impact score of 89 reflects
+                      solid survival rate projections and your native species focus is exactly what the committee
+                      wants to see.
+                    </p>
+                    <p>
+                      Two areas need attention: your pricing of 25M SAR is 25% above the market median of
+                      18–20M SAR — we recommend revising to 19.5M SAR. Additionally, your team lacks a dedicated
+                      hydrologist, which the committee will likely question given Tabuk&apos;s water scarcity.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Fallback AI feedback when no decision packet */}
-          {!app.decisionPacket?.executiveSummary && !app.decisionPacket?.narrative && app.compositeScore != null && (
-            <div className="ai-brief-panel">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full animate-ember" style={{ background: "rgba(74, 140, 106, 0.7)" }} />
-                  <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1.5px", color: "rgba(75, 165, 195, 0.7)", textTransform: "uppercase" as const }}>
-                    AI Feedback
-                  </span>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onChat(); }}
-                  className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer"
-                  style={{ background: "rgba(30, 34, 53, 0.12)", boxShadow: "2px 2px 6px rgba(155,161,180,0.3), -2px -2px 6px rgba(255,255,255,0.5)" }}
-                >
-                  <div className="w-[10px] h-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, rgba(92, 111, 181, 0.7), rgba(75, 100, 160, 0.9))", boxShadow: "0 0 8px rgba(92, 111, 181, 0.3)" }} />
-                </button>
-              </div>
-              <p style={{ fontSize: "16px", fontWeight: 700, color: "rgba(30, 34, 53, 0.8)", marginBottom: "8px" }}>
-                {contractorFeedbackTitle(null, app.compositeScore)}
-              </p>
-              <p style={{ fontSize: "13px", fontWeight: 400, color: "rgba(30, 34, 53, 0.55)", lineHeight: 1.8 }}>
-                {contractorFeedbackBody(null, null, app.compositeScore)}
-              </p>
-            </div>
-          )}
-
-          {/* Score Dimension Bars */}
+          {/* Score Dimension Bars with data-cue attributes */}
           {Object.keys(scores).length > 0 && (
             <div className="stagger-bars space-y-2.5">
               {[
-                { key: "procurement", label: "Procurement", delay: 0 },
-                { key: "vision", label: "Vision", delay: 120 },
-                { key: "viability", label: "Viability", delay: 240 },
-                { key: "impact", label: "Impact", delay: 360 },
+                { key: "procurement", label: "Procurement", delay: 0, cue: "procurement-bar" },
+                { key: "vision", label: "Vision", delay: 120, cue: "vision-bar" },
+                { key: "viability", label: "Viability", delay: 240, cue: "viability-bar" },
+                { key: "impact", label: "Impact", delay: 360, cue: "impact-bar" },
               ].map((dim) => (
-                <NeuProgress
-                  key={dim.key}
-                  value={scores[dim.key] ?? 0}
-                  label={dim.label}
-                  showValue
-                  delay={dim.delay}
-                  variant={scores[dim.key] >= 75 ? "gold" : scores[dim.key] >= 50 ? "amber" : "critical"}
-                  size="sm"
-                  groove
-                />
+                <div key={dim.key} data-cue={dim.cue} style={{ borderRadius: 8 }}>
+                  <NeuProgress
+                    value={scores[dim.key] ?? 0}
+                    label={dim.label}
+                    showValue
+                    delay={dim.delay}
+                    variant={scoreBarVariant(scores[dim.key] ?? 0)}
+                    size="sm"
+                    groove
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -587,34 +836,4 @@ function lineStyle(from: NodeState, to: NodeState): React.CSSProperties {
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Contractor-specific AI feedback copy                                */
-/* ------------------------------------------------------------------ */
-
-function contractorFeedbackTitle(rec: string | null | undefined, score: number | null): string {
-  if (!rec && score) {
-    if (score >= 75) return "Competitive application with strong scores";
-    if (score >= 50) return "Solid application — room to grow";
-    return "Application received — opportunities for improvement";
-  }
-  if (rec === "RECOMMEND") return "Strong application — well positioned";
-  if (rec === "RECOMMEND_WITH_CONDITIONS") return "Competitive application with room to grow";
-  if (rec === "DO_NOT_RECOMMEND") return "Application received — here's what to focus on next time";
-  return "Application under review";
-}
-
-function contractorFeedbackBody(
-  summary: string | null | undefined,
-  narrative: string | null | undefined,
-  score: number | null,
-): string {
-  // Use the executive summary if available, but keep it constructive
-  const text = summary || narrative || "";
-  if (text) {
-    // Truncate to ~250 chars for mobile readability
-    return text.length > 250 ? text.slice(0, 247) + "..." : text;
-  }
-  if (score && score >= 75) return "Your application scored well across key dimensions. The review panel will evaluate your proposal alongside other candidates.";
-  if (score && score >= 50) return "Your application shows promise. Focus on strengthening the areas highlighted below for future proposals.";
-  return "Your application is being processed. Check back soon for detailed feedback.";
-}
+/* Removed: contractorFeedbackTitle / contractorFeedbackBody — replaced by Navigator Video Briefing */

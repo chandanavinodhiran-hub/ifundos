@@ -24,8 +24,8 @@ interface NeuProgressProps {
 const fillGradients = {
   gold: "linear-gradient(90deg, rgba(75, 165, 195, 0.7), rgba(75, 165, 195, 0.9))",
   green: "linear-gradient(90deg, #4a7c59, #6a9c79)",
-  amber: "linear-gradient(90deg, rgba(75, 165, 195, 0.5), rgba(75, 165, 195, 0.7))",
-  critical: "linear-gradient(90deg, #9c4a4a, #b86a6a)",
+  amber: "linear-gradient(90deg, rgba(175, 148, 63, 0.55), rgba(175, 148, 63, 0.7))",
+  critical: "linear-gradient(90deg, rgba(150, 90, 90, 0.45), rgba(150, 90, 90, 0.6))",
 };
 
 export function NeuProgress({
