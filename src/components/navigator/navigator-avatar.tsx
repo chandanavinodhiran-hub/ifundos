@@ -19,17 +19,19 @@ export function NavigatorAvatar() {
   const [response, setResponse] = useState("");
   const [displayedResponse, setDisplayedResponse] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const avatarHistory = useRef<{ role: "user" | "navigator"; content: string }[]>([]);
 
   const role = session?.user?.role ?? "FUND_MANAGER";
   const pageName = getPageName(role, pathname);
   const isOpen = mode === "avatar";
 
-  // Focus input on open
+  // Focus input on open + reset history
   useEffect(() => {
     if (isOpen) {
       setOrbState("idle");
       setResponse("");
       setDisplayedResponse("");
+      avatarHistory.current = [];
       setTimeout(() => inputRef.current?.focus(), 400);
     }
   }, [isOpen]);
@@ -61,6 +63,10 @@ export function NavigatorAvatar() {
     const trimmed = input.trim();
     if (!trimmed || orbState === "thinking") return;
 
+    // Track local avatar conversation for multi-turn context
+    const prevHistory = avatarHistory.current;
+    prevHistory.push({ role: "user" as const, content: trimmed });
+
     setInput("");
     setResponse("");
     setDisplayedResponse("");
@@ -73,19 +79,24 @@ export function NavigatorAvatar() {
       const res = await fetch("/api/navigator", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, role, pathname }),
+        body: JSON.stringify({ message: trimmed, role, pathname, history: prevHistory.slice(0, -1) }),
       });
 
       if (res.ok) {
         const data = await res.json();
         setResponse(data.response);
+        prevHistory.push({ role: "navigator" as const, content: data.response });
       } else {
         const scripted = findScriptedResponse(role, pathname, trimmed);
-        setResponse(scripted ?? "I'm having trouble processing that. Please try again.");
+        const fallback = scripted ?? "I'm having trouble processing that. Please try again.";
+        setResponse(fallback);
+        prevHistory.push({ role: "navigator" as const, content: fallback });
       }
     } catch {
       const scripted = findScriptedResponse(role, pathname, trimmed);
-      setResponse(scripted ?? "I'm having trouble processing that. Please try again.");
+      const fallback = scripted ?? "I'm having trouble processing that. Please try again.";
+      setResponse(fallback);
+      prevHistory.push({ role: "navigator" as const, content: fallback });
     }
   }
 

@@ -54,10 +54,15 @@ export function NavigatorChat() {
     setIsThinking(true);
 
     try {
+      // Build conversation history from existing messages (exclude the welcome message)
+      const history = chatMessages
+        .filter((m) => m.role === "user" || m.role === "navigator")
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const res = await fetch("/api/navigator", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, role, pathname }),
+        body: JSON.stringify({ message: trimmed, role, pathname, history }),
       });
 
       if (res.ok) {
