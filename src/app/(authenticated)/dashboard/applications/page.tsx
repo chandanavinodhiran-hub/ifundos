@@ -10,10 +10,12 @@ import {
   Loader2,
   ArrowRight,
   Check,
+  CheckCircle,
   Undo2,
   Eye,
   XCircle,
   Volume2,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigator } from "@/components/navigator/navigator-context";
@@ -289,6 +291,11 @@ export default function PipelinePage() {
   const [slidingOutId, setSlidingOutId] = useState<string | null>(null);
   const [undoToast, setUndoToast] = useState<{ appId: string; orgName: string; decision: Decision; timerId: ReturnType<typeof setTimeout> } | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [alinEncoded, setAlinEncoded] = useState(false);
+
+  useEffect(() => {
+    try { setAlinEncoded(localStorage.getItem("ifundos-alin-encoded") === "true"); } catch {}
+  }, []);
 
   /* TTS: speak the AI brief aloud */
   function speakBrief(app: Application) {
@@ -729,6 +736,57 @@ export default function PipelinePage() {
                         <span className="mono-data" style={{ fontWeight: 500 }}>{app.proposedBudget > 0 ? formatSAR(app.proposedBudget) : "—"}</span>
                         <span>&middot;</span>
                         <span className="truncate">{app.rfp.title}</span>
+                      </div>
+
+                      {/* ALIN Credential Status */}
+                      <div
+                        style={{
+                          borderRadius: 16,
+                          padding: "12px 16px",
+                          background: "rgba(228, 231, 238, 0.5)",
+                          boxShadow:
+                            "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+                        }}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Shield
+                            className="w-3.5 h-3.5 shrink-0"
+                            style={{ color: alinEncoded ? "rgba(74, 140, 106, 0.8)" : "rgba(175, 148, 63, 0.7)" }}
+                          />
+                          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, color: "rgba(30,34,53,0.45)" }}>
+                            FINANCIAL CREDENTIALS
+                          </span>
+                        </div>
+                        {alinEncoded ? (
+                          <div className="flex items-center gap-3">
+                            <div className="alin-thumb" />
+                            <div className="flex-1 min-w-0">
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(74, 140, 106, 0.9)" }}>
+                                ALIN-Protected
+                              </p>
+                              <p style={{ fontSize: 12, color: "rgba(30, 34, 53, 0.5)", marginTop: 1 }}>
+                                Verified for disbursement
+                              </p>
+                              <p style={{ fontSize: 11, color: "rgba(30, 34, 53, 0.35)", marginTop: 1 }}>
+                                Encoded: March 9, 2026
+                              </p>
+                            </div>
+                            <CheckCircle className="w-4 h-4 shrink-0" style={{ color: "rgba(74, 140, 106, 0.6)" }} />
+                          </div>
+                        ) : (
+                          <div className="flex items-start gap-2">
+                            <span style={{ fontSize: 16, lineHeight: 1 }}>⚠</span>
+                            <div className="flex-1 min-w-0">
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(175, 148, 63, 0.9)" }}>
+                                Not yet provided
+                              </p>
+                              <p style={{ fontSize: 12, color: "rgba(30, 34, 53, 0.5)", marginTop: 2, lineHeight: 1.5 }}>
+                                Contractor has not submitted financial credentials.
+                                Disbursement cannot proceed until credentials are encoded.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* A4: Action Buttons — sticky, stack vertically on mobile */}

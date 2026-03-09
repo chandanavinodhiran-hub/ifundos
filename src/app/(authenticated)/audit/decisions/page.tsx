@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Check, Diamond, AlertTriangle, Flag, Clock, ExternalLink } from "lucide-react";
+import { Loader2, Check, Diamond, AlertTriangle, Flag, Clock, ExternalLink, Shield } from "lucide-react";
 import { NeuToggle } from "@/components/ui/neu-toggle";
 import { NeuProgress } from "@/components/ui/neu-progress";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -272,6 +272,22 @@ export default function AuditorDecisions() {
                     {fmDec.label}
                   </span>
                 </div>
+
+                {/* ALIN Verification Badge — disbursement-relevant decisions */}
+                {["SHORTLISTED", "APPROVED", "QUESTIONNAIRE_PENDING", "QUESTIONNAIRE_SUBMITTED"].includes(app.status) && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Shield className="w-3 h-3" style={{ color: "rgba(74, 140, 106, 0.85)" }} />
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: "rgba(74, 140, 106, 0.85)",
+                      }}
+                    >
+                      ALIN ✓
+                    </span>
+                  </div>
+                )}
 
                 {/* Concordance indicator (right) + timestamp */}
                 <div className="absolute top-4 right-4 flex flex-col items-end gap-1">

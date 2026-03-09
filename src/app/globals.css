@@ -3360,3 +3360,77 @@ body { padding-top: env(safe-area-inset-top); }
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+
+/* ── ALIN Thumbnail Variants ───────────────────────────────────────── */
+
+/* 64x40 thumbnail — used in application detail expanded card */
+.alin-thumb {
+  width: 64px;
+  height: 40px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  background-image: url('/alin-texture.png');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(75, 165, 195, 0.15);
+  box-shadow:
+    0 0 12px rgba(75, 165, 195, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.alin-thumb::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(75, 165, 195, 0.03) 20%,
+    rgba(75, 165, 195, 0.10) 40%,
+    rgba(120, 200, 220, 0.15) 50%,
+    rgba(75, 165, 195, 0.10) 60%,
+    rgba(75, 165, 195, 0.03) 80%,
+    transparent 100%
+  );
+  animation: alinSweep 4s ease-in-out 0s infinite;
+  z-index: 1;
+}
+
+/* 32x20 mini thumbnail — used in grant cards */
+.alin-thumb-sm {
+  width: 32px;
+  height: 20px;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  background-image: url('/alin-texture.png');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(75, 165, 195, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.alin-thumb-sm::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(75, 165, 195, 0.05) 30%,
+    rgba(120, 200, 220, 0.12) 50%,
+    rgba(75, 165, 195, 0.05) 70%,
+    transparent 100%
+  );
+  animation: alinSweep 5s ease-in-out 0.5s infinite;
+  z-index: 1;
+}

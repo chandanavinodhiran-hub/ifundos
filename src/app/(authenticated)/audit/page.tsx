@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Loader2, CheckCircle, Diamond } from "lucide-react";
+import { Loader2, CheckCircle, Diamond, Shield } from "lucide-react";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import DynamicShadowCard from "@/components/DynamicShadowCard";
 
@@ -82,6 +82,39 @@ export default function AuditorHome() {
     );
   }
   if (!stats) return null;
+
+  /* ── Inject ALIN encoding events into activity stream ── */
+  const alinEvents: PlatformAction[] = [
+    {
+      id: "alin-1",
+      actor: "GreenBuild Saudi",
+      actorRole: "CONTRACTOR",
+      action: "ALIN credential encoded — texture verified",
+      timestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
+    },
+    {
+      id: "alin-2",
+      actor: "EcoRestore Ltd",
+      actorRole: "CONTRACTOR",
+      action: "ALIN credential encoded — disbursement unlocked",
+      timestamp: new Date(Date.now() - 5 * 3600000).toISOString(),
+    },
+    {
+      id: "alin-3",
+      actor: "Desert Bloom Co",
+      actorRole: "CONTRACTOR",
+      action: "ALIN encoding reminder — pending 3 days",
+      timestamp: new Date(Date.now() - 8 * 3600000).toISOString(),
+    },
+  ];
+  const enrichedActions = [...stats.platformActions];
+  if (enrichedActions.length >= 6) {
+    enrichedActions.splice(2, 0, alinEvents[0]);
+    enrichedActions.splice(5, 0, alinEvents[1]);
+    enrichedActions.splice(8, 0, alinEvents[2]);
+  } else {
+    enrichedActions.push(...alinEvents);
+  }
 
   const now = new Date();
   const dayName = now.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
@@ -279,15 +312,92 @@ export default function AuditorHome() {
           </div>
         )}
 
+        {/* ALIN Encoding Status Card */}
+        <div
+          className="animate-in-4"
+          style={{
+            borderRadius: 18,
+            padding: 16,
+            background: "rgba(228, 231, 238, 0.5)",
+            boxShadow:
+              "inset 4px 4px 10px rgba(155, 161, 180, 0.25), inset -4px -4px 10px rgba(255, 255, 255, 0.7)",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="w-4 h-4" style={{ color: "rgba(74, 140, 106, 0.7)" }} />
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: 2.5,
+                color: "rgba(30, 34, 53, 0.5)",
+              }}
+            >
+              ALIN ENCODING STATUS
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "ENCODED", value: 4, color: "rgba(74, 140, 106, 0.9)" },
+              { label: "PENDING", value: 1, color: "rgba(175, 148, 63, 0.9)" },
+              { label: "FLAGGED", value: 0, color: "var(--text-tertiary)" },
+            ].map((s) => (
+              <div
+                key={s.label}
+                style={{
+                  textAlign: "center",
+                  padding: "10px 8px",
+                  borderRadius: 12,
+                  background: "rgba(255, 255, 255, 0.5)",
+                }}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 24,
+                    fontWeight: 300,
+                    lineHeight: 1,
+                    color: s.color,
+                  }}
+                >
+                  {s.value}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: 9,
+                    fontWeight: 600,
+                    letterSpacing: 1.5,
+                    color: "rgba(30, 34, 53, 0.45)",
+                    marginTop: 6,
+                  }}
+                >
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p
+            style={{
+              fontSize: 11,
+              lineHeight: 1.5,
+              color: "rgba(30, 34, 53, 0.45)",
+              marginTop: 10,
+            }}
+          >
+            ALIN credential textures protect disbursement integrity across enrolled contractors.
+          </p>
+        </div>
+
         {/* Activity Stream — mobile/tablet only */}
         <div className="desktop:hidden">
-          <ActivityStream actions={stats.platformActions} router={router} />
+          <ActivityStream actions={enrichedActions} router={router} />
         </div>
       </div>
 
       {/* ══════════ RIGHT COLUMN — Activity Stream (desktop only) ══════════ */}
       <div className="hidden desktop:block desktop:self-start desktop:sticky desktop:top-0">
-        <ActivityStream actions={stats.platformActions} router={router} />
+        <ActivityStream actions={enrichedActions} router={router} />
       </div>
     </div>
   );

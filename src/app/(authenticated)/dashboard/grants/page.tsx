@@ -185,6 +185,11 @@ function ActiveGrantsInner() {
     useState<ContractItem | null>(null);
   const [evidenceForContract, setEvidenceForContract] = useState<EvidenceRecord[]>([]);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [alinEncoded, setAlinEncoded] = useState(false);
+
+  useEffect(() => {
+    try { setAlinEncoded(localStorage.getItem("ifundos-alin-encoded") === "true"); } catch {}
+  }, []);
 
   useEffect(() => {
     fetch("/api/contracts")
@@ -427,6 +432,29 @@ function ActiveGrantsInner() {
                   label={`${verifiedMs}/${totalMs} milestones`}
                   className="mb-2"
                 />
+
+                {/* ALIN Protection Status */}
+                {alinEncoded && (
+                  <div
+                    className="flex items-center gap-2 mb-2"
+                    style={{
+                      borderTop: "1px solid rgba(30, 34, 53, 0.06)",
+                      paddingTop: 8,
+                      marginTop: 4,
+                    }}
+                  >
+                    <Shield className="w-3 h-3 shrink-0" style={{ color: "rgba(74, 140, 106, 0.6)" }} />
+                    <div className="alin-thumb-sm" />
+                    <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(74, 140, 106, 0.85)" }}>
+                      ALIN-Protected
+                    </span>
+                    <span style={{ color: "rgba(30,34,53,0.2)" }}>&middot;</span>
+                    <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(30,34,53,0.45)" }}>
+                      Disbursement ready
+                    </span>
+                    <CheckCircle2 className="w-3 h-3 shrink-0 ml-auto" style={{ color: "rgba(74, 140, 106, 0.6)" }} />
+                  </div>
+                )}
 
                 {/* Bottom row: next action badge */}
                 <div className="flex items-center justify-between">
