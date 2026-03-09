@@ -49,11 +49,11 @@ function generateScramble(len: number): string {
 
 /* Visual variants so each ALIN field looks unique */
 const FIELD_VARIANTS = [
-  { angle: "135deg", dur: "4s", del: "0s" },
-  { angle: "150deg", dur: "4.5s", del: "0.5s" },
-  { angle: "120deg", dur: "3.8s", del: "1s" },
-  { angle: "160deg", dur: "5s", del: "0.3s" },
-  { angle: "140deg", dur: "4.2s", del: "0.8s" },
+  { shimmerDur: "6s",   sweepDur: "5s",   sweepDelay: "0s",   angle: "135deg" },
+  { shimmerDur: "7s",   sweepDur: "5.5s", sweepDelay: "1.2s", angle: "150deg" },
+  { shimmerDur: "5.5s", sweepDur: "4.8s", sweepDelay: "0.6s", angle: "125deg" },
+  { shimmerDur: "6.5s", sweepDur: "5.2s", sweepDelay: "1.8s", angle: "160deg" },
+  { shimmerDur: "5.8s", sweepDur: "4.5s", sweepDelay: "0.3s", angle: "140deg" },
 ];
 
 type FieldPhase = "idle" | "blur" | "scramble" | "dissolve" | "done";
@@ -234,21 +234,13 @@ export default function ContractorProfilePage() {
     padding: "24px",
   };
 
-  /* ── ALIN field base style (dark iridescent gradient) ────── */
-  function alinFieldStyle(
-    variantIndex: number,
-  ): React.CSSProperties {
+  /* ── ALIN field custom properties per variant ────────────── */
+  function alinFieldVars(variantIndex: number): React.CSSProperties {
     const v = FIELD_VARIANTS[variantIndex];
     return {
-      height: 46,
-      borderRadius: 12,
-      background: `linear-gradient(${v.angle}, #1a1a2e, #16213e, #0f3460)`,
-      backgroundSize: "200% 200%",
-      animation: `alinShimmer ${v.dur} ease-in-out infinite`,
-      animationDelay: v.del,
-      border: "1px solid rgba(92, 200, 200, 0.15)",
-      position: "relative" as const,
-      overflow: "hidden" as const,
+      ["--shimmer-dur" as string]: v.shimmerDur,
+      ["--sweep-dur" as string]: v.sweepDur,
+      ["--sweep-delay" as string]: v.sweepDelay,
     };
   }
 
@@ -295,8 +287,9 @@ export default function ContractorProfilePage() {
 
         {phase === "dissolve" && (
           <div
+            className="alin-field"
             style={{
-              ...alinFieldStyle(index),
+              ...alinFieldVars(index),
               opacity: 0.5,
               transition: "opacity 200ms ease-in",
             }}
@@ -304,18 +297,10 @@ export default function ContractorProfilePage() {
         )}
 
         {phase === "done" && (
-          <div style={alinFieldStyle(index)}>
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(90deg, transparent 0%, rgba(92,200,200,0.08) 50%, transparent 100%)",
-                animation: `alinSweep 3s ease-in-out infinite`,
-                animationDelay: FIELD_VARIANTS[index].del,
-              }}
-            />
-          </div>
+          <div
+            className="alin-field"
+            style={alinFieldVars(index)}
+          />
         )}
       </div>
     );
@@ -682,28 +667,29 @@ export default function ContractorProfilePage() {
         {/* ── State C: Encoded — permanent ALIN field display ─── */}
         {credState === "encoded" && (
           <div>
-            {/* Status banner */}
+            {/* Status banner — green accent */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 10,
                 padding: "12px 16px",
-                background: "rgba(42, 99, 72, 0.06)",
+                background: "rgba(74, 140, 106, 0.06)",
                 borderRadius: 12,
-                border: "1px solid rgba(42, 99, 72, 0.12)",
+                border: "1px solid rgba(74, 140, 106, 0.12)",
+                borderLeft: "3px solid rgba(74, 140, 106, 0.4)",
                 marginBottom: 20,
               }}
             >
               <ShieldCheck
                 className="w-4 h-4 shrink-0"
-                style={{ color: "#2a6348" }}
+                style={{ color: "rgba(74, 140, 106, 0.7)" }}
               />
               <span
                 style={{
                   fontSize: 13,
                   fontWeight: 500,
-                  color: "rgba(30,34,53,0.7)",
+                  color: "rgba(74, 140, 106, 0.7)",
                 }}
               >
                 All credentials encoded with ALIN — secure and active
@@ -712,84 +698,70 @@ export default function ContractorProfilePage() {
 
             {/* Encoded ALIN fields */}
             <div className="space-y-4">
-              {FIELD_META.map((meta, i) => {
-                const v = FIELD_VARIANTS[i];
-                return (
-                  <div key={meta.key}>
-                    {/* Label row with ENCODED badge */}
-                    <div
+              {FIELD_META.map((meta, i) => (
+                <div key={meta.key}>
+                  {/* Label row with ENCODED badge */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 6,
+                    }}
+                  >
+                    <span
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        marginBottom: 6,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        letterSpacing: 2,
+                        textTransform: "uppercase",
+                        color: "rgba(30,34,53,0.45)",
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 600,
-                          letterSpacing: 2,
-                          textTransform: "uppercase",
-                          color: "rgba(30,34,53,0.45)",
-                        }}
-                      >
-                        {meta.label}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          color: "rgba(92, 200, 200, 0.75)",
-                          letterSpacing: 1.5,
-                        }}
-                      >
-                        · ENCODED
-                      </span>
-                    </div>
+                      {meta.label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: "rgba(74, 140, 106, 0.6)",
+                        letterSpacing: 1.5,
+                      }}
+                    >
+                      · ENCODED
+                    </span>
+                  </div>
 
-                    {/* ALIN dark iridescent field */}
+                  {/* ALIN dark iridescent field — CSS class handles all visuals */}
+                  <div
+                    className="alin-field"
+                    style={alinFieldVars(i)}
+                  >
+                    {/* Green shield checkmark — absolute positioned */}
                     <div
-                      className="alin-field"
                       style={{
-                        height: 46,
-                        borderRadius: 12,
-                        background: `linear-gradient(${v.angle}, #1a1a2e, #16213e, #0f3460)`,
-                        backgroundSize: "200% 200%",
-                        animation: `alinShimmer ${v.dur} ease-in-out infinite`,
-                        animationDelay: v.del,
-                        border: "1px solid rgba(92, 200, 200, 0.15)",
-                        position: "relative",
-                        overflow: "hidden",
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        zIndex: 2,
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        background: "rgba(74, 140, 106, 0.15)",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "flex-end",
-                        paddingRight: 14,
+                        justifyContent: "center",
                       }}
                     >
-                      {/* Sweep highlight overlay */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          background:
-                            "linear-gradient(90deg, transparent 0%, rgba(92,200,200,0.06) 50%, transparent 100%)",
-                          animation: `alinSweep 3s ease-in-out infinite`,
-                          animationDelay: v.del,
-                        }}
-                      />
-                      {/* Shield checkmark */}
                       <ShieldCheck
                         className="w-3.5 h-3.5"
-                        style={{
-                          color: "rgba(42, 160, 120, 0.45)",
-                          zIndex: 1,
-                        }}
+                        style={{ color: "rgba(74, 140, 106, 0.7)" }}
                       />
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
             {/* Demo reset link */}

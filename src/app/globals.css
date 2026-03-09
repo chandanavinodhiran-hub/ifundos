@@ -3269,65 +3269,117 @@ body { padding-top: env(safe-area-inset-top); }
 
 /* Form expand animation */
 @keyframes alinExpand {
-  from {
-    opacity: 0;
-    max-height: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    max-height: 800px;
-    transform: translateY(0);
-  }
+  from { opacity: 0; max-height: 0; transform: translateY(-8px); }
+  to   { opacity: 1; max-height: 800px; transform: translateY(0); }
 }
 
-/* Iridescent gradient shimmer — background-position shift */
+/* ── ALIN Encoded Field — Rich Iridescent Dark Effect ────────────── */
+.alin-field {
+  height: 48px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+
+  /* Multi-layered iridescent background */
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(15, 52, 96, 0.8) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(45, 64, 89, 0.8) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(75, 165, 195, 0.15) 0%, transparent 40%),
+    radial-gradient(ellipse at 30% 100%, rgba(120, 80, 160, 0.1) 0%, transparent 40%),
+    linear-gradient(
+      135deg,
+      #0d1117 0%,
+      #161b22 15%,
+      #0f1923 30%,
+      #1a2332 45%,
+      #0d1117 55%,
+      #141d28 70%,
+      #0f1923 85%,
+      #0d1117 100%
+    );
+  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%, 200% 200%;
+  animation: alinShimmer var(--shimmer-dur, 6s) ease infinite;
+
+  /* Teal-tinted border */
+  border: 1px solid rgba(75, 165, 195, 0.12);
+
+  /* Subtle outer glow */
+  box-shadow:
+    0 0 15px rgba(75, 165, 195, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Traveling light sweep — the key "alive" indicator */
+.alin-field::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(75, 165, 195, 0.03) 20%,
+    rgba(75, 165, 195, 0.08) 40%,
+    rgba(120, 160, 200, 0.12) 50%,
+    rgba(75, 165, 195, 0.08) 60%,
+    rgba(75, 165, 195, 0.03) 80%,
+    transparent 100%
+  );
+  animation: alinSweep var(--sweep-dur, 5s) ease-in-out var(--sweep-delay, 0s) infinite;
+}
+
+/* Secondary shimmer with purple/teal iridescence */
+.alin-field::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(100, 120, 180, 0.04) 45%,
+    rgba(75, 165, 195, 0.06) 50%,
+    rgba(140, 100, 180, 0.04) 55%,
+    transparent 70%
+  );
+  background-size: 300% 300%;
+  animation: alinIridescence 8s ease infinite;
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────── */
+
 @keyframes alinShimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0%   { background-position: 0% 50%, 100% 50%, 0% 0%, 0% 0%, 0% 50%; }
+  50%  { background-position: 100% 50%, 0% 50%, 0% 0%, 0% 0%, 100% 50%; }
+  100% { background-position: 0% 50%, 100% 50%, 0% 0%, 0% 0%, 0% 50%; }
 }
 
-/* Horizontal sweep highlight across encoded fields */
 @keyframes alinSweep {
-  0% {
-    transform: translateX(-100%);
-  }
-  50% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
+  0%   { left: -150%; }
+  45%  { left: 150%; }
+  100% { left: 150%; }
+}
+
+@keyframes alinIridescence {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
 
 /* Phase 2 completion flash ripple */
 @keyframes alinFlashRipple {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2);
-  }
+  0%  { opacity: 0; transform: scale(0.5); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: scale(2); }
 }
 
 /* Lock icon spin during encoding */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
