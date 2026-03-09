@@ -3027,6 +3027,32 @@ body { padding-top: env(safe-area-inset-top); }
     margin-bottom: 6px !important;
   }
 
+  /* ── Registration card — bottom-sheet on mobile ── */
+  .register-card-wrapper {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+  .register-card-wrapper .register-card {
+    width: calc(100% - 32px) !important;
+    max-width: 100% !important;
+    max-height: 82vh !important;
+    margin: 0 16px 0 16px !important;
+    padding: 24px 20px 28px !important;
+    border-radius: 24px 24px 0 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Compact spacing on mobile registration */
+  .register-card-wrapper .register-card .forest-slide-up {
+    margin-bottom: 12px !important;
+  }
+  /* Smaller emblem on mobile */
+  .register-card-wrapper .register-card img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
   /* ── Hide custom cursor on touch ── */
   .login-cursor-dot { display: none !important; }
   .login-page-root,

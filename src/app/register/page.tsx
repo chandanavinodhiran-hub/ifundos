@@ -1,26 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Label } from "@/components/ui/label";
-import { Hexagon, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+/* ── Canvas-based forest background (client only, no SSR) ──────── */
+const ForestCanopy = dynamic(() => import("@/components/ForestCanopy"), {
+  ssr: false,
+});
 
 export default function RegisterPage() {
+  return <RegisterForm />;
+}
+
+/* ================================================================== */
+/* Registration Form                                                    */
+/* ================================================================== */
+
+function RegisterForm() {
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     email: "",
+    organizationName: "",
     password: "",
     confirmPassword: "",
-    organizationName: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const cursorRef = useRef<HTMLDivElement>(null);
 
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
+
+  /* Custom cursor dot — same as login */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${e.clientX}px`;
+        cursorRef.current.style.top = `${e.clientY}px`;
+      }
+    };
+    document.addEventListener("mousemove", handler);
+    return () => document.removeEventListener("mousemove", handler);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,7 +81,8 @@ export default function RegisterPage() {
       if (!res.ok) {
         setError(data.error || "Registration failed");
       } else {
-        router.push("/login?registered=true");
+        setSuccess(true);
+        setTimeout(() => router.push("/login?registered=true"), 1200);
       }
     } catch {
       setError("An unexpected error occurred");
@@ -63,160 +91,374 @@ export default function RegisterPage() {
     }
   }
 
-  const inputClass =
-    "flex h-12 w-full rounded-xl border-0 bg-neu-dark/50 shadow-neu-inset px-3 py-2 text-sm text-sovereign-charcoal placeholder:text-sovereign-stone/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sovereign-gold/40 transition-all";
+  /* ── Shared input styling ─────────────────────────────────────── */
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 9.5,
+    fontWeight: 600,
+    color: "rgba(170,200,170,0.4)",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 6,
+  };
+
+  const inputWrapStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    background: "rgba(255,255,255,0.035)",
+    border: "1px solid rgba(90,150,90,0.08)",
+    borderRadius: 11,
+    padding: "0 13px",
+    transition: "all 0.3s",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "12px 0",
+    background: "transparent",
+    border: "none",
+    outline: "none",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: 13,
+    color: "rgba(210,230,210,0.8)",
+    cursor: "none",
+  };
+
+  const iconProps = {
+    width: 15,
+    height: 15,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "rgba(170,200,170,0.22)",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    style: { marginRight: 9, flexShrink: 0 } as React.CSSProperties,
+  };
 
   return (
-    <div className="login-shell min-h-screen flex items-center justify-center bg-neu-base px-4 relative overflow-hidden">
-      {/* Soft neumorphic background texture */}
-      <div className="absolute inset-0 opacity-30" style={{
-        backgroundImage: "radial-gradient(circle at 50% 50%, rgba(184,148,63,0.08) 0%, transparent 60%)",
-      }} />
-      {/* Top-right glow */}
-      <div className="absolute -top-20 -right-20 w-[400px] h-[400px] bg-neu-light rounded-full blur-3xl opacity-60" />
-      {/* Bottom-left shadow */}
-      <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] bg-neu-darker rounded-full blur-3xl opacity-40" />
+    <div
+      className="login-page-root"
+      style={{
+        minHeight: "100vh",
+        overflow: "hidden",
+        fontFamily: "'DM Sans', sans-serif",
+        cursor: "none",
+        background: "#050c06",
+      }}
+    >
+      {/* Full-screen animated forest canopy — same as login */}
+      <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
+        <ForestCanopy />
+      </div>
 
-      <div className="w-full max-w-md relative z-10 py-8">
-        {/* Logo / Branding */}
-        <div className="text-center mb-8">
-          <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-neu-raised-lg"
-            style={{
-              background: "linear-gradient(135deg, #b8943f 0%, #d4b665 60%, #b8943f 100%)",
-            }}
-          >
-            <Hexagon className="w-8 h-8 text-sovereign-charcoal" />
-          </div>
-          <h1 className="text-3xl font-display font-bold text-sovereign-charcoal tracking-tight mt-4">
-            iFundOS
-          </h1>
-          <p className="text-sovereign-gold text-sm font-medium mt-1">
-            Contractor Registration
-          </p>
-        </div>
-
-        {/* Neumorphic form card */}
-        <div className="rounded-[18px] bg-neu-base shadow-neu-raised-lg p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-sovereign-charcoal">Create Account</h2>
-            <p className="text-sm text-sovereign-stone mt-1">
-              Register your organization to apply for funding
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-xl bg-critical/10 border border-critical/20 text-critical px-4 py-3 text-sm flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-critical shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sovereign-charcoal font-medium text-sm">Full Name</Label>
-              <input
-                id="name"
-                placeholder="Your full name"
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sovereign-charcoal font-medium text-sm">Email</Label>
-              <input
-                id="email"
-                type="email"
-                placeholder="you@organization.sa"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="orgName" className="text-sovereign-charcoal font-medium text-sm">Organization Name</Label>
-              <input
-                id="orgName"
-                placeholder="Your company or entity name"
-                value={form.organizationName}
-                onChange={(e) => updateField("organizationName", e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sovereign-charcoal font-medium text-sm">Password</Label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Minimum 8 characters"
-                value={form.password}
-                onChange={(e) => updateField("password", e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sovereign-charcoal font-medium text-sm">Confirm Password</Label>
-              <input
-                id="confirmPassword"
-                type="password"
-                placeholder="Re-enter password"
-                value={form.confirmPassword}
-                onChange={(e) => updateField("confirmPassword", e.target.value)}
-                required
-                className={inputClass}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-neu-raised-sm neu-press cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sovereign-charcoal mt-2"
+      {/* Card wrapper — centered on desktop, bottom-sheet on mobile */}
+      <div
+        className="register-card-wrapper"
+        style={{
+          position: "fixed",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 10,
+        }}
+      >
+        {/* Frosted glass card */}
+        <div
+          className="forest-card-in register-card"
+          style={{
+            width: "100%",
+            maxWidth: 440,
+            padding: "32px 40px 36px",
+            borderRadius: 20,
+            background: "rgba(6, 16, 8, 0.6)",
+            backdropFilter: "blur(50px) saturate(1.3)",
+            WebkitBackdropFilter: "blur(50px) saturate(1.3)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+            borderLeft: "1px solid rgba(255, 255, 255, 0.06)",
+          }}
+        >
+          {/* ── Logo ──────────────────────────────────────────────── */}
+          <div className="forest-fade-in" style={{ textAlign: "center", animationDelay: "0.15s" }}>
+            <img
+              src="/emblem.png"
+              alt="iFundOS"
+              width={52}
+              height={52}
+              className="emblem-breathe"
               style={{
-                background: "linear-gradient(135deg, #b8943f 0%, #d4b665 60%, #b8943f 100%)",
+                display: "block",
+                margin: "0 auto 10px",
+                width: 52,
+                height: 52,
+              }}
+            />
+            <div
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 28,
+                fontWeight: 300,
+                color: "rgba(230, 228, 240, 0.90)",
+                letterSpacing: 3,
+                textShadow: "0 0 30px rgba(130, 100, 220, 0.08)",
+                marginBottom: 4,
               }}
             >
-              {loading ? (
+              iFundOS
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: "rgba(255,255,255,0.4)",
+                marginBottom: 28,
+              }}
+            >
+              Contractor Registration
+            </div>
+          </div>
+
+          {/* ── Error message ──────────────────────────────────────── */}
+          {error && (
+            <div
+              style={{
+                background: "rgba(180, 60, 60, 0.12)",
+                border: "1px solid rgba(180, 60, 60, 0.2)",
+                borderRadius: 11,
+                padding: "10px 14px",
+                marginBottom: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+                color: "rgba(255, 160, 160, 0.85)",
+              }}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(255,120,120,0.7)", flexShrink: 0 }} />
+              {error}
+            </div>
+          )}
+
+          {/* ── Success message ──────────────────────────────────── */}
+          {success && (
+            <div
+              style={{
+                background: "rgba(42, 99, 72, 0.2)",
+                border: "1px solid rgba(42, 99, 72, 0.3)",
+                borderRadius: 11,
+                padding: "10px 14px",
+                marginBottom: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+                color: "rgba(160, 230, 180, 0.85)",
+              }}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(120,220,150,0.7)", flexShrink: 0 }} />
+              Account created! Redirecting to sign in…
+            </div>
+          )}
+
+          {/* ── Form ──────────────────────────────────────────────── */}
+          <form onSubmit={handleSubmit}>
+            {/* Full Name */}
+            <div className="forest-slide-up" style={{ marginBottom: 16, animationDelay: "0.2s" }}>
+              <label htmlFor="reg-name" style={labelStyle}>Full Name</label>
+              <div className="forest-input-wrap" style={inputWrapStyle}>
+                <svg {...iconProps}>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <input
+                  id="reg-name"
+                  type="text"
+                  placeholder="Your full name"
+                  value={form.name}
+                  onChange={(e) => updateField("name", e.target.value)}
+                  required
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="forest-slide-up" style={{ marginBottom: 16, animationDelay: "0.25s" }}>
+              <label htmlFor="reg-email" style={labelStyle}>Email Address</label>
+              <div className="forest-input-wrap" style={inputWrapStyle}>
+                <svg {...iconProps}>
+                  <rect x="2" y="4" width="20" height="16" rx="3" />
+                  <polyline points="2 4 12 13 22 4" />
+                </svg>
+                <input
+                  id="reg-email"
+                  type="email"
+                  placeholder="you@organization.sa"
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                  required
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Organization Name */}
+            <div className="forest-slide-up" style={{ marginBottom: 16, animationDelay: "0.3s" }}>
+              <label htmlFor="reg-org" style={labelStyle}>Organization Name</label>
+              <div className="forest-input-wrap" style={inputWrapStyle}>
+                <svg {...iconProps}>
+                  <rect x="4" y="2" width="16" height="20" rx="2" />
+                  <path d="M9 22V12h6v10" />
+                  <path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01" />
+                </svg>
+                <input
+                  id="reg-org"
+                  type="text"
+                  placeholder="Your company or entity name"
+                  value={form.organizationName}
+                  onChange={(e) => updateField("organizationName", e.target.value)}
+                  required
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="forest-slide-up" style={{ marginBottom: 16, animationDelay: "0.35s" }}>
+              <label htmlFor="reg-password" style={labelStyle}>Password</label>
+              <div className="forest-input-wrap" style={inputWrapStyle}>
+                <svg {...iconProps}>
+                  <rect x="3" y="11" width="18" height="11" rx="3" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <input
+                  id="reg-password"
+                  type="password"
+                  placeholder="Minimum 8 characters"
+                  value={form.password}
+                  onChange={(e) => updateField("password", e.target.value)}
+                  required
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="forest-slide-up" style={{ marginBottom: 24, animationDelay: "0.4s" }}>
+              <label htmlFor="reg-confirm" style={labelStyle}>Confirm Password</label>
+              <div className="forest-input-wrap" style={inputWrapStyle}>
+                <svg {...iconProps}>
+                  <rect x="3" y="11" width="18" height="11" rx="3" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <input
+                  id="reg-confirm"
+                  type="password"
+                  placeholder="Re-enter password"
+                  value={form.confirmPassword}
+                  onChange={(e) => updateField("confirmPassword", e.target.value)}
+                  required
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Create Account button — green gradient matching the forest */}
+            <button
+              type="submit"
+              disabled={loading || success}
+              className="forest-slide-up"
+              style={{
+                animationDelay: "0.45s",
+                width: "100%",
+                height: 48,
+                borderRadius: 12,
+                border: "none",
+                background: "linear-gradient(135deg, #2a6348, #38865f)",
+                color: "#fff",
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: loading || success ? "not-allowed" : "none",
+                opacity: loading ? 0.6 : 1,
+                transition: "all 0.3s",
+                boxShadow: "0 4px 20px rgba(42, 99, 72, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              {success ? (
+                "Redirecting…"
+              ) : loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating account...
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  Creating account…
                 </>
               ) : (
-                "Register"
+                "Create Account →"
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neu-darker/50" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-neu-base px-3 text-sovereign-stone">Already have an account?</span>
-              </div>
-            </div>
+          {/* ── Footer links ──────────────────────────────────────── */}
+          <div className="forest-fade-in" style={{ textAlign: "center", marginTop: 16, animationDelay: "0.5s" }}>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginBottom: 2 }}>
+              Already registered?
+            </p>
             <Link
               href="/login"
-              className="inline-block mt-3 text-sm text-sovereign-gold hover:text-sovereign-gold/80 font-medium transition-colors"
+              style={{
+                fontSize: 13,
+                color: "rgba(255,255,255,0.5)",
+                textDecoration: "none",
+                cursor: "none",
+              }}
             >
-              Sign in &rarr;
+              Sign in →
             </Link>
           </div>
         </div>
-
-        <p className="text-center text-xs text-sovereign-stone mt-8">
-          Powered by <span className="font-semibold text-sovereign-gold">Iozera Technologies</span>
-        </p>
       </div>
+
+      {/* Powered by — bottom center (hidden on mobile) */}
+      <div
+        className="forest-fade-in hidden sm:block"
+        style={{
+          position: "fixed",
+          bottom: 18,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+          fontSize: 9,
+          fontWeight: 400,
+          color: "rgba(255, 255, 255, 0.12)",
+          letterSpacing: 1.5,
+          animationDelay: "0.7s",
+        }}
+      >
+        Powered by Iozera Technologies
+      </div>
+
+      {/* Custom cursor dot (hidden on mobile via CSS) */}
+      <div
+        ref={cursorRef}
+        className="login-cursor-dot"
+        style={{
+          width: 5,
+          height: 5,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.5)",
+          position: "fixed",
+          pointerEvents: "none",
+          zIndex: 9999,
+          transform: "translate(-50%,-50%)",
+          boxShadow: "0 0 12px rgba(255,255,255,0.15)",
+        }}
+      />
     </div>
   );
 }
