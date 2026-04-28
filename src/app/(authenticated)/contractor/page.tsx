@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import DynamicShadowCard from "@/components/DynamicShadowCard";
@@ -61,20 +60,6 @@ interface ContractorStats {
 /* Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const TIER_LABELS: Record<string, { label: string; dot: string }> = {
-  T0: { label: "Unrated", dot: "#9a9488" },
-  T1: { label: "Bronze", dot: "rgba(160, 130, 100, 0.6)" },
-  T2: { label: "Silver", dot: "#8a8275" },
-  T3: { label: "Gold", dot: "#5C6FB5" },
-  T4: { label: "Platinum", dot: "#7a7265" },
-};
-
-function formatSAR(amount: number): string {
-  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`;
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
-  return String(amount);
-}
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -201,7 +186,6 @@ export default function ContractorHome() {
   const [stats, setStats] = useState<ContractorStats | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { data: session } = useSession();
   const saplingCanvasRef = useRef<HTMLCanvasElement>(null);
   const saplingDrawn = useRef(false);
 
@@ -230,16 +214,8 @@ export default function ContractorHome() {
 
   if (!stats) return null;
 
-  const org = stats.organization;
-  const trustTier = org?.trustTier ?? "T0";
-  const tierInfo = TIER_LABELS[trustTier] || TIER_LABELS.T0;
-  const firstName = session?.user?.name?.split(" ")[0] ?? org?.name?.split(" ")[0] ?? "there";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-
-  const activeApps = stats.applications.filter(
-    (a) => !["DRAFT", "REJECTED"].includes(a.status)
-  ).length;
 
   const pulse = buildPulse(stats);
   const timeline = buildTimeline(stats);
@@ -297,7 +273,7 @@ export default function ContractorHome() {
               color: "rgba(30, 34, 53, 0.85)",
             }}
           >
-            {greeting}, {firstName}
+            {greeting}, Patterson Team
           </div>
           <p
             style={{
@@ -307,7 +283,7 @@ export default function ContractorHome() {
               marginTop: 4,
             }}
           >
-            {org?.name ?? "Your Organization"}
+            Patterson Dental
           </p>
           <div className="mt-3">
             <span
@@ -321,7 +297,7 @@ export default function ContractorHome() {
             >
               <span
                 className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: tierInfo.dot }}
+                style={{ background: "#5C6FB5" }}
               />
               <span
                 style={{
@@ -330,7 +306,7 @@ export default function ContractorHome() {
                   color: "rgba(160, 130, 100, 0.7)",
                 }}
               >
-                {tierInfo.label} · {trustTier}
+                Supply Intelligence · Live
               </span>
             </span>
           </div>
@@ -356,9 +332,9 @@ export default function ContractorHome() {
             {/* Stat cards — inset neumorphism */}
             <div className="grid grid-cols-3 gap-3 animate-in-3 contractor-stat-grid">
               {[
-                { label: "ACTIVE", value: activeApps, isMoney: false },
-                { label: "CONTRACTS", value: stats.activeContracts, isMoney: false },
-                { label: "PENDING", value: stats.totalReceived, isMoney: true },
+                { label: "ACTIVE SIGNALS", display: null as string | null, value: 7 },
+                { label: "FORECAST ORDERS", display: "$6.8K", value: 0 },
+                { label: "IMMEDIATE REORDERS", display: null as string | null, value: 3 },
               ].map((well) => (
                 <div
                   key={well.label}
@@ -394,12 +370,8 @@ export default function ContractorHome() {
                       lineHeight: 1,
                     }}
                   >
-                    {well.isMoney ? formatSAR(well.value) : <AnimatedCounter end={well.value} duration={800} />}
+                    {well.display ? well.display : <AnimatedCounter end={well.value} duration={800} />}
                   </p>
-                  {/* SAR subtitle — desktop only */}
-                  {well.isMoney && (
-                    <p className="hidden desktop:block" style={{ fontSize: 11, color: "rgba(30, 34, 53, 0.4)", marginTop: 4 }}>SAR</p>
-                  )}
                 </div>
               ))}
             </div>
@@ -475,7 +447,7 @@ export default function ContractorHome() {
                         marginBottom: 8,
                       }}
                     >
-                      Navigator Insight
+                      SUPPLY INSIGHT
                     </p>
                     <p
                       className="contractor-insight-body"
@@ -487,20 +459,8 @@ export default function ContractorHome() {
                         marginBottom: 12,
                       }}
                     >
-                      {(() => {
-                        const topApp = stats.applications.find((a) => a.compositeScore !== null);
-                        if (topApp) {
-                          const score = Math.round(topApp.compositeScore!);
-                          const status = topApp.status === "SHORTLISTED" ? "shortlisted" : topApp.status === "IN_REVIEW" ? "under review" : "submitted";
-                          return `Your application scored ${score} and is ${status}. Review committees typically decide within 10\u201315 days.${stats.openRfps > 0 ? ` While you wait \u2014 there\u2019s ${stats.openRfps} open RFP${stats.openRfps > 1 ? "s" : ""} matching your profile.` : ""}`;
-                        }
-                        if (stats.openRfps > 0) {
-                          return `There ${stats.openRfps === 1 ? "is" : "are"} ${stats.openRfps} open RFP${stats.openRfps > 1 ? "s" : ""} matching your profile. Browse opportunities to find the right fit for your organization.`;
-                        }
-                        return "No urgent actions right now. We\u2019ll notify you when new opportunities matching your profile become available.";
-                      })()}
+                      IDENT.OS detected 7 active Patterson demand signals from 11 chairside observations. Implant-related cases are driving the highest projected order value.
                     </p>
-                    {stats.openRfps > 0 && (
                       <button
                         onClick={() => router.push("/contractor/rfps")}
                         className="cursor-pointer inline-flex items-center gap-1 contractor-insight-cta"
@@ -524,7 +484,7 @@ export default function ContractorHome() {
                           if (arrow) arrow.style.transform = "translateX(0)";
                         }}
                       >
-                        View matching opportunities{" "}
+                        View demand signals{" "}
                         <span
                           className="insight-arrow"
                           style={{ display: "inline-block", transition: "transform 0.2s ease" }}
@@ -532,7 +492,6 @@ export default function ContractorHome() {
                           →
                         </span>
                       </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -614,7 +573,7 @@ export default function ContractorHome() {
 /* Application Status Tracker (right column)                           */
 /* ------------------------------------------------------------------ */
 
-const TRACKER_STEPS = ["Submitted", "Scored", "Review", "Decision"] as const;
+const TRACKER_STEPS = ["Captured", "AI Structured", "Order Review", "Order Created"] as const;
 
 function statusToStep(status: string): number {
   switch (status) {
@@ -644,7 +603,6 @@ function ApplicationTracker({
 
   const currentStep = statusToStep(topApp.status);
   const aiScore = topApp.compositeScore ? Math.round(topApp.compositeScore) : null;
-  const title = topApp.rfp.title;
 
   return (
     <div
@@ -684,7 +642,7 @@ function ApplicationTracker({
           marginBottom: 14,
         }}
       >
-        Application Status
+        DEMAND PIPELINE
       </p>
 
       {/* Project title */}
@@ -698,7 +656,7 @@ function ApplicationTracker({
           marginBottom: 18,
         }}
       >
-        {title}
+        Chairside Observation → Patterson Order
       </p>
 
       {/* Progress tracker — horizontal steps */}
@@ -839,11 +797,11 @@ function ApplicationTracker({
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" style={{ color: "rgba(75, 165, 195, 0.6)" }} />
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: "rgba(30, 34, 53, 0.4)" }}>
-                AI SCORE
+                ORDER CONFIDENCE
               </span>
             </div>
             <p style={{ fontSize: 11, color: "rgba(30, 34, 53, 0.35)", marginTop: 2 }}>
-              Composite evaluation
+              Clinical + supply signal
             </p>
           </div>
         </div>
@@ -875,8 +833,8 @@ function buildPulse(stats: ContractorStats): PulseItem | null {
         accent: "accent-left-green",
         icon: AlertTriangle,
         iconColor: "rgba(75, 165, 195, 0.8)",
-        title: `Action required: Complete questionnaire`,
-        subtitle: `Interview questionnaire for "${app.rfp.title}" is waiting for your response.`,
+        title: `Action required: Review demand signal`,
+        subtitle: `Clinic demand signal for "${app.rfp.title}" requires your review.`,
         href: `/contractor/applications/${app.id}/questionnaire`,
         urgency: 0,
       });
@@ -885,8 +843,8 @@ function buildPulse(stats: ContractorStats): PulseItem | null {
         accent: "accent-left-purple",
         icon: Sparkles,
         iconColor: "#5C6FB5",
-        title: `Your application for ${app.rfp.title.replace(/\s*—.*$/, "")} was scored`,
-        subtitle: `AI Score: ${Math.round(app.compositeScore)} — View score breakdown →`,
+        title: `Order confidence scored for ${app.rfp.title.replace(/\s*—.*$/, "")}`,
+        subtitle: `Order Confidence: ${Math.round(app.compositeScore)} — View signal breakdown →`,
         href: "/contractor/applications",
         urgency: 1,
       });
@@ -895,8 +853,8 @@ function buildPulse(stats: ContractorStats): PulseItem | null {
         accent: "accent-left-green",
         icon: CheckCircle2,
         iconColor: "#5CA03E",
-        title: `Application approved!`,
-        subtitle: `Your proposal for "${app.rfp.title}" has been approved. Check your contracts.`,
+        title: `Order created!`,
+        subtitle: `Demand signal for "${app.rfp.title}" converted to order. Check your pipeline.`,
         href: "/contractor/contracts",
         urgency: 2,
       });
@@ -918,34 +876,25 @@ interface TimelineItem {
   time: string;
 }
 
-function buildTimeline(stats: ContractorStats): TimelineItem[] {
-  const items: TimelineItem[] = [];
-
-  for (const app of stats.applications) {
-    if (app.compositeScore !== null) {
-      items.push({
-        id: `scored-${app.id}`,
-        text: `AI scored your application for ${app.rfp.title}`,
-        dotColor: "#5C6FB5",
-        time: app.submittedAt ? relativeTime(app.submittedAt) : relativeTime(app.createdAt),
-      });
-    }
-    if (app.submittedAt) {
-      items.push({
-        id: `submitted-${app.id}`,
-        text: `Application submitted for ${app.rfp.title}`,
-        dotColor: "#5CA03E",
-        time: relativeTime(app.submittedAt),
-      });
-    }
-  }
-
-  items.push({
-    id: "registered",
-    text: "Registration completed",
-    dotColor: "#5CA03E",
-    time: "Feb 15",
-  });
-
-  return items.slice(0, 5);
+function buildTimeline(_stats: ContractorStats): TimelineItem[] {
+  return [
+    {
+      id: "signal-1",
+      text: "Bone graft reorder signal created from Maria Lopez implant opportunity",
+      dotColor: "#5C6FB5",
+      time: "Today",
+    },
+    {
+      id: "signal-2",
+      text: "Endo materials demand detected from James Carter urgent pain case",
+      dotColor: "#5CA03E",
+      time: "Today",
+    },
+    {
+      id: "signal-3",
+      text: "Ortho supply usage forecast updated from Ava Singh recall",
+      dotColor: "#5CA03E",
+      time: "Today",
+    },
+  ];
 }

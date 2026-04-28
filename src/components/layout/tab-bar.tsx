@@ -3,10 +3,11 @@
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  FileText,
+  Mic,
   GitPullRequestArrow,
-  Landmark,
+  CalendarClock,
   Search,
+  FileText,
   FolderKanban,
   Scale,
   Wallet,
@@ -32,10 +33,10 @@ export interface TabConfig {
 
 export const FM_TABS: TabConfig[] = [
   { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-  { label: "RFPs", href: "/dashboard/rfps", icon: FileText },
+  { label: "Observe", href: "/dashboard/rfps", icon: Mic },
   { label: "Navigator", href: "#navigator", icon: LayoutDashboard, isOrb: true },
   { label: "Pipeline", href: "/dashboard/applications", icon: GitPullRequestArrow, notificationDot: true },
-  { label: "Grants", href: "/dashboard/grants", icon: Landmark },
+  { label: "Recall", href: "/dashboard/grants", icon: CalendarClock },
 ];
 
 export const CONTRACTOR_TABS: TabConfig[] = [

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NeuProgress } from "@/components/ui/neu-progress";
@@ -16,16 +16,8 @@ import {
   Loader2,
   CheckCircle2,
   Clock,
-  XCircle,
   ArrowRight,
-  Eye,
-  FileText,
   AlertTriangle,
-  Shield,
-  Camera,
-  Plane,
-  BarChart3,
-  TreePine,
 } from "lucide-react";
 import DynamicShadowCard from "@/components/DynamicShadowCard";
 
@@ -33,772 +25,353 @@ import DynamicShadowCard from "@/components/DynamicShadowCard";
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
 
-interface MilestoneItem {
+interface RecallPatient {
   id: string;
-  sequence: number;
-  title: string;
-  status: string;
-  disbursementAmount: number;
-  disbursementPct: number;
-  verifiedAt: string | null;
+  patient: string;
+  finding: string;
+  secondary: string;
+  aiPriority: number;
+  recommendation: string;
+  whyNow: string;
+  estimatedValue: string;
+  badge: string;
+  urgency: "urgent" | "high" | "routine";
+  supplySignal: string;
+  showProbability?: string;
+  valueContext: string;
 }
-
-interface DisbursementItem {
-  id: string;
-  amount: number;
-  status: string;
-  releasedAt: string | null;
-}
-
-interface ContractItem {
-  id: string;
-  awardAmount: number;
-  justification: string | null;
-  status: string;
-  createdAt: string;
-  organization: { id: string; name: string; trustTier: string };
-  application: {
-    id: string;
-    compositeScore: number | null;
-    rfp: { id: string; title: string };
-  };
-  program: { id: string; name: string };
-  milestones: MilestoneItem[];
-  disbursements: DisbursementItem[];
-}
-
-interface EvidenceRecord {
-  id: string;
-  type: string;
-  filePath: string | null;
-  submittedAt: string;
-  reviewStatus: string;
-  slideSolveCheck: string;
-  milestone: { id: string; sequence: number; title: string };
-}
-
-const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  PHOTO: Camera,
-  DRONE: Plane,
-  SENSOR: BarChart3,
-  REPORT: FileText,
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  PHOTO: "Photo",
-  DRONE: "Drone",
-  SENSOR: "Sensor",
-  REPORT: "Report",
-};
 
 /* ------------------------------------------------------------------ */
-/* Urgency helpers                                                     */
+/* Static Demo Data                                                    */
 /* ------------------------------------------------------------------ */
 
-type Urgency = "evidence" | "overdue" | "ontrack";
+const DEMO_RECALLS: RecallPatient[] = [
+  {
+    id: "recall-1",
+    patient: "Maria Lopez",
+    finding: "Missing teeth #19, #30",
+    secondary: "No pain reported",
+    aiPriority: 91,
+    recommendation: "Schedule implant consultation",
+    whyNow: "Delay reduces implant success probability",
+    estimatedValue: "$4,000–$6,000",
+    badge: "HIGH VALUE",
+    urgency: "high",
+    supplySignal: "Likely supply demand: Bone graft + membrane",
+    valueContext: "Implant case opportunity",
+  },
+  {
+    id: "recall-2",
+    patient: "James Carter",
+    finding: "Severe pain — tooth #14",
+    secondary: "Prior root canal history",
+    aiPriority: 88,
+    recommendation: "Urgent endo consult",
+    whyNow: "Pain-driven case — high show probability",
+    estimatedValue: "$1,200–$2,500",
+    badge: "URGENT",
+    urgency: "urgent",
+    supplySignal: "Likely supply demand: Endo kit + anesthetic",
+    showProbability: "High show probability (pain-driven)",
+    valueContext: "Urgent endo case",
+  },
+  {
+    id: "recall-3",
+    patient: "Ava Singh",
+    finding: "Ortho recall — elastic change",
+    secondary: "Assistant-driven visit",
+    aiPriority: 87,
+    recommendation: "Routine ortho visit",
+    whyNow: "Recurring revenue",
+    estimatedValue: "$300+",
+    badge: "RECURRING",
+    urgency: "routine",
+    supplySignal: "Likely supply demand: Elastics + ortho supplies",
+    valueContext: "Recurring ortho revenue",
+  },
+];
 
-function getUrgency(contract: ContractItem): Urgency {
-  const hasEvidence = contract.milestones.some(
-    (m) => m.status === "EVIDENCE_SUBMITTED"
-  );
-  if (hasEvidence) return "evidence";
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
 
-  const hasFailed = contract.milestones.some((m) => m.status === "FAILED");
-  if (hasFailed) return "overdue";
-
-  return "ontrack";
-}
-
-function urgencyOrder(u: Urgency): number {
-  if (u === "evidence") return 0;
-  if (u === "overdue") return 1;
-  return 2;
-}
-
-function accentBarClass(u: Urgency): string {
-  if (u === "evidence") return "accent-left-amber";
-  if (u === "overdue") return "accent-left-critical";
+function accentBarClass(urgency: RecallPatient["urgency"]): string {
+  if (urgency === "urgent") return "accent-left-critical";
+  if (urgency === "high") return "accent-left-amber";
   return "";
 }
 
-function nextActionBadge(contract: ContractItem) {
-  const evidenceMs = contract.milestones.find(
-    (m) => m.status === "EVIDENCE_SUBMITTED"
-  );
-  if (evidenceMs) {
-    return (
-      <Badge variant="neu-amber">
-        <Eye className="w-3 h-3 mr-1" />
-        Review Evidence
-      </Badge>
-    );
-  }
+function badgeVariant(badge: string): "neu-critical" | "neu-gold" | "neu-verified" | "neu" {
+  if (badge === "URGENT") return "neu-critical";
+  if (badge === "HIGH VALUE") return "neu-gold";
+  if (badge === "RECURRING") return "neu-verified";
+  return "neu";
+}
 
-  const failedMs = contract.milestones.find((m) => m.status === "FAILED");
-  if (failedMs) {
-    return (
-      <Badge variant="neu-critical">
-        <AlertTriangle className="w-3 h-3 mr-1" />
-        Overdue
-      </Badge>
-    );
-  }
-
-  const pendingMs = contract.milestones.find((m) => m.status === "PENDING");
-  if (pendingMs) {
-    return (
-      <Badge variant="neu">
-        <Clock className="w-3 h-3 mr-1" />
-        Awaiting
-      </Badge>
-    );
-  }
-
-  return (
-    <Badge variant="neu-verified">
-      <CheckCircle2 className="w-3 h-3 mr-1" />
-      Complete
-    </Badge>
-  );
+function priorityVariant(score: number): "gold" | "green" | "amber" | "critical" {
+  if (score >= 85) return "gold";
+  if (score >= 70) return "green";
+  if (score >= 50) return "amber";
+  return "critical";
 }
 
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function ActiveGrantsPage() {
+export default function RecallEnginePage() {
   return (
     <Suspense fallback={<div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-sovereign-gold" /></div>}>
-      <ActiveGrantsInner />
+      <RecallEngineInner />
     </Suspense>
   );
 }
 
-function ActiveGrantsInner() {
+function RecallEngineInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const filterEvidence = searchParams.get("filter") === "evidence";
-  const [contracts, setContracts] = useState<ContractItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedContract, setSelectedContract] =
-    useState<ContractItem | null>(null);
-  const [evidenceForContract, setEvidenceForContract] = useState<EvidenceRecord[]>([]);
-  const [reviewingId, setReviewingId] = useState<string | null>(null);
-  const [alinEncoded, setAlinEncoded] = useState(false);
-
-  useEffect(() => {
-    try { setAlinEncoded(localStorage.getItem("ifundos-alin-encoded") === "true"); } catch {}
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/contracts")
-      .then((r) => r.json())
-      .then((data) => setContracts(data.contracts || []))
-      .catch(() => setError("Failed to load grants"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  /* Impact summary data (mobile Grants page) */
-  const [impactData, setImpactData] = useState<{
-    treesPlanted: number;
-    activeGrants: number;
-    completedGrants: number;
-    avgAiScore: number;
-  } | null>(null);
-
-  useEffect(() => {
-    fetch("/api/impact")
-      .then((r) => r.json())
-      .then((data) => {
-        setImpactData({
-          treesPlanted: data.summary?.totalTreesPlanted ?? 0,
-          activeGrants: data.summary?.activeContracts ?? 0,
-          completedGrants: data.summary?.completedContracts ?? 0,
-          avgAiScore: data.applicationStats?.avgScore ?? 0,
-        });
-      })
-      .catch(() => { /* silent — impact section just won't show */ });
-  }, []);
-
-  /* Fetch evidence when a contract is selected */
-  const fetchEvidence = useCallback((contractId: string) => {
-    fetch(`/api/evidence?contractId=${contractId}`)
-      .then((r) => r.json())
-      .then((data) => setEvidenceForContract(data.evidenceRecords || []))
-      .catch(() => setEvidenceForContract([]));
-  }, []);
-
-  const openContract = useCallback((contract: ContractItem) => {
-    setSelectedContract(contract);
-    fetchEvidence(contract.id);
-  }, [fetchEvidence]);
-
-  async function handleEvidenceReview(id: string, decision: "APPROVED" | "REJECTED") {
-    setReviewingId(id);
-    try {
-      const res = await fetch(`/api/evidence/${id}/review`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          decision,
-          slideSolveCheck: decision === "APPROVED" ? "PASS" : "FAIL",
-        }),
-      });
-      if (res.ok && selectedContract) {
-        fetchEvidence(selectedContract.id);
-      }
-    } catch {
-      // handled
-    } finally {
-      setReviewingId(null);
-    }
-  }
-
-  /* Stats */
-  const summaryStats = useMemo(() => {
-    const active = contracts.filter((c) => c.status === "ACTIVE").length;
-    const totalDisbursed = contracts.reduce(
-      (s, c) =>
-        s +
-        c.disbursements
-          .filter((d) => d.status === "RELEASED" || d.status === "APPROVED")
-          .reduce((ds, d) => ds + d.amount, 0),
-      0
-    );
-    const pendingEvidence = contracts.reduce(
-      (s, c) =>
-        s +
-        c.milestones.filter((m) => m.status === "EVIDENCE_SUBMITTED").length,
-      0
-    );
-    return { active, totalDisbursed, pendingEvidence };
-  }, [contracts]);
-
-  /* Sort by urgency, optionally filter to evidence-pending only */
-  const sorted = useMemo(() => {
-    let list = [...contracts];
-    if (filterEvidence) {
-      list = list.filter((c) => c.milestones.some((m) => m.status === "EVIDENCE_SUBMITTED"));
-    }
-    return list.sort(
-      (a, b) => urgencyOrder(getUrgency(a)) - urgencyOrder(getUrgency(b))
-    );
-  }, [contracts, filterEvidence]);
-
-  /* ---- Loading state ---- */
-  if (loading) {
-    return (
-      <div className="space-y-6 pb-safe page-enter">
-        <div>
-          <div className="skeleton-bar h-2 w-20 mb-2" style={{ opacity: 0.4 }} />
-          <div className="skeleton-bar h-6 w-36" style={{ opacity: 0.5 }} />
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {[1,2,3].map(i => (
-            <div key={i} className="skeleton-card p-4" style={{ height: 90 }}>
-              <div className="flex flex-col items-center gap-2">
-                <div className="skeleton-bar h-8 w-12" style={{ opacity: 0.5 }} />
-                <div className="skeleton-bar h-2 w-14" style={{ opacity: 0.3 }} />
-              </div>
-            </div>
-          ))}
-        </div>
-        {[1,2].map(i => (
-          <div key={i} className="skeleton-card p-4" style={{ height: 120 }}>
-            <div className="skeleton-bar h-4 w-40 mb-2" style={{ opacity: 0.5 }} />
-            <div className="skeleton-bar h-3 w-32 mb-3" style={{ opacity: 0.3 }} />
-            <div className="skeleton-bar h-2 w-full mb-2" style={{ opacity: 0.2 }} />
-            <div className="flex items-center justify-between">
-              <div className="skeleton-bar h-5 w-20" style={{ opacity: 0.3 }} />
-              <div className="skeleton-bar h-5 w-16" style={{ opacity: 0.3 }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  /* ---- Error state ---- */
-  if (error) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <p className="text-critical">{error}</p>
-      </div>
-    );
-  }
+  const [selectedRecall, setSelectedRecall] = useState<RecallPatient | null>(null);
 
   return (
     <div className="space-y-6 pb-safe page-enter">
       {/* ── Page Header ── */}
       <div className="animate-in-1">
-        <p className="text-eyebrow">{filterEvidence ? "EVIDENCE REVIEW" : "GRANTS"}</p>
+        <p className="text-eyebrow">RECALL ENGINE</p>
         <h1 className="text-xl font-bold text-sovereign-charcoal mt-1">
-          {filterEvidence ? "Grants with Pending Evidence" : "Active Grants"}
+          AI-Prioritized Patient Recall
         </h1>
+        <p className="text-[12px] text-sovereign-stone mt-0.5">
+          Who to bring back, when, and why
+        </p>
       </div>
 
       {/* ── 3 Compact Stat Wells ── */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 animate-in-2">
-        {/* Active count */}
+        {/* Patients to Recall */}
         <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-6 flex flex-col items-center justify-center">
           <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 300, color: "#2C3044" }}>
-            <AnimatedCounter end={summaryStats.active} duration={1000} />
+            <AnimatedCounter end={11} duration={1000} />
           </span>
-          <span className="label-style mt-1">Active</span>
+          <span className="label-style mt-1 text-center leading-tight">Patients to Recall</span>
+          <span className="text-[9px] text-sovereign-stone mt-0.5">This week</span>
         </DynamicShadowCard>
 
-        {/* Total Disbursed */}
+        {/* High Value Opportunities */}
         <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-6 flex flex-col items-center justify-center">
           <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 300, color: "#2C3044" }}>
-            {formatSAR(summaryStats.totalDisbursed)}
+            <AnimatedCounter end={6} duration={1000} />
           </span>
-          <span className="label-style mt-1">Disbursed</span>
+          <span className="label-style mt-1 text-center leading-tight">High Value</span>
+          <span className="text-[9px] text-sovereign-stone mt-0.5">Implant / Crown / Endo</span>
         </DynamicShadowCard>
 
-        {/* Pending Evidence */}
+        {/* Expected Recall Revenue */}
         <DynamicShadowCard inset intensity={2} className="neu-stat-inset p-3 sm:p-6 flex flex-col items-center justify-center">
-          <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 300, color: "#2C3044" }}>
-            <AnimatedCounter end={summaryStats.pendingEvidence} duration={1000} />
+          <span className="stat-number" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(18px, 4.5vw, 28px)", fontWeight: 300, color: "#2C3044" }}>
+            $<AnimatedCounter end={18500} duration={1200} />
           </span>
-          <span className="label-style mt-1">Pending</span>
+          <span className="label-style mt-1 text-center leading-tight">Expected Recall Revenue</span>
+          <span className="text-[9px] text-sovereign-stone mt-0.5">Next 7 Days</span>
         </DynamicShadowCard>
       </div>
 
-      {/* ── Grant Cards ── */}
-      {sorted.length === 0 ? (
-        <DynamicShadowCard inset intensity={1} className="neu-empty-inset p-8">
-          <div className="smart-empty">
-            <div className="smart-empty-icon">
-              <FileText className="w-7 h-7" style={{ color: "var(--text-muted)" }} />
+      {/* ── Recall Cards — extra top margin for clear visual separation ── */}
+      <div className="space-y-3 stagger-children animate-in-3" style={{ marginTop: 32 }}>
+        {DEMO_RECALLS.map((recall) => (
+          <DynamicShadowCard
+            key={recall.id}
+            intensity={2}
+            onClick={() => setSelectedRecall(recall)}
+            className={`relative w-full text-left bg-neu-base rounded-[18px] shadow-neu-raised neu-press p-4 ${accentBarClass(recall.urgency)} transition-shadow cursor-pointer`}
+          >
+            {/* Top row: patient name + badge */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-bold text-sovereign-charcoal truncate leading-snug">
+                  {recall.patient}
+                </p>
+                <p className="text-xs text-sovereign-stone truncate mt-0.5 italic">
+                  {recall.finding}
+                </p>
+                <p className="text-xs text-sovereign-stone/60 truncate mt-0.5 hidden sm:block">
+                  {recall.secondary}
+                </p>
+              </div>
+              <Badge variant={badgeVariant(recall.badge)} className="shrink-0 ml-3">
+                {recall.badge}
+              </Badge>
             </div>
-            <h3>No grants awarded yet</h3>
-            <p>
-              Grants appear here after applications are shortlisted and contracts awarded from the Pipeline.
-              Reviewing pending applications is the first step toward active grants.
+
+            {/* AI Priority Score bar */}
+            <NeuProgress
+              value={recall.aiPriority}
+              variant={priorityVariant(recall.aiPriority)}
+              size="sm"
+              showValue
+              label="AI Priority Score"
+              className="mb-1"
+            />
+            <p className="text-[10px] text-sovereign-stone/55 mb-3">High Value · Act Now</p>
+
+            {/* Recall recommendation */}
+            <p className="text-[12px] font-semibold text-sovereign-charcoal mb-1">
+              {recall.recommendation}
             </p>
-            <button
-              onClick={() => router.push('/dashboard/applications')}
-              className="smart-empty-action"
+
+            {/* Why now + value row */}
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-sovereign-stone/70 flex items-center gap-1">
+                <Clock className="w-3 h-3 shrink-0" />
+                {recall.whyNow}
+              </p>
+              <span className="font-mono text-xs font-semibold text-sovereign-charcoal ml-2 shrink-0">
+                {recall.estimatedValue}
+              </span>
+            </div>
+
+            {/* Show probability signal (urgent cases only) */}
+            {recall.showProbability && (
+              <p className="text-[10px] text-sovereign-stone/55 mt-1">
+                {recall.showProbability}
+              </p>
+            )}
+
+            {/* Supply signal */}
+            <p className="text-[10px] text-sovereign-stone/45 mt-1.5">
+              {recall.supplySignal}
+            </p>
+          </DynamicShadowCard>
+        ))}
+      </div>
+
+      {/* ── AI Insight Panel ── */}
+      <div className="animate-in-4">
+        <div style={{ height: 1, background: "rgba(30, 34, 53, 0.08)", marginBottom: 16 }} />
+        <p
+          className="mb-3"
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: 2.5,
+            textTransform: "uppercase" as const,
+            color: "rgba(30, 34, 53, 0.5)",
+          }}
+        >
+          AI INSIGHT
+        </p>
+        <DynamicShadowCard inset intensity={1} className="rounded-[18px] p-4">
+          <div className="flex items-start gap-3">
+            <div
+              className="shrink-0 flex items-center justify-center rounded-xl"
+              style={{ width: 32, height: 32, background: "rgba(92, 111, 181, 0.10)" }}
             >
-              Go to Pipeline <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+              <AlertTriangle className="w-4 h-4" style={{ color: "rgba(92, 111, 181, 0.65)" }} />
+            </div>
+            <p
+              style={{
+                fontSize: 13,
+                lineHeight: 1.65,
+                color: "rgba(30, 34, 53, 0.7)",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Pain + implant cases drive majority of revenue.{" "}
+              Prioritize these for immediate scheduling.
+            </p>
           </div>
         </DynamicShadowCard>
-      ) : (
-        <div className="space-y-3 stagger-children animate-in-3">
-          {sorted.map((contract) => {
-            const urgency = getUrgency(contract);
-            const totalMs = contract.milestones.length;
-            const verifiedMs = contract.milestones.filter(
-              (m) => m.status === "VERIFIED"
-            ).length;
-            const progressPct = totalMs > 0 ? Math.round((verifiedMs / totalMs) * 100) : 0;
 
-            return (
-              <DynamicShadowCard
-                key={contract.id}
-                intensity={2}
-                onClick={() => openContract(contract)}
-                className={`relative w-full text-left bg-neu-base rounded-[18px] shadow-neu-raised neu-press p-4 ${accentBarClass(urgency)} transition-shadow`}
-              >
-                {/* Top row: contractor + budget */}
-                <div className="flex items-start justify-between mb-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[15px] font-bold text-sovereign-charcoal truncate leading-snug">
-                      {contract.organization.name}
-                    </p>
-                    <p className="text-xs text-sovereign-stone truncate mt-0.5">
-                      {contract.application.rfp.title}
-                    </p>
-                  </div>
-                  <span className="font-mono text-sm font-semibold text-sovereign-charcoal ml-3 shrink-0 tabular-nums">
-                    {formatSAR(contract.awardAmount)}
-                  </span>
-                </div>
+        {/* Link to Pipeline */}
+        <button
+          onClick={() => router.push("/dashboard/applications")}
+          className="mt-3 w-full text-center text-xs font-semibold cursor-pointer transition-colors"
+          style={{ color: "var(--accent)", padding: "8px 0" }}
+        >
+          View Processing Pipeline <ArrowRight className="w-3 h-3 inline ml-1" style={{ verticalAlign: "middle" }} />
+        </button>
+      </div>
 
-                {/* Progress bar */}
-                <NeuProgress
-                  value={progressPct}
-                  variant={
-                    urgency === "overdue"
-                      ? "critical"
-                      : urgency === "evidence"
-                        ? "amber"
-                        : "gold"
-                  }
-                  size="sm"
-                  showValue
-                  label={`${verifiedMs}/${totalMs} milestones`}
-                  className="mb-2"
-                />
-
-                {/* ALIN Protection Status */}
-                {alinEncoded && (
-                  <div
-                    className="flex items-center gap-2 mb-2"
-                    style={{
-                      borderTop: "1px solid rgba(30, 34, 53, 0.06)",
-                      paddingTop: 8,
-                      marginTop: 4,
-                    }}
-                  >
-                    <Shield className="w-3 h-3 shrink-0" style={{ color: "rgba(74, 140, 106, 0.6)" }} />
-                    <div className="alin-thumb-sm" />
-                    <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(74, 140, 106, 0.85)" }}>
-                      ALIN-Protected
-                    </span>
-                    <span style={{ color: "rgba(30,34,53,0.2)" }}>&middot;</span>
-                    <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(30,34,53,0.45)" }}>
-                      Disbursement ready
-                    </span>
-                    <CheckCircle2 className="w-3 h-3 shrink-0 ml-auto" style={{ color: "rgba(74, 140, 106, 0.6)" }} />
-                  </div>
-                )}
-
-                {/* Bottom row: next action badge */}
-                <div className="flex items-center justify-between">
-                  {nextActionBadge(contract)}
-                  <Badge variant="neu" className="text-[10px]">
-                    {contract.status}
-                  </Badge>
-                </div>
-              </DynamicShadowCard>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── Impact Summary (mobile-only — embedded in Grants) ── */}
-      {impactData && (
-        <div className="mt-6 desktop:hidden animate-in-4">
-          {/* Divider */}
-          <div style={{ height: 1, background: "rgba(30, 34, 53, 0.08)", marginBottom: 16 }} />
-
-          {/* Section header */}
-          <p
-            className="mb-3"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: 2.5,
-              textTransform: "uppercase" as const,
-              color: "rgba(30, 34, 53, 0.5)",
-            }}
-          >
-            IMPACT SUMMARY
-          </p>
-
-          {/* Compact stat row */}
-          <div className="grid grid-cols-3 gap-2">
-            <DynamicShadowCard inset intensity={1} className="p-3 flex flex-col items-center justify-center">
-              <TreePine className="w-4 h-4 mb-1" style={{ color: "var(--accent-light, #7B8DC8)" }} />
-              <span style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(20px, 5vw, 28px)",
-                fontWeight: 300,
-                color: "#2C3044",
-              }}>
-                <AnimatedCounter end={impactData.treesPlanted} duration={1000} />
-              </span>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase" as const, color: "rgba(30,34,53,0.45)", marginTop: 2 }}>Trees Planted</span>
-            </DynamicShadowCard>
-
-            <DynamicShadowCard inset intensity={1} className="p-3 flex flex-col items-center justify-center">
-              <CheckCircle2 className="w-4 h-4 mb-1" style={{ color: "var(--accent-light, #7B8DC8)" }} />
-              <span style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(20px, 5vw, 28px)",
-                fontWeight: 300,
-                color: "#2C3044",
-              }}>
-                <AnimatedCounter end={impactData.activeGrants} duration={1000} />
-              </span>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase" as const, color: "rgba(30,34,53,0.45)", marginTop: 2 }}>
-                Active ({impactData.completedGrants} done)
-              </span>
-            </DynamicShadowCard>
-
-            <DynamicShadowCard inset intensity={1} className="p-3 flex flex-col items-center justify-center">
-              <BarChart3 className="w-4 h-4 mb-1" style={{ color: "var(--accent-light, #7B8DC8)" }} />
-              <span style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(20px, 5vw, 28px)",
-                fontWeight: 300,
-                color: "#2C3044",
-              }}>
-                <AnimatedCounter end={impactData.avgAiScore} duration={1000} />
-              </span>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase" as const, color: "rgba(30,34,53,0.45)", marginTop: 2 }}>Avg AI Score</span>
-            </DynamicShadowCard>
-          </div>
-
-          {/* Full impact link */}
-          <button
-            onClick={() => router.push("/dashboard/impact")}
-            className="mt-3 w-full text-center text-xs font-semibold cursor-pointer transition-colors"
-            style={{ color: "var(--accent)", padding: "8px 0" }}
-          >
-            View full impact <ArrowRight className="w-3 h-3 inline ml-1" style={{ verticalAlign: "middle" }} />
-          </button>
-        </div>
-      )}
-
-      {/* ── Contract Detail Dialog ── */}
-      {selectedContract && (
+      {/* ── Recall Detail Dialog ── */}
+      {selectedRecall && (
         <Dialog
-          open={!!selectedContract}
-          onOpenChange={() => setSelectedContract(null)}
+          open={!!selectedRecall}
+          onOpenChange={() => setSelectedRecall(null)}
         >
           <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-neu-base border-0">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-sovereign-charcoal">
-                {selectedContract.organization.name}
+              <DialogTitle className="text-xl font-bold text-sovereign-charcoal">
+                {selectedRecall.patient}
               </DialogTitle>
+              <p className="text-[11px] text-sovereign-stone mt-0.5">
+                Source: Chairside Voice Capture
+              </p>
             </DialogHeader>
 
-            <div className="space-y-5 mt-3">
-              {/* Contract info tiles */}
+            <div className="space-y-6 mt-4 pb-safe">
+              {/* Info tiles */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <InfoTile label="RFP" value={selectedContract.application.rfp.title} />
-                <InfoTile label="Program" value={selectedContract.program.name} />
-                <InfoTile
-                  label="Award"
-                  value={`${formatSAR(selectedContract.awardAmount)} SAR`}
-                  mono
-                />
-                <InfoTile
-                  label="AI Score"
-                  value={
-                    selectedContract.application.compositeScore
-                      ? `${selectedContract.application.compositeScore}/100`
-                      : "N/A"
-                  }
-                />
-                <InfoTile
-                  label="Awarded"
-                  value={new Date(selectedContract.createdAt).toLocaleDateString()}
-                />
-                <InfoTile
-                  label="Trust Tier"
-                  value={selectedContract.organization.trustTier}
-                />
+                <InfoTile label="Finding" value={selectedRecall.finding} />
+                <InfoTile label="Status" value={selectedRecall.secondary} />
+                <InfoTile label="AI Priority" value={`${selectedRecall.aiPriority}`} mono />
+                <InfoTile label="Estimated Value" value={selectedRecall.estimatedValue} mono />
+                <InfoTile label="Case Type" value={selectedRecall.valueContext} />
+                <InfoTile label="Urgency" value={selectedRecall.urgency.toUpperCase()} />
               </div>
 
-              {selectedContract.justification && (
-                <div className="bg-neu-dark/40 rounded-2xl p-3">
-                  <p className="text-eyebrow mb-1">Award Justification</p>
-                  <p className="text-sm text-sovereign-charcoal">
-                    {selectedContract.justification}
+              {/* Recall Recommendation */}
+              <div className="bg-neu-dark/40 rounded-2xl p-4">
+                <p className="text-[10px] font-medium tracking-widest uppercase text-sovereign-stone/60 mb-2">Recall Recommendation</p>
+                <p className="text-[15px] font-semibold text-sovereign-charcoal">
+                  {selectedRecall.recommendation}
+                </p>
+              </div>
+
+              {/* Why Now */}
+              <div className="bg-neu-dark/40 rounded-2xl p-4">
+                <p className="text-[10px] font-medium tracking-widest uppercase text-sovereign-stone/60 mb-2">Why Now</p>
+                <div className="flex items-start gap-2">
+                  <Clock className="w-4 h-4 shrink-0 text-sovereign-stone mt-0.5" />
+                  <p className="text-[14px] text-sovereign-charcoal/85 leading-relaxed">
+                    {selectedRecall.whyNow}
                   </p>
                 </div>
-              )}
-
-              {/* Milestone Journey */}
-              <div>
-                <p className="text-eyebrow mb-3">Milestone Journey</p>
-                <div className="relative">
-                  <div className="absolute left-[18px] top-6 bottom-6 w-0.5 bg-sovereign-warm/30" />
-                  <div className="space-y-3">
-                    {selectedContract.milestones.map((m) => (
-                      <div key={m.id} className="relative flex items-start gap-3">
-                        <div
-                          className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-2 ${
-                            m.status === "VERIFIED"
-                              ? "bg-sovereign-gold border-sovereign-gold text-white"
-                              : m.status === "EVIDENCE_SUBMITTED"
-                                ? "bg-neu-light border-amber/60 text-amber"
-                                : m.status === "FAILED"
-                                  ? "bg-neu-light border-critical/60 text-critical"
-                                  : "bg-neu-light border-sovereign-warm/40 text-sovereign-stone"
-                          }`}
-                        >
-                          {m.status === "VERIFIED" ? (
-                            <CheckCircle2 className="w-5 h-5" />
-                          ) : m.status === "EVIDENCE_SUBMITTED" ? (
-                            <Eye className="w-4 h-4 animate-ember" />
-                          ) : m.status === "FAILED" ? (
-                            <XCircle className="w-5 h-5" />
-                          ) : (
-                            <span className="text-xs font-bold">{m.sequence}</span>
-                          )}
-                        </div>
-
-                        <div className="flex-1 neu-display-inset rounded-2xl p-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <p className="font-semibold text-sm text-sovereign-charcoal truncate">
-                                {m.title}
-                              </p>
-                              <Badge
-                                variant={
-                                  m.status === "VERIFIED"
-                                    ? "neu-verified"
-                                    : m.status === "EVIDENCE_SUBMITTED"
-                                      ? "neu-amber"
-                                      : m.status === "FAILED"
-                                        ? "neu-critical"
-                                        : "neu"
-                                }
-                                className="text-[10px] shrink-0"
-                              >
-                                {m.status.replace(/_/g, " ")}
-                              </Badge>
-                            </div>
-                            <span className="font-mono text-xs font-medium text-sovereign-charcoal ml-2 shrink-0 tabular-nums">
-                              {formatSAR(m.disbursementAmount)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-[11px] text-sovereign-stone">
-                            <span>{(m.disbursementPct * 100).toFixed(0)}% of contract</span>
-                            {m.verifiedAt && (
-                              <span className="flex items-center gap-1 text-verified">
-                                <CheckCircle2 className="w-3 h-3" />
-                                {new Date(m.verifiedAt).toLocaleDateString()}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
 
-              {/* Inline Evidence Review */}
-              {evidenceForContract.filter((e) => e.reviewStatus === "PENDING").length > 0 && (
-                <div>
-                  <p className="text-eyebrow mb-3">Pending Evidence</p>
-                  <div className="space-y-2">
-                    {evidenceForContract
-                      .filter((e) => e.reviewStatus === "PENDING")
-                      .map((ev) => {
-                        const TypeIcon = TYPE_ICONS[ev.type] || FileText;
-                        return (
-                          <div
-                            key={ev.id}
-                            className="relative neu-display-inset rounded-2xl p-3 accent-left-amber"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg bg-neu-dark/40 flex items-center justify-center">
-                                  <TypeIcon className="w-3.5 h-3.5 text-sovereign-stone" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-sovereign-charcoal">
-                                    M{ev.milestone.sequence}: {ev.milestone.title}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <Badge variant="neu" className="text-[10px]">
-                                      {TYPE_LABELS[ev.type] || ev.type}
-                                    </Badge>
-                                    <Badge
-                                      variant={ev.slideSolveCheck === "PASS" ? "neu-verified" : ev.slideSolveCheck === "FAIL" ? "neu-critical" : "neu"}
-                                      className="text-[10px]"
-                                    >
-                                      <Shield className="w-3 h-3 mr-0.5" />
-                                      AI: {ev.slideSolveCheck}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </div>
-                              <span className="text-[11px] text-sovereign-stone shrink-0">
-                                {new Date(ev.submittedAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <div className="flex gap-2 mt-2">
-                              <Button
-                                variant="neu-gold"
-                                size="sm"
-                                className="flex-1"
-                                disabled={reviewingId === ev.id}
-                                onClick={() => handleEvidenceReview(ev.id, "APPROVED")}
-                              >
-                                {reviewingId === ev.id ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
-                                ) : (
-                                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                                )}
-                                Approve
-                              </Button>
-                              <Button
-                                variant="neu-outline"
-                                size="sm"
-                                className="flex-1"
-                                disabled={reviewingId === ev.id}
-                                onClick={() => handleEvidenceReview(ev.id, "REJECTED")}
-                              >
-                                {reviewingId === ev.id ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
-                                ) : (
-                                  <XCircle className="w-3.5 h-3.5 mr-1" />
-                                )}
-                                Reject
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
+              {/* Priority Bar */}
+              <div className="bg-neu-dark/40 rounded-2xl p-4">
+                <p className="text-[10px] font-medium tracking-widest uppercase text-sovereign-stone/60 mb-3">AI Priority Score</p>
+                <NeuProgress
+                  value={selectedRecall.aiPriority}
+                  variant={priorityVariant(selectedRecall.aiPriority)}
+                  label={`${selectedRecall.aiPriority}`}
+                  showValue
+                />
+                <p className="text-[11px] text-sovereign-stone/50 mt-2">High Value · Act Now</p>
+              </div>
 
-              {/* Payment History */}
-              {selectedContract.disbursements.length > 0 && (
-                <div>
-                  <p className="text-eyebrow mb-3">Payment History</p>
-                  <div className="space-y-2">
-                    {selectedContract.disbursements.map((d) => (
-                      <div
-                        key={d.id}
-                        className="flex items-center justify-between neu-display-inset rounded-2xl p-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          {d.status === "RELEASED" ? (
-                            <CheckCircle2 className="w-4 h-4 text-sovereign-gold" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-sovereign-stone" />
-                          )}
-                          <span className="font-mono text-sm tabular-nums">
-                            {formatSAR(d.amount)} SAR
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={d.status === "RELEASED" ? "neu-gold" : "neu"}
-                            className="text-[10px]"
-                          >
-                            {d.status}
-                          </Badge>
-                          {d.releasedAt && (
-                            <span className="text-[11px] text-sovereign-stone">
-                              {new Date(d.releasedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Completion indicator */}
+              <div className="flex items-center gap-3 p-4 bg-neu-dark/40 rounded-2xl">
+                <CheckCircle2 className="w-4 h-4 text-verified shrink-0" />
+                <p className="text-[14px] font-medium text-sovereign-charcoal">
+                  AI recall queued — ready to schedule
+                </p>
+              </div>
 
               {/* Actions */}
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button
                   variant="neu-gold"
                   size="sm"
-                  onClick={() => {
-                    window.location.href = `/dashboard/rfps/${selectedContract.application.rfp.id}`;
-                  }}
+                  className="text-white font-semibold"
+                  onClick={() => setSelectedRecall(null)}
                 >
-                  View RFP
+                  Schedule Recall
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
                 <Button
                   variant="neu-outline"
                   size="sm"
-                  onClick={() => setSelectedContract(null)}
+                  onClick={() => setSelectedRecall(null)}
                 >
                   Close
                 </Button>
@@ -812,7 +385,7 @@ function ActiveGrantsInner() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Helpers                                                             */
+/* Sub-components                                                      */
 /* ------------------------------------------------------------------ */
 
 function InfoTile({
@@ -825,10 +398,10 @@ function InfoTile({
   mono?: boolean;
 }) {
   return (
-    <div className="neu-info-tile rounded-xl p-2.5">
-      <p className="text-eyebrow text-[10px]">{label}</p>
+    <div className="neu-info-tile rounded-xl p-3">
+      <p className="text-[10px] font-medium tracking-widest uppercase text-sovereign-stone/60">{label}</p>
       <p
-        className={`text-sm font-semibold text-sovereign-charcoal mt-0.5 truncate ${
+        className={`text-[14px] font-semibold text-sovereign-charcoal mt-1 truncate ${
           mono ? "font-mono tabular-nums" : ""
         }`}
       >
@@ -836,11 +409,4 @@ function InfoTile({
       </p>
     </div>
   );
-}
-
-function formatSAR(amount: number): string {
-  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`;
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
-  return String(amount);
 }

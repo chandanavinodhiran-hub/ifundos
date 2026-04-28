@@ -25,17 +25,17 @@ export interface NavItem {
 export const roleNavigation: Record<string, NavItem[]> = {
   FUND_MANAGER: [
     { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-    { label: "RFPs", href: "/dashboard/rfps", icon: FileText },
+    { label: "Observations", href: "/dashboard/rfps", icon: FileText },
     { label: "Pipeline", href: "/dashboard/applications", icon: GitPullRequestArrow },
-    { label: "Grants", href: "/dashboard/grants", icon: Landmark },
-    { label: "Impact", href: "/dashboard/impact", icon: TrendingUp },
+    { label: "Recall Engine", href: "/dashboard/grants", icon: Landmark },
+    { label: "Patterson Signals", href: "/dashboard/impact", icon: TrendingUp },
   ],
   CONTRACTOR: [
     { label: "Home", href: "/contractor", icon: LayoutDashboard },
-    { label: "Opportunities", href: "/contractor/rfps", icon: Search },
-    { label: "Applications", href: "/contractor/applications", icon: FileText },
-    { label: "Contracts", href: "/contractor/contracts", icon: FolderKanban },
-    { label: "Profile", href: "/contractor/profile", icon: UserCircle },
+    { label: "Demand Signals", href: "/contractor/rfps", icon: Search },
+    { label: "Clinic Demand", href: "/contractor/applications", icon: FileText },
+    { label: "Order Pipeline", href: "/contractor/contracts", icon: FolderKanban },
+    { label: "Account", href: "/contractor/profile", icon: UserCircle },
   ],
   AUDITOR: [
     { label: "Home", href: "/audit", icon: LayoutDashboard },
@@ -53,8 +53,8 @@ export const roleNavigation: Record<string, NavItem[]> = {
 
 /** Human-readable role labels */
 export const roleLabels: Record<string, string> = {
-  CONTRACTOR: "Contractor",
-  FUND_MANAGER: "Fund Manager",
+  CONTRACTOR: "Patterson Manager",
+  FUND_MANAGER: "Clinic Manager",
   ADMIN: "Administrator",
   AUDITOR: "Auditor",
 };

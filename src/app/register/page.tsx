@@ -183,7 +183,7 @@ function RegisterForm() {
           <div className="forest-fade-in" style={{ textAlign: "center", animationDelay: "0.15s" }}>
             <img
               src="/emblem.png"
-              alt="iFundOS"
+              alt="iDent.OS"
               width={52}
               height={52}
               className="emblem-breathe"
@@ -192,6 +192,9 @@ function RegisterForm() {
                 margin: "0 auto 10px",
                 width: 52,
                 height: 52,
+                borderRadius: 14,
+                background: "rgba(255,255,255,0.10)",
+                padding: 8,
               }}
             />
             <div
@@ -205,8 +208,8 @@ function RegisterForm() {
                 marginBottom: 4,
               }}
             >
-              iFundOS
-            </div>
+              iDent.OS
+</div>
             <div
               style={{
                 fontSize: 13,

@@ -170,17 +170,18 @@ function LoginForm() {
           }}
         >
           {/* ── Logo ──────────────────────────────────────────────── */}
-          <div className="forest-fade-in" style={{ textAlign: "center", marginBottom: 30, animationDelay: "0.2s" }}>
+          <div className="forest-fade-in" style={{ textAlign: "center", marginBottom: 22, animationDelay: "0.2s" }}>
             {/* Sovereign emblem */}
             <img
               src="/emblem.png"
-              alt="iFundOS"
+              alt="iDent.OS"
               width={76}
               height={76}
               className="w-[56px] h-[56px] sm:w-[76px] sm:h-[76px] emblem-breathe"
               style={{
                 display: "block",
-                margin: "0 auto 12px",
+                margin: "0 auto 4px",
+                borderRadius: 14,
               }}
             />
 
@@ -188,14 +189,14 @@ function LoginForm() {
               style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: "clamp(28px, 7vw, 38px)",
-                fontWeight: 200,
+                fontWeight: 400,
                 color: "rgba(230, 228, 240, 0.90)",
                 letterSpacing: 3,
                 textShadow: "0 0 30px rgba(130, 100, 220, 0.08)",
                 marginBottom: 2,
               }}
             >
-              iFundOS
+              iDent.OS
             </div>
           </div>
 
@@ -257,7 +258,7 @@ function LoginForm() {
                 <input
                   id="forest-email"
                   type="email"
-                  placeholder="you@organization.sa"
+                  placeholder="you@clinic.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -347,7 +348,7 @@ function LoginForm() {
           {/* ── Footer links ──────────────────────────────────────── */}
           <div className="forest-fade-in" style={{ textAlign: "center", marginTop: 20, animationDelay: "0.6s" }}>
             <p style={{ fontSize: 11, color: "rgba(170,200,170,0.22)", marginBottom: 2 }}>
-              New contractor?
+              New to IDENT.OS?
             </p>
             <Link
               href="/register"
@@ -358,7 +359,7 @@ function LoginForm() {
                 cursor: "none",
               }}
             >
-              Register your organization →
+              Register your clinic →
             </Link>
           </div>
         </div>

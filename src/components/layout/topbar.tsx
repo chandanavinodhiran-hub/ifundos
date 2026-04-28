@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
 import { roleLabels } from "@/lib/navigation";
-import { LogOut, Building2, Menu, Settings, Bell, ChevronRight, UserCircle } from "lucide-react";
+import { LogOut, Building2, Menu, Settings, Bell, ChevronRight, UserCircle, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -45,9 +45,10 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpen]);
 
-  const initials = (user?.name ?? "U")
+  const displayName = isFundManager ? "Dr. Patel" : isContractor ? "Patterson Team" : (user?.name ?? "User");
+  const initials = isFundManager ? "DP" : isContractor ? "PM" : (user?.name ?? "U")
     .split(" ")
-    .map((w) => w[0])
+    .map((w: string) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
@@ -76,21 +77,21 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               <Menu className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
             </button>
           )}
-          {/* Logo: emblem + iFundOS text — mobile/tablet only (desktop has sidebar) */}
+          {/* Logo: emblem + iDent.OS text — mobile/tablet only (desktop has sidebar) */}
           <div className="flex items-center gap-2 desktop:hidden">
             <Image
               src="/emblem.png"
-              alt="iFundOS"
+              alt="iDent.OS"
               width={28}
               height={28}
               style={{ width: 28, height: "auto", objectFit: "contain" }}
             />
-            <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>iFundOS</span>
+            <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>iDent.OS</span>
           </div>
           {/* Desktop: show org name — DM Sans 11px subtle */}
           <Building2 className="w-3.5 h-3.5 hidden desktop:block shrink-0" style={{ color: "var(--text-tertiary)" }} />
           <span className="font-medium hidden desktop:inline" style={{ color: "var(--text-tertiary)", fontSize: "11px" }}>
-            {user?.organizationName ?? "iFundOS"}
+            {isContractor ? "Patterson Dental Supply Intelligence" : (user?.organizationName ?? "iDent.OS")}
           </span>
         </div>
 
@@ -153,7 +154,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
                 boxShadow: "var(--raise-lg)",
               }}
             >
-              <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} onClose={() => setMenuOpen(false)} />
+              <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} displayName={displayName} onClose={() => setMenuOpen(false)} />
             </div>
           )}
         </div>
@@ -183,7 +184,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
           >
             {/* Handle bar */}
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "var(--text-muted)" }} />
-            <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} onClose={() => setMenuOpen(false)} />
+            <AvatarMenuContent user={user} roleLabel={roleLabel} initials={initials} displayName={displayName} onClose={() => setMenuOpen(false)} />
           </div>
         </div>,
         document.body
@@ -199,11 +200,13 @@ function AvatarMenuContent({
   user,
   roleLabel,
   initials,
+  displayName,
   onClose,
 }: {
   user: { name?: string | null; email?: string | null; role?: string; organizationName?: string | null } | undefined;
   roleLabel: string;
   initials: string;
+  displayName: string;
   onClose: () => void;
 }) {
   function handleSignOut(e: React.MouseEvent) {
@@ -226,13 +229,16 @@ function AvatarMenuContent({
         </div>
         <div className="min-w-0">
           <p className="font-display text-[16px]" style={{ color: "var(--text-primary)", fontWeight: 500 }}>
-            {user?.name ?? "User"}
+            {displayName}
           </p>
           <p className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
-            {roleLabel} · {user?.organizationName ?? "iFundOS"}
+            {roleLabel} · IDENT.OS
+          </p>
+          <p className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
+            AI Operating Layer for Dental Clinics
           </p>
           <p className="text-[12px] truncate" style={{ color: "var(--text-tertiary)" }}>
-            {user?.email ?? ""}
+            {user?.role === "FUND_MANAGER" ? "dr.patel@identos.ai" : user?.role === "CONTRACTOR" ? "team@patterson.dental" : (user?.email ?? "")}
           </p>
         </div>
       </div>
@@ -245,6 +251,20 @@ function AvatarMenuContent({
         <button
           type="button"
           className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors"
+          onClick={(e) => { e.stopPropagation(); }}
+          style={{ WebkitTapHighlightColor: "transparent" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.3)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <div className="flex items-center gap-3 pointer-events-none">
+            <RefreshCw className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Switch Role</span>
+          </div>
+          <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "var(--text-tertiary)" }} />
+        </button>
+        <button
+          type="button"
+          className="w-full flex items-center justify-between py-3 px-2 rounded-xl cursor-pointer transition-colors"
           onClick={(e) => { e.stopPropagation(); onClose(); }}
           style={{ WebkitTapHighlightColor: "transparent" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.3)")}
@@ -252,7 +272,7 @@ function AvatarMenuContent({
         >
           <div className="flex items-center gap-3 pointer-events-none">
             <Settings className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
-            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Account Settings</span>
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Profile & Clinic Settings</span>
           </div>
           <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "var(--text-tertiary)" }} />
         </button>
@@ -266,7 +286,7 @@ function AvatarMenuContent({
         >
           <div className="flex items-center gap-3 pointer-events-none">
             <Bell className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
-            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Notification Preferences</span>
+            <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Alerts & AI Notifications</span>
           </div>
           <ChevronRight className="w-4 h-4 pointer-events-none" style={{ color: "var(--text-tertiary)" }} />
         </button>
@@ -293,7 +313,7 @@ function AvatarMenuContent({
 
       {/* Footer */}
       <p className="text-[10px] text-center" style={{ color: "var(--text-tertiary)" }}>
-        Powered by Iozera Technologies
+        IDENT.OS · Dental Intelligence Platform
       </p>
     </div>
   );

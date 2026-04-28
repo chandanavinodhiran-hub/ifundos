@@ -132,14 +132,14 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
 
         {/* Sovereign Emblem + Branding — centered vertical stack */}
         <div className="flex flex-col items-center" style={{ marginBottom: 32, position: "relative", zIndex: 1 }}>
-          <div className="sidebar-emblem-breathe" style={{ filter: "drop-shadow(0 0 12px rgba(92, 111, 181, 0.15))" }}>
+          <div className="sidebar-emblem-breathe">
             <Image
               src="/emblem.png"
-              alt="iFundOS"
-              width={72}
-              height={72}
+              alt="iDent.OS"
+              width={64}
+              height={64}
               priority
-              style={{ width: 72, height: 72, objectFit: "contain" }}
+              style={{ width: 64, height: 64, objectFit: "contain", borderRadius: 12 }}
             />
           </div>
           <h1
@@ -153,21 +153,20 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
               textAlign: "center",
             }}
           >
-            iFundOS
+            iDent.OS
           </h1>
           <p
-            className="font-arabic"
             style={{
               fontSize: 11,
               fontWeight: 400,
               color: "rgba(236, 238, 244, 0.3)",
-              direction: "rtl",
               marginTop: 4,
               lineHeight: 1.3,
               textAlign: "center",
+              letterSpacing: "0.5px",
             }}
           >
-            {"\u0635\u0646\u062F\u0648\u0642 \u0627\u0644\u0628\u064A\u0626\u0629"}
+            Dental Intelligence
           </p>
         </div>
 
@@ -250,18 +249,18 @@ export function Sidebar({ isOpen, onClose, disableMobileDrawer }: SidebarProps) 
         >
           {/* Sovereign Emblem + Branding (mobile) */}
           <div className="flex items-center gap-3 px-4 py-4 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="shrink-0 sidebar-emblem-breathe" style={{ filter: "drop-shadow(0 0 10px rgba(92, 111, 181, 0.12))" }}>
+            <div className="shrink-0 sidebar-emblem-breathe">
               <Image
                 src="/emblem.png"
-                alt="iFundOS"
-                width={48}
-                height={48}
-                style={{ width: 48, height: 48, objectFit: "contain" }}
+                alt="iDent.OS"
+                width={40}
+                height={40}
+                style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8 }}
               />
             </div>
             <div>
-              <h1 style={{ fontSize: 16, fontWeight: 500, letterSpacing: "1px", color: "rgba(236, 238, 244, 0.9)", lineHeight: 1.2 }}>iFundOS</h1>
-              <p className="font-arabic" style={{ fontSize: 10, fontWeight: 400, color: "rgba(236, 238, 244, 0.3)", direction: "rtl", marginTop: 2 }}>{"\u0635\u0646\u062F\u0648\u0642 \u0627\u0644\u0628\u064A\u0626\u0629"}</p>
+              <h1 style={{ fontSize: 16, fontWeight: 500, letterSpacing: "1px", color: "rgba(236, 238, 244, 0.9)", lineHeight: 1.2 }}>iDent.OS</h1>
+              <p className="font-arabic" style={{ fontSize: 10, fontWeight: 400, color: "rgba(236, 238, 244, 0.3)", direction: "rtl", marginTop: 2 }}>Dental Intelligence</p>
             </div>
           </div>
           <nav className="flex-1 py-4 overflow-y-auto">
